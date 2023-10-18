@@ -1,0 +1,10 @@
+syntax = "proto3";
+package dkvs.message;
+
+option go_package = "types/actor";
+
+// StoreMessage is a message that is sent to a node that should store a key
+message StoreMessage {
+    string key = 1;
+    string value = 2;
+}
