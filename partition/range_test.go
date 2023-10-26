@@ -32,10 +32,9 @@ func TestNewRange(t *testing.T) {
 			expectingPanic: false,
 		},
 		{
-			min:           big.NewInt(1),
-			max:           big.NewInt(0),
-			expectedRange: &Range{},
-			// max is less than min
+			min:            big.NewInt(1),
+			max:            big.NewInt(0),
+			expectedRange:  &Range{},
 			expectingPanic: true,
 		},
 		{
