@@ -1,7 +1,7 @@
 syntax = "proto3";
-package dkvs.message;
+package dkvs;
 
-option go_package = "types/actor";
+option go_package = "todo";
 
 // StoreMessage is a message that is sent to a node that should store a key
 message StoreMessage {
