@@ -2,6 +2,7 @@ package partition
 
 import "github.com/pysel/dkvs/db"
 
+// Partition is a slave node that stores some range of keys
 type Partition struct {
 	DB        db.DB
 	hashRange *Range
