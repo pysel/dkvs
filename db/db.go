@@ -27,11 +27,11 @@ func (ldb *LevelDB) Delete(key []byte) error {
 }
 
 // NewGoLevelDB returns a new instance of GoLevelDB.
-func NewLevelDB(path string) (*leveldb.DB, error) {
+func NewLevelDB(path string) (*LevelDB, error) {
 	db, err := leveldb.OpenFile(path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return db, nil
+	return &LevelDB{db}, nil
 }
