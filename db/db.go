@@ -4,8 +4,9 @@ import "github.com/syndtr/goleveldb/leveldb"
 
 type DB interface {
 	Get(key []byte) ([]byte, error)
-	Put(key []byte, value []byte) error
+	Set(key []byte, value []byte) error
 	Delete(key []byte) error
+	Has(key []byte) bool
 	Close() error
 }
 
@@ -18,12 +19,17 @@ func (ldb *LevelDB) Get(key []byte) ([]byte, error) {
 	return ldb.DB.Get(key, nil)
 }
 
-func (ldb *LevelDB) Put(key []byte, value []byte) error {
+func (ldb *LevelDB) Set(key []byte, value []byte) error {
 	return ldb.DB.Put(key, value, nil)
 }
 
 func (ldb *LevelDB) Delete(key []byte) error {
 	return ldb.DB.Delete(key, nil)
+}
+
+func (ldb *LevelDB) Has(key []byte) bool {
+	has, _ := ldb.DB.Has(key, nil)
+	return has
 }
 
 // NewGoLevelDB returns a new instance of GoLevelDB.
