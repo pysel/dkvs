@@ -1,4 +1,4 @@
-package partition
+package hashrange
 
 import "math/big"
 
@@ -9,18 +9,18 @@ type Range struct {
 }
 
 var (
-	minInt = big.NewInt(0)
-	maxInt = new(big.Int).Exp(big.NewInt(2), big.NewInt(256), nil)
+	MinInt = big.NewInt(0)
+	MaxInt = new(big.Int).Exp(big.NewInt(2), big.NewInt(256), nil)
 )
 
 // NewRange is a constructor for Range.
 func NewRange(min, max *big.Int) *Range {
-	if min.Cmp(minInt) == -1 {
+	if min.Cmp(MinInt) == -1 {
 		// min should be >= 0, since SHA-2 only produces positive hashes.
 		panic("min is negative")
 	}
 
-	if max.Cmp(maxInt) == 1 {
+	if max.Cmp(MaxInt) == 1 {
 		// max should be lower than maximum possible hash.
 		panic("max is greater than 2^256")
 	}

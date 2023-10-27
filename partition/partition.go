@@ -2,17 +2,18 @@ package partition
 
 import (
 	"github.com/pysel/dkvs/db"
+	"github.com/pysel/dkvs/partition/hashrange"
 )
 
 // Partition is a slave node that stores some range of keys
 type Partition struct {
-	hashrange *Range
+	hashrange *hashrange.Range
 
 	db.DB
 }
 
 // NewPartition creates a new partition instance.
-func NewPartition(dbPath string, hashRange *Range) *Partition {
+func NewPartition(dbPath string, hashRange *hashrange.Range) *Partition {
 	db, err := db.NewLevelDB(dbPath)
 	if err != nil {
 		panic(err)
