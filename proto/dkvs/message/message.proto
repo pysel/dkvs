@@ -1,7 +1,7 @@
 syntax = "proto3";
-package dkvs;
+package dkvs.message;
 
-option go_package = "todo";
+option go_package = "github.com/pysel/dkvs/prototypes";
 
 // StoreMessage is a message that is sent to a node that should store a key
 message StoreMessage {
