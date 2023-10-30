@@ -36,7 +36,7 @@ for filename in list_files_recursively(proto_dir):
                         os.system(f'mkdir -p {go_package}')
                         
                     # Build the protoc command
-                    cmd = f'protoc -I=proto --go_out=. {filename}'
+                    cmd = f'protoc -I=proto --go_out=. --go-grpc_out=. {filename}'
                     subPaths.append(relativeGoPackage)
                     print(f'Running: {cmd}')
                     os.system(cmd)
