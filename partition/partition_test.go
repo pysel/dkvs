@@ -6,12 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/pysel/dkvs/partition/hashrange"
 	"github.com/stretchr/testify/require"
 )
 
 // Half of maxInt
-var defaultHashRange = hashrange.NewRange(big.NewInt(0), hashrange.MaxInt.Div(hashrange.MaxInt, big.NewInt(2)))
+var defaultHashRange = NewRange(big.NewInt(0), maxInt.Div(maxInt, big.NewInt(2)))
 
 func TestDatabaseMethods(t *testing.T) {
 	p := NewPartition("test", defaultHashRange)

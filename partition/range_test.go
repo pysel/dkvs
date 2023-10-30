@@ -1,4 +1,4 @@
-package hashrange
+package partition
 
 import (
 	"math/big"
@@ -51,8 +51,8 @@ func TestNewRange(t *testing.T) {
 		},
 		{
 			min:            big.NewInt(500),
-			max:            MaxInt,
-			expectedRange:  &Range{big.NewInt(500), MaxInt},
+			max:            maxInt,
+			expectedRange:  &Range{big.NewInt(500), maxInt},
 			expectingPanic: false,
 		},
 	}
