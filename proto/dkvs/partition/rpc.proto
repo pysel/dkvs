@@ -1,0 +1,10 @@
+syntax = "proto3";
+package dkvs.balancer;
+
+import "dkvs/message/message.proto";
+
+option go_package = "github.com/pysel/dkvs/prototypes/partition";
+
+service CommandsService {
+    rpc StoreMessage(dkvs.message.StoreMessageRequest) returns (dkvs.message.StoreMessageResponse);
+}
