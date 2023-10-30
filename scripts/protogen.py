@@ -25,13 +25,19 @@ for filename in list_files_recursively(proto_dir):
                 if line.startswith('option go_package'):
                     # Extract the go_package value
                     go_package = line.split('=')[1].strip(' ";').replace('";\n', '')
+                    relativeGoPackage = go_package.split(go_mod_name)[1].lstrip('/')
+                    print("AAAA", go_package, relativeGoPackage)
+
+                    rmrf = f'rm -rf {relativeGoPackage}'
+                    print(f'Running: {rmrf}')
+                    os.system(rmrf)
                     
                     if not os.path.exists(go_package):
                         os.system(f'mkdir -p {go_package}')
                         
                     # Build the protoc command
                     cmd = f'protoc -I=proto --go_out=. {filename}'
-                    subPaths.append(filename.split(proto_dir)[1])
+                    subPaths.append(relativeGoPackage)
                     print(f'Running: {cmd}')
                     os.system(cmd)
                     break
@@ -39,7 +45,7 @@ for filename in list_files_recursively(proto_dir):
 # Remove module prefix and move generated files from there
 for path in subPaths:
     # get names of top directories to move
-    topDir = path.split('/')[1]
+    topDir = path.split('/')[0]
     dirToMove = go_mod_name + "/" + topDir
     cmd = f'(mkdir {topDir}; mv {dirToMove} .)'
     print(f'Running: {cmd}')
