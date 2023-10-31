@@ -2,6 +2,7 @@ package partition
 
 import (
 	"crypto/sha256"
+	"fmt"
 	"math/big"
 	"os"
 	"testing"
@@ -16,14 +17,17 @@ func TestDatabaseMethods(t *testing.T) {
 	p := NewPartition("test", defaultHashRange)
 	defer p.Close()
 	defer require.NoError(t, os.RemoveAll("test"))
-
+	fmt.Print(maxInt.Div(maxInt, big.NewInt(2)))
 	partitionKey := []byte("Partition key")
 	notPartitionKey := []byte("Not partition key.")
+
+	err := p.Set(partitionKey[:], []byte("Value"))
+	require.Error(t, err, "should return error if key is not 32 bytes long - not a valid SHA-2 digest")
 
 	hashedPartitionKey := sha256.Sum256(partitionKey)
 	hashedNotPartitionKey := sha256.Sum256(notPartitionKey)
 
-	err := p.Set(hashedPartitionKey[:], []byte("Value"))
+	err = p.Set(hashedPartitionKey[:], []byte("Value"))
 	require.NoError(t, err) // partition's key, should store correctly
 
 	err = p.Set(hashedNotPartitionKey[:], []byte("Value2"))

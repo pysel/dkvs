@@ -2,6 +2,7 @@ package partition
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"math/big"
 	"net"
@@ -13,7 +14,7 @@ import (
 
 type ListenServer struct {
 	pbpartition.UnimplementedCommandsServiceServer
-	p *Partition
+	*Partition
 }
 
 func RunPartitionServer(port int64, dbPath string, from *big.Int, to *big.Int) {
@@ -25,12 +26,14 @@ func RunPartitionServer(port int64, dbPath string, from *big.Int, to *big.Int) {
 	partition := NewPartition(dbPath, NewRange(from, to))
 
 	grpcServer := grpc.NewServer()
-	pbpartition.RegisterCommandsServiceServer(grpcServer, &ListenServer{p: partition})
+	pbpartition.RegisterCommandsServiceServer(grpcServer, &ListenServer{Partition: partition})
 	grpcServer.Serve(lis)
 }
 
 func (ls *ListenServer) StoreMessage(ctx context.Context, req *prototypes.StoreMessageRequest) (*prototypes.StoreMessageResponse, error) {
-	err := ls.p.Set(req.Key, req.Value)
+	shaKey := sha256.Sum256(req.Key)
+
+	err := ls.Set(shaKey[:], req.Value)
 	if err != nil {
 		return nil, err
 	}

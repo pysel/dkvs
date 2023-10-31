@@ -58,3 +58,7 @@ func (p *Partition) Has(key []byte) (bool, error) {
 
 	return p.DB.Has(key), nil
 }
+
+func (p *Partition) Close() error {
+	return p.DB.Close()
+}
