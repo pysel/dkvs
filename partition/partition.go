@@ -7,7 +7,6 @@ import (
 // Partition is a slave node that stores some range of keys
 type Partition struct {
 	hashrange *Range
-
 	db.DB
 }
 
@@ -19,8 +18,8 @@ func NewPartition(dbPath string, hashRange *Range) *Partition {
 	}
 
 	return &Partition{
-		hashRange,
-		db,
+		hashrange: hashRange,
+		DB:        db,
 	}
 }
 
