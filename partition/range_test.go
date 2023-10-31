@@ -3,6 +3,8 @@ package partition
 import (
 	"math/big"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewRange(t *testing.T) {
@@ -66,6 +68,7 @@ func TestNewRange(t *testing.T) {
 			}()
 		}
 
-		NewRange(test.min, test.max)
+		got := NewRange(test.min, test.max)
+		require.Equal(t, test.expectedRange, got)
 	}
 }

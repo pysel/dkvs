@@ -16,7 +16,7 @@ type ListenServer struct {
 	pbpartition.UnimplementedCommandsServiceServer
 }
 
-func init() {
+func RegisterServer() {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", ListeningPort))
 	if err != nil {
 		panic(err)
