@@ -27,7 +27,8 @@ func main() {
 	mode := args[1]
 	switch mode {
 	case types.PARTITION_MODE:
-		if len(args) < 6 {
+		fmt.Println(args)
+		if len(args) < 5 {
 			panic(fmt.Sprintf("Need a port, db path, from and to, but got: %T", args))
 		}
 		port, err := strconv.Atoi(args[2])
