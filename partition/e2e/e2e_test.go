@@ -2,8 +2,6 @@ package e2e
 
 import (
 	"context"
-	"crypto/sha256"
-	"fmt"
 	"log"
 	"math/big"
 	"net"
@@ -35,8 +33,9 @@ func init() {
 	for i := 0; i < 32; i++ {
 		to_bz[i] = 0xFF
 	}
+	full_range := new(big.Int).SetBytes(to_bz) // 2^256 - 1
 
-	to = new(big.Int).SetBytes(to_bz)
+	to = new(big.Int).Div(full_range, big.NewInt(2)) // half of 2^256 - 1
 }
 
 func TestGRPCServer(t *testing.T) {
@@ -50,13 +49,39 @@ func TestGRPCServer(t *testing.T) {
 	defer closer()
 	defer os.RemoveAll(testDBPath)
 	domainKey := []byte("Partition key")
-	fmt.Println(sha256.Sum256(domainKey))
+	nonDomainKey := []byte("Not partition key.")
 
+	// Assert that value was stored correctly
 	_, err := client.StoreMessage(ctx, &prototypes.StoreMessageRequest{
 		Key:   domainKey,
 		Value: []byte("value"),
 	})
 	require.NoError(t, err, "StoreMessage should not return error")
+
+	// Assert that value was stored correctly
+	getResp, err := client.GetMessage(ctx, &prototypes.GetMessageRequest{Key: domainKey})
+	require.NoError(t, err, "GetMessage should not return error")
+	require.Equal(t, []byte("value"), getResp.Value, "GetMessage should return correct value")
+
+	// Assert that value was not stored if key is nil
+	setResp, err := client.StoreMessage(ctx, &prototypes.StoreMessageRequest{})
+	require.ErrorContains(t, err, partition.ErrNilKey.Error(), "StoreMessage should return error if key is nil")
+	require.Nil(t, setResp, "StoreMessage should return nil response if key is nil")
+
+	// Assert that get operation won't succeed if key is nil
+	getResp, err = client.GetMessage(ctx, &prototypes.GetMessageRequest{})
+	require.ErrorContains(t, err, partition.ErrNilKey.Error(), "GetMessage should return error if key is nil")
+	require.Nil(t, getResp, "GetMessage should return nil response if key is nil")
+
+	// Assert that value was not stored if key is not in partition's hashrange
+	setResp, err = client.StoreMessage(ctx, &prototypes.StoreMessageRequest{Key: nonDomainKey})
+	require.ErrorContains(t, err, partition.ErrNotThisPartitionKey.Error(), "StoreMessage should return error if key is not domain key")
+	require.Nil(t, setResp, "StoreMessage should return nil response if key is not domain key")
+
+	// Assert that get operation won't succeed if key is not in partition's hashrange
+	getResp, err = client.GetMessage(ctx, &prototypes.GetMessageRequest{Key: nonDomainKey})
+	require.ErrorContains(t, err, partition.ErrNotThisPartitionKey.Error(), "GetMessage should return error if key is not domain key")
+	require.Nil(t, getResp, "GetMessage should return nil response if key is not domain key")
 }
 
 func server(ctx context.Context) (pbpartition.CommandsServiceClient, func()) {

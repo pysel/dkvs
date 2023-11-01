@@ -31,6 +31,10 @@ func RunPartitionServer(port int64, dbPath string, from *big.Int, to *big.Int) {
 }
 
 func (ls *ListenServer) StoreMessage(ctx context.Context, req *prototypes.StoreMessageRequest) (*prototypes.StoreMessageResponse, error) {
+	if req.Key == nil {
+		return nil, ErrNilKey
+	}
+
 	shaKey := sha256.Sum256(req.Key)
 
 	err := ls.Set(shaKey[:], req.Value)
@@ -42,6 +46,10 @@ func (ls *ListenServer) StoreMessage(ctx context.Context, req *prototypes.StoreM
 }
 
 func (ls *ListenServer) GetMessage(ctx context.Context, req *prototypes.GetMessageRequest) (*prototypes.GetMessageResponse, error) {
+	if req.Key == nil {
+		return nil, ErrNilKey
+	}
+
 	shaKey := sha256.Sum256(req.Key)
 
 	value, err := ls.Get(shaKey[:])
