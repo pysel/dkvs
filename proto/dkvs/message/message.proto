@@ -1,8 +1,6 @@
 syntax = "proto3";
 package dkvs.message;
 
-import "dkvs/message/errors.proto";
-
 option go_package = "github.com/pysel/dkvs/prototypes";
 
 // StoreMessage is a message that is sent to a node that should store a key
@@ -17,5 +15,4 @@ message GetMessageRequest {
 }
 message GetMessageResponse {
     bytes value = 1;
-    dkvs.error.ErrorResponse error = 2;
 }

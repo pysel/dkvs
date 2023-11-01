@@ -1,8 +1,0 @@
-syntax = "proto3";
-package dkvs.error;
-
-option go_package = "github.com/pysel/dkvs/prototypes";
-
-message ErrorResponse {
-    string message = 1;
-}
