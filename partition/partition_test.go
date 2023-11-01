@@ -1,23 +1,23 @@
-package partition
+package partition_test
 
 import (
 	"crypto/sha256"
-	"fmt"
 	"math/big"
 	"os"
 	"testing"
 
+	"github.com/pysel/dkvs/partition"
 	"github.com/stretchr/testify/require"
 )
 
-// Half of maxInt
-var defaultHashRange = NewRange(big.NewInt(0), maxInt.Div(maxInt, big.NewInt(2)))
+// Half of MaxInt
+var defaultHashRange = partition.NewRange(big.NewInt(0), new(big.Int).Div(partition.MaxInt, big.NewInt(2)))
 
 func TestDatabaseMethods(t *testing.T) {
-	p := NewPartition("test", defaultHashRange)
+	p := partition.NewPartition("test", defaultHashRange)
 	defer p.Close()
 	defer require.NoError(t, os.RemoveAll("test"))
-	fmt.Print(maxInt.Div(maxInt, big.NewInt(2)))
+
 	partitionKey := []byte("Partition key")
 	notPartitionKey := []byte("Not partition key.")
 
