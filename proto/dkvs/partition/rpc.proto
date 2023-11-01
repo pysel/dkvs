@@ -1,5 +1,5 @@
 syntax = "proto3";
-package dkvs.balancer;
+package dkvs.partition;
 
 import "dkvs/message/message.proto";
 

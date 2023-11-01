@@ -37,7 +37,7 @@ func NewCommandsServiceClient(cc grpc.ClientConnInterface) CommandsServiceClient
 
 func (c *commandsServiceClient) StoreMessage(ctx context.Context, in *prototypes.StoreMessageRequest, opts ...grpc.CallOption) (*prototypes.StoreMessageResponse, error) {
 	out := new(prototypes.StoreMessageResponse)
-	err := c.cc.Invoke(ctx, "/dkvs.balancer.CommandsService/StoreMessage", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/dkvs.partition.CommandsService/StoreMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *commandsServiceClient) StoreMessage(ctx context.Context, in *prototypes
 
 func (c *commandsServiceClient) GetMessage(ctx context.Context, in *prototypes.GetMessageRequest, opts ...grpc.CallOption) (*prototypes.GetMessageResponse, error) {
 	out := new(prototypes.GetMessageResponse)
-	err := c.cc.Invoke(ctx, "/dkvs.balancer.CommandsService/GetMessage", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/dkvs.partition.CommandsService/GetMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func _CommandsService_StoreMessage_Handler(srv interface{}, ctx context.Context,
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/dkvs.balancer.CommandsService/StoreMessage",
+		FullMethod: "/dkvs.partition.CommandsService/StoreMessage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CommandsServiceServer).StoreMessage(ctx, req.(*prototypes.StoreMessageRequest))
@@ -113,7 +113,7 @@ func _CommandsService_GetMessage_Handler(srv interface{}, ctx context.Context, d
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/dkvs.balancer.CommandsService/GetMessage",
+		FullMethod: "/dkvs.partition.CommandsService/GetMessage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CommandsServiceServer).GetMessage(ctx, req.(*prototypes.GetMessageRequest))
@@ -125,7 +125,7 @@ func _CommandsService_GetMessage_Handler(srv interface{}, ctx context.Context, d
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var CommandsService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "dkvs.balancer.CommandsService",
+	ServiceName: "dkvs.partition.CommandsService",
 	HandlerType: (*CommandsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
