@@ -5,7 +5,7 @@ import "dkvs/message/message.proto";
 
 option go_package = "github.com/pysel/dkvs/prototypes/partition";
 
-service CommandsService {
+service PartitionService {
     rpc StoreMessage(dkvs.message.StoreMessageRequest) returns (dkvs.message.StoreMessageResponse);
     rpc GetMessage(dkvs.message.GetMessageRequest) returns (dkvs.message.GetMessageResponse);
 }

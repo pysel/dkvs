@@ -13,7 +13,7 @@ import (
 )
 
 type ListenServer struct {
-	pbpartition.UnimplementedCommandsServiceServer
+	pbpartition.UnimplementedPartitionServiceServer
 	*Partition
 }
 
@@ -26,7 +26,7 @@ func RunPartitionServer(port int64, dbPath string, from *big.Int, to *big.Int) {
 	partition := NewPartition(dbPath, NewRange(from, to))
 
 	grpcServer := grpc.NewServer()
-	pbpartition.RegisterCommandsServiceServer(grpcServer, &ListenServer{Partition: partition})
+	pbpartition.RegisterPartitionServiceServer(grpcServer, &ListenServer{Partition: partition})
 	grpcServer.Serve(lis)
 }
 

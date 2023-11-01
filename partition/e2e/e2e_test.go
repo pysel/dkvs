@@ -84,12 +84,12 @@ func TestGRPCServer(t *testing.T) {
 	require.Nil(t, getResp, "GetMessage should return nil response if key is not domain key")
 }
 
-func server(ctx context.Context) (pbpartition.CommandsServiceClient, func()) {
+func server(ctx context.Context) (pbpartition.PartitionServiceClient, func()) {
 	lis := bufconn.Listen(bufSize)
 	s := grpc.NewServer()
 	p := partition.NewPartition(testDBPath, partition.NewRange(from, to))
 
-	pbpartition.RegisterCommandsServiceServer(s, &partition.ListenServer{Partition: p})
+	pbpartition.RegisterPartitionServiceServer(s, &partition.ListenServer{Partition: p})
 	go func() {
 		if err := s.Serve(lis); err != nil {
 			panic(err)
@@ -110,5 +110,5 @@ func server(ctx context.Context) (pbpartition.CommandsServiceClient, func()) {
 		}
 		s.Stop()
 	}
-	return pbpartition.NewCommandsServiceClient(conn), closer
+	return pbpartition.NewPartitionServiceClient(conn), closer
 }
