@@ -1,0 +1,7 @@
+syntax = "proto3";
+package dkvs.balancer;
+
+option go_package = "github.com/pysel/dkvs/prototypes/balancer";
+
+service BalancerService {}
+
