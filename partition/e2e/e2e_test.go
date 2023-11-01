@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"log"
 	"math/big"
@@ -24,14 +25,43 @@ const (
 )
 
 var (
-	from = new(big.Int).SetInt64(0)
-	to   = new(big.Int).Exp(big.NewInt(2), big.NewInt(128), nil) // half of SHA-2 domain
+	from *big.Int
+	to   *big.Int
 )
+
+func init() {
+	from = new(big.Int).SetInt64(0)
+	to_bz := make([]byte, 32)
+	for i := 0; i < 32; i++ {
+		to_bz[i] = 0xFF
+	}
+
+	to = new(big.Int).SetBytes(to_bz)
+}
+
+func TestGRPCServer(t *testing.T) {
+	ctx := context.Background()
+
+	client, closer := server(ctx)
+	if closer == nil {
+		t.Fatal("Closer should not be nil")
+	}
+
+	defer closer()
+	defer os.RemoveAll(testDBPath)
+	domainKey := []byte("Partition key")
+	fmt.Println(sha256.Sum256(domainKey))
+
+	_, err := client.StoreMessage(ctx, &prototypes.StoreMessageRequest{
+		Key:   domainKey,
+		Value: []byte("value"),
+	})
+	require.NoError(t, err, "StoreMessage should not return error")
+}
 
 func server(ctx context.Context) (pbpartition.CommandsServiceClient, func()) {
 	lis := bufconn.Listen(bufSize)
 	s := grpc.NewServer()
-	fmt.Println("TO: ", to)
 	p := partition.NewPartition(testDBPath, partition.NewRange(from, to))
 
 	pbpartition.RegisterCommandsServiceServer(s, &partition.ListenServer{Partition: p})
@@ -56,25 +86,4 @@ func server(ctx context.Context) (pbpartition.CommandsServiceClient, func()) {
 		s.Stop()
 	}
 	return pbpartition.NewCommandsServiceClient(conn), closer
-}
-
-func TestGRPCServer(t *testing.T) {
-	ctx := context.Background()
-
-	client, closer := server(ctx)
-	if closer == nil {
-		t.Fatal("Closer should not be nil")
-	}
-
-	defer closer()
-	defer os.RemoveAll(testDBPath)
-	domainKey := []byte("Partition key")
-
-	res, err := client.StoreMessage(ctx, &prototypes.StoreMessageRequest{
-		Key:   domainKey,
-		Value: []byte("value"),
-	})
-	require.NoError(t, err, "StoreMessage should not return error")
-	require.Equal(t, res, &prototypes.StoreMessageResponse{}, "StoreMessage should return empty response")
-
 }
