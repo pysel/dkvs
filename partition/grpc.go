@@ -10,6 +10,7 @@ import (
 	"github.com/pysel/dkvs/prototypes"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type ListenServer struct {
@@ -26,27 +27,35 @@ func RunPartitionServer(port int64, dbPath string, from *big.Int, to *big.Int) {
 	partition := NewPartition(dbPath, NewRange(from, to))
 
 	grpcServer := grpc.NewServer()
+	reflection.Register(grpcServer)
 	pbpartition.RegisterPartitionServiceServer(grpcServer, &ListenServer{Partition: partition})
+	fmt.Println("Starting server on port", port)
 	grpcServer.Serve(lis)
 }
 
-func (ls *ListenServer) StoreMessage(ctx context.Context, req *prototypes.StoreMessageRequest) (*prototypes.StoreMessageResponse, error) {
+func (ls *ListenServer) SetMessage(ctx context.Context, req *prototypes.SetMessageRequest) (*prototypes.SetMessageResponse, error) {
 	if req == nil {
 		return nil, ErrNilRequest
 	}
 
-	if req.Key == nil {
+	if req.Key == "" {
 		return nil, ErrNilKey
 	}
+	if req.Value == nil {
+		return nil, ErrNilValue
+	}
 
-	shaKey := sha256.Sum256(req.Key)
+	keyBz := []byte(req.Key)
+	valueBz := []byte(req.Value)
 
-	err := ls.Set(shaKey[:], req.Value)
+	shaKey := sha256.Sum256(keyBz)
+
+	err := ls.Set(shaKey[:], valueBz)
 	if err != nil {
 		return nil, err
 	}
 
-	return &prototypes.StoreMessageResponse{}, nil
+	return &prototypes.SetMessageResponse{}, nil
 }
 
 func (ls *ListenServer) GetMessage(ctx context.Context, req *prototypes.GetMessageRequest) (*prototypes.GetMessageResponse, error) {
@@ -54,11 +63,13 @@ func (ls *ListenServer) GetMessage(ctx context.Context, req *prototypes.GetMessa
 		return nil, ErrNilRequest
 	}
 
-	if req.Key == nil {
+	if req.Key == "" {
 		return nil, ErrNilKey
 	}
 
-	shaKey := sha256.Sum256(req.Key)
+	keyBz := []byte(req.Key)
+
+	shaKey := sha256.Sum256(keyBz)
 
 	value, err := ls.Get(shaKey[:])
 	if err != nil {
@@ -73,11 +84,12 @@ func (ls *ListenServer) DeleteMessage(ctx context.Context, req *prototypes.Delet
 		return nil, ErrNilRequest
 	}
 
-	if req.Key == nil {
+	if req.Key == "" {
 		return nil, ErrNilKey
 	}
+	keyBz := []byte(req.Key)
 
-	shaKey := sha256.Sum256(req.Key)
+	shaKey := sha256.Sum256(keyBz)
 
 	err := ls.Delete(shaKey[:])
 	if err != nil {

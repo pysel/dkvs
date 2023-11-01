@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PartitionServiceClient interface {
-	StoreMessage(ctx context.Context, in *prototypes.StoreMessageRequest, opts ...grpc.CallOption) (*prototypes.StoreMessageResponse, error)
+	SetMessage(ctx context.Context, in *prototypes.SetMessageRequest, opts ...grpc.CallOption) (*prototypes.SetMessageResponse, error)
 	GetMessage(ctx context.Context, in *prototypes.GetMessageRequest, opts ...grpc.CallOption) (*prototypes.GetMessageResponse, error)
 	DeleteMessage(ctx context.Context, in *prototypes.DeleteMessageRequest, opts ...grpc.CallOption) (*prototypes.DeleteMessageResponse, error)
 	// SetHashrange sets this node's hashrange to the given range.
@@ -38,9 +38,9 @@ func NewPartitionServiceClient(cc grpc.ClientConnInterface) PartitionServiceClie
 	return &partitionServiceClient{cc}
 }
 
-func (c *partitionServiceClient) StoreMessage(ctx context.Context, in *prototypes.StoreMessageRequest, opts ...grpc.CallOption) (*prototypes.StoreMessageResponse, error) {
-	out := new(prototypes.StoreMessageResponse)
-	err := c.cc.Invoke(ctx, "/dkvs.partition.PartitionService/StoreMessage", in, out, opts...)
+func (c *partitionServiceClient) SetMessage(ctx context.Context, in *prototypes.SetMessageRequest, opts ...grpc.CallOption) (*prototypes.SetMessageResponse, error) {
+	out := new(prototypes.SetMessageResponse)
+	err := c.cc.Invoke(ctx, "/dkvs.partition.PartitionService/SetMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func (c *partitionServiceClient) SetHashrange(ctx context.Context, in *prototype
 // All implementations must embed UnimplementedPartitionServiceServer
 // for forward compatibility
 type PartitionServiceServer interface {
-	StoreMessage(context.Context, *prototypes.StoreMessageRequest) (*prototypes.StoreMessageResponse, error)
+	SetMessage(context.Context, *prototypes.SetMessageRequest) (*prototypes.SetMessageResponse, error)
 	GetMessage(context.Context, *prototypes.GetMessageRequest) (*prototypes.GetMessageResponse, error)
 	DeleteMessage(context.Context, *prototypes.DeleteMessageRequest) (*prototypes.DeleteMessageResponse, error)
 	// SetHashrange sets this node's hashrange to the given range.
@@ -90,8 +90,8 @@ type PartitionServiceServer interface {
 type UnimplementedPartitionServiceServer struct {
 }
 
-func (UnimplementedPartitionServiceServer) StoreMessage(context.Context, *prototypes.StoreMessageRequest) (*prototypes.StoreMessageResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StoreMessage not implemented")
+func (UnimplementedPartitionServiceServer) SetMessage(context.Context, *prototypes.SetMessageRequest) (*prototypes.SetMessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetMessage not implemented")
 }
 func (UnimplementedPartitionServiceServer) GetMessage(context.Context, *prototypes.GetMessageRequest) (*prototypes.GetMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessage not implemented")
@@ -115,20 +115,20 @@ func RegisterPartitionServiceServer(s grpc.ServiceRegistrar, srv PartitionServic
 	s.RegisterService(&PartitionService_ServiceDesc, srv)
 }
 
-func _PartitionService_StoreMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(prototypes.StoreMessageRequest)
+func _PartitionService_SetMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(prototypes.SetMessageRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PartitionServiceServer).StoreMessage(ctx, in)
+		return srv.(PartitionServiceServer).SetMessage(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/dkvs.partition.PartitionService/StoreMessage",
+		FullMethod: "/dkvs.partition.PartitionService/SetMessage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PartitionServiceServer).StoreMessage(ctx, req.(*prototypes.StoreMessageRequest))
+		return srv.(PartitionServiceServer).SetMessage(ctx, req.(*prototypes.SetMessageRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -195,8 +195,8 @@ var PartitionService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*PartitionServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "StoreMessage",
-			Handler:    _PartitionService_StoreMessage_Handler,
+			MethodName: "SetMessage",
+			Handler:    _PartitionService_SetMessage_Handler,
 		},
 		{
 			MethodName: "GetMessage",

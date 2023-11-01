@@ -48,15 +48,15 @@ func TestGRPCServer(t *testing.T) {
 
 	defer closer()
 	defer os.RemoveAll(testDBPath)
-	domainKey := []byte("Partition key")
-	nonDomainKey := []byte("Not partition key.")
+	domainKey := "Partition key"
+	nonDomainKey := "Not partition key."
 
 	// Assert that value was stored correctly
-	_, err := client.StoreMessage(ctx, &prototypes.StoreMessageRequest{
+	_, err := client.SetMessage(ctx, &prototypes.SetMessageRequest{
 		Key:   domainKey,
 		Value: []byte("value"),
 	})
-	require.NoError(t, err, "StoreMessage should not return error")
+	require.NoError(t, err, "SetMessage should not return error")
 
 	// Assert that value was stored correctly
 	getResp, err := client.GetMessage(ctx, &prototypes.GetMessageRequest{Key: domainKey})
@@ -64,9 +64,9 @@ func TestGRPCServer(t *testing.T) {
 	require.Equal(t, []byte("value"), getResp.Value, "GetMessage should return correct value")
 
 	// Assert that value was not stored if key is nil
-	setResp, err := client.StoreMessage(ctx, &prototypes.StoreMessageRequest{})
-	require.ErrorContains(t, err, partition.ErrNilKey.Error(), "StoreMessage should return error if key is nil")
-	require.Nil(t, setResp, "StoreMessage should return nil response if key is nil")
+	setResp, err := client.SetMessage(ctx, &prototypes.SetMessageRequest{})
+	require.ErrorContains(t, err, partition.ErrNilKey.Error(), "SetMessage should return error if key is nil")
+	require.Nil(t, setResp, "SetMessage should return nil response if key is nil")
 
 	// Assert that get operation won't succeed if key is nil
 	getResp, err = client.GetMessage(ctx, &prototypes.GetMessageRequest{})
@@ -74,9 +74,9 @@ func TestGRPCServer(t *testing.T) {
 	require.Nil(t, getResp, "GetMessage should return nil response if key is nil")
 
 	// Assert that value was not stored if key is not in partition's hashrange
-	setResp, err = client.StoreMessage(ctx, &prototypes.StoreMessageRequest{Key: nonDomainKey})
-	require.ErrorContains(t, err, partition.ErrNotThisPartitionKey.Error(), "StoreMessage should return error if key is not domain key")
-	require.Nil(t, setResp, "StoreMessage should return nil response if key is not domain key")
+	setResp, err = client.SetMessage(ctx, &prototypes.SetMessageRequest{Key: nonDomainKey})
+	require.ErrorContains(t, err, partition.ErrNotThisPartitionKey.Error(), "SetMessage should return error if key is not domain key")
+	require.Nil(t, setResp, "SetMessage should return nil response if key is not domain key")
 
 	// Assert that get operation won't succeed if key is not in partition's hashrange
 	getResp, err = client.GetMessage(ctx, &prototypes.GetMessageRequest{Key: nonDomainKey})

@@ -4,21 +4,21 @@ package dkvs.message;
 option go_package = "github.com/pysel/dkvs/prototypes";
 
 // StoreMessage is a message that is sent to a node that should store a key
-message StoreMessageRequest {
-    bytes key = 1;
+message SetMessageRequest {
+    string key = 1;
     bytes value = 2;
 }
-message StoreMessageResponse {}
+message SetMessageResponse {}
 
 message GetMessageRequest {
-    bytes key = 1;
+    string key = 1;
 }
 message GetMessageResponse {
     bytes value = 1;
 }
 
 message DeleteMessageRequest {
-    bytes key = 1;
+    string key = 1;
 }
 message DeleteMessageResponse {}
 

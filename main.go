@@ -43,10 +43,20 @@ func main() {
 			panic("Could not parse from")
 		}
 
-		to, ok := new(big.Int).SetString(args[5], 10)
-		if !ok {
-			panic("Could not parse to")
+		percentInt, err := strconv.Atoi(args[5])
+		if err != nil {
+			panic(err)
 		}
+
+		domain := new(big.Int).Exp(big.NewInt(2), big.NewInt(256), nil)
+
+		to := new(big.Int).Div(domain, big.NewInt(int64(100/percentInt)))
+		fmt.Println(to.Bytes(), len(to.Bytes()))
+
+		// to, ok := new(big.Int).SetString(args[5], 10)
+		// if !ok {
+		// 	panic("Could not parse to")
+		// }
 
 		partition.RunPartitionServer(int64(port), dbPath, from, to)
 	}
