@@ -53,8 +53,8 @@ func TestNewRange(t *testing.T) {
 		},
 		{
 			min:            big.NewInt(500),
-			max:            maxInt,
-			expectedRange:  &Range{big.NewInt(500), maxInt},
+			max:            MaxInt,
+			expectedRange:  &Range{big.NewInt(500), MaxInt},
 			expectingPanic: false,
 		},
 	}
