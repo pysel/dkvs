@@ -26,7 +26,6 @@ for filename in list_files_recursively(proto_dir):
                     # Extract the go_package value
                     go_package = line.split('=')[1].strip(' ";').replace('";\n', '')
                     relativeGoPackage = go_package.split(go_mod_name)[1].lstrip('/')
-                    print("AAAA", go_package, relativeGoPackage)
 
                     rmrf = f'rm -rf {relativeGoPackage}'
                     print(f'Running: {rmrf}')
