@@ -40,3 +40,14 @@ func (ls *ListenServer) StoreMessage(ctx context.Context, req *prototypes.StoreM
 
 	return &prototypes.StoreMessageResponse{}, nil
 }
+
+func (ls *ListenServer) GetMessage(ctx context.Context, req *prototypes.GetMessageRequest) (*prototypes.GetMessageResponse, error) {
+	shaKey := sha256.Sum256(req.Key)
+
+	value, err := ls.Get(shaKey[:])
+	if err != nil {
+		return nil, err
+	}
+
+	return &prototypes.GetMessageResponse{Value: value}, nil
+}

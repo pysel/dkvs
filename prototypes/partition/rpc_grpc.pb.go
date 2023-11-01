@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CommandsServiceClient interface {
 	StoreMessage(ctx context.Context, in *prototypes.StoreMessageRequest, opts ...grpc.CallOption) (*prototypes.StoreMessageResponse, error)
+	GetMessage(ctx context.Context, in *prototypes.GetMessageRequest, opts ...grpc.CallOption) (*prototypes.GetMessageResponse, error)
 }
 
 type commandsServiceClient struct {
@@ -43,11 +44,21 @@ func (c *commandsServiceClient) StoreMessage(ctx context.Context, in *prototypes
 	return out, nil
 }
 
+func (c *commandsServiceClient) GetMessage(ctx context.Context, in *prototypes.GetMessageRequest, opts ...grpc.CallOption) (*prototypes.GetMessageResponse, error) {
+	out := new(prototypes.GetMessageResponse)
+	err := c.cc.Invoke(ctx, "/dkvs.balancer.CommandsService/GetMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CommandsServiceServer is the server API for CommandsService service.
 // All implementations must embed UnimplementedCommandsServiceServer
 // for forward compatibility
 type CommandsServiceServer interface {
 	StoreMessage(context.Context, *prototypes.StoreMessageRequest) (*prototypes.StoreMessageResponse, error)
+	GetMessage(context.Context, *prototypes.GetMessageRequest) (*prototypes.GetMessageResponse, error)
 	mustEmbedUnimplementedCommandsServiceServer()
 }
 
@@ -57,6 +68,9 @@ type UnimplementedCommandsServiceServer struct {
 
 func (UnimplementedCommandsServiceServer) StoreMessage(context.Context, *prototypes.StoreMessageRequest) (*prototypes.StoreMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreMessage not implemented")
+}
+func (UnimplementedCommandsServiceServer) GetMessage(context.Context, *prototypes.GetMessageRequest) (*prototypes.GetMessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMessage not implemented")
 }
 func (UnimplementedCommandsServiceServer) mustEmbedUnimplementedCommandsServiceServer() {}
 
@@ -89,6 +103,24 @@ func _CommandsService_StoreMessage_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CommandsService_GetMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(prototypes.GetMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommandsServiceServer).GetMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dkvs.balancer.CommandsService/GetMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommandsServiceServer).GetMessage(ctx, req.(*prototypes.GetMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CommandsService_ServiceDesc is the grpc.ServiceDesc for CommandsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -99,6 +131,10 @@ var CommandsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreMessage",
 			Handler:    _CommandsService_StoreMessage_Handler,
+		},
+		{
+			MethodName: "GetMessage",
+			Handler:    _CommandsService_GetMessage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
