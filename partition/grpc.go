@@ -31,6 +31,10 @@ func RunPartitionServer(port int64, dbPath string, from *big.Int, to *big.Int) {
 }
 
 func (ls *ListenServer) StoreMessage(ctx context.Context, req *prototypes.StoreMessageRequest) (*prototypes.StoreMessageResponse, error) {
+	if req == nil {
+		return nil, ErrNilRequest
+	}
+
 	if req.Key == nil {
 		return nil, ErrNilKey
 	}
@@ -46,6 +50,10 @@ func (ls *ListenServer) StoreMessage(ctx context.Context, req *prototypes.StoreM
 }
 
 func (ls *ListenServer) GetMessage(ctx context.Context, req *prototypes.GetMessageRequest) (*prototypes.GetMessageResponse, error) {
+	if req == nil {
+		return nil, ErrNilRequest
+	}
+
 	if req.Key == nil {
 		return nil, ErrNilKey
 	}
@@ -58,4 +66,32 @@ func (ls *ListenServer) GetMessage(ctx context.Context, req *prototypes.GetMessa
 	}
 
 	return &prototypes.GetMessageResponse{Value: value}, nil
+}
+
+func (ls *ListenServer) DeleteMessage(ctx context.Context, req *prototypes.DeleteMessageRequest) (*prototypes.DeleteMessageResponse, error) {
+	if req == nil {
+		return nil, ErrNilRequest
+	}
+
+	if req.Key == nil {
+		return nil, ErrNilKey
+	}
+
+	shaKey := sha256.Sum256(req.Key)
+
+	err := ls.Delete(shaKey[:])
+	if err != nil {
+		return nil, err
+	}
+
+	return &prototypes.DeleteMessageResponse{}, nil
+}
+
+func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHashrangeRequest) (*prototypes.SetHashrangeResponse, error) {
+	if req == nil {
+		return nil, ErrNilRequest
+	}
+
+	ls.hashrange = NewRange(new(big.Int).SetBytes(req.Min), new(big.Int).SetBytes(req.Max))
+	return &prototypes.SetHashrangeResponse{}, nil
 }

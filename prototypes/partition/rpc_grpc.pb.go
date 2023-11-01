@@ -25,6 +25,9 @@ const _ = grpc.SupportPackageIsVersion7
 type PartitionServiceClient interface {
 	StoreMessage(ctx context.Context, in *prototypes.StoreMessageRequest, opts ...grpc.CallOption) (*prototypes.StoreMessageResponse, error)
 	GetMessage(ctx context.Context, in *prototypes.GetMessageRequest, opts ...grpc.CallOption) (*prototypes.GetMessageResponse, error)
+	DeleteMessage(ctx context.Context, in *prototypes.DeleteMessageRequest, opts ...grpc.CallOption) (*prototypes.DeleteMessageResponse, error)
+	// SetHashrange sets this node's hashrange to the given range.
+	SetHashrange(ctx context.Context, in *prototypes.SetHashrangeRequest, opts ...grpc.CallOption) (*prototypes.SetHashrangeResponse, error)
 }
 
 type partitionServiceClient struct {
@@ -53,12 +56,33 @@ func (c *partitionServiceClient) GetMessage(ctx context.Context, in *prototypes.
 	return out, nil
 }
 
+func (c *partitionServiceClient) DeleteMessage(ctx context.Context, in *prototypes.DeleteMessageRequest, opts ...grpc.CallOption) (*prototypes.DeleteMessageResponse, error) {
+	out := new(prototypes.DeleteMessageResponse)
+	err := c.cc.Invoke(ctx, "/dkvs.partition.PartitionService/DeleteMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *partitionServiceClient) SetHashrange(ctx context.Context, in *prototypes.SetHashrangeRequest, opts ...grpc.CallOption) (*prototypes.SetHashrangeResponse, error) {
+	out := new(prototypes.SetHashrangeResponse)
+	err := c.cc.Invoke(ctx, "/dkvs.partition.PartitionService/SetHashrange", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PartitionServiceServer is the server API for PartitionService service.
 // All implementations must embed UnimplementedPartitionServiceServer
 // for forward compatibility
 type PartitionServiceServer interface {
 	StoreMessage(context.Context, *prototypes.StoreMessageRequest) (*prototypes.StoreMessageResponse, error)
 	GetMessage(context.Context, *prototypes.GetMessageRequest) (*prototypes.GetMessageResponse, error)
+	DeleteMessage(context.Context, *prototypes.DeleteMessageRequest) (*prototypes.DeleteMessageResponse, error)
+	// SetHashrange sets this node's hashrange to the given range.
+	SetHashrange(context.Context, *prototypes.SetHashrangeRequest) (*prototypes.SetHashrangeResponse, error)
 	mustEmbedUnimplementedPartitionServiceServer()
 }
 
@@ -71,6 +95,12 @@ func (UnimplementedPartitionServiceServer) StoreMessage(context.Context, *protot
 }
 func (UnimplementedPartitionServiceServer) GetMessage(context.Context, *prototypes.GetMessageRequest) (*prototypes.GetMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessage not implemented")
+}
+func (UnimplementedPartitionServiceServer) DeleteMessage(context.Context, *prototypes.DeleteMessageRequest) (*prototypes.DeleteMessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteMessage not implemented")
+}
+func (UnimplementedPartitionServiceServer) SetHashrange(context.Context, *prototypes.SetHashrangeRequest) (*prototypes.SetHashrangeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetHashrange not implemented")
 }
 func (UnimplementedPartitionServiceServer) mustEmbedUnimplementedPartitionServiceServer() {}
 
@@ -121,6 +151,42 @@ func _PartitionService_GetMessage_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PartitionService_DeleteMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(prototypes.DeleteMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PartitionServiceServer).DeleteMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dkvs.partition.PartitionService/DeleteMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PartitionServiceServer).DeleteMessage(ctx, req.(*prototypes.DeleteMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PartitionService_SetHashrange_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(prototypes.SetHashrangeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PartitionServiceServer).SetHashrange(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dkvs.partition.PartitionService/SetHashrange",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PartitionServiceServer).SetHashrange(ctx, req.(*prototypes.SetHashrangeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PartitionService_ServiceDesc is the grpc.ServiceDesc for PartitionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -135,6 +201,14 @@ var PartitionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMessage",
 			Handler:    _PartitionService_GetMessage_Handler,
+		},
+		{
+			MethodName: "DeleteMessage",
+			Handler:    _PartitionService_DeleteMessage_Handler,
+		},
+		{
+			MethodName: "SetHashrange",
+			Handler:    _PartitionService_SetHashrange_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -208,6 +208,184 @@ func (x *GetMessageResponse) GetValue() []byte {
 	return nil
 }
 
+type DeleteMessageRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Key []byte `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+}
+
+func (x *DeleteMessageRequest) Reset() {
+	*x = DeleteMessageRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dkvs_message_message_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteMessageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteMessageRequest) ProtoMessage() {}
+
+func (x *DeleteMessageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_dkvs_message_message_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteMessageRequest.ProtoReflect.Descriptor instead.
+func (*DeleteMessageRequest) Descriptor() ([]byte, []int) {
+	return file_dkvs_message_message_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *DeleteMessageRequest) GetKey() []byte {
+	if x != nil {
+		return x.Key
+	}
+	return nil
+}
+
+type DeleteMessageResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *DeleteMessageResponse) Reset() {
+	*x = DeleteMessageResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dkvs_message_message_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteMessageResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteMessageResponse) ProtoMessage() {}
+
+func (x *DeleteMessageResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_dkvs_message_message_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteMessageResponse.ProtoReflect.Descriptor instead.
+func (*DeleteMessageResponse) Descriptor() ([]byte, []int) {
+	return file_dkvs_message_message_proto_rawDescGZIP(), []int{5}
+}
+
+type SetHashrangeRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Min []byte `protobuf:"bytes,1,opt,name=min,proto3" json:"min,omitempty"`
+	Max []byte `protobuf:"bytes,2,opt,name=max,proto3" json:"max,omitempty"`
+}
+
+func (x *SetHashrangeRequest) Reset() {
+	*x = SetHashrangeRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dkvs_message_message_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetHashrangeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetHashrangeRequest) ProtoMessage() {}
+
+func (x *SetHashrangeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_dkvs_message_message_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetHashrangeRequest.ProtoReflect.Descriptor instead.
+func (*SetHashrangeRequest) Descriptor() ([]byte, []int) {
+	return file_dkvs_message_message_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *SetHashrangeRequest) GetMin() []byte {
+	if x != nil {
+		return x.Min
+	}
+	return nil
+}
+
+func (x *SetHashrangeRequest) GetMax() []byte {
+	if x != nil {
+		return x.Max
+	}
+	return nil
+}
+
+type SetHashrangeResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *SetHashrangeResponse) Reset() {
+	*x = SetHashrangeResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_dkvs_message_message_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetHashrangeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetHashrangeResponse) ProtoMessage() {}
+
+func (x *SetHashrangeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_dkvs_message_message_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetHashrangeResponse.ProtoReflect.Descriptor instead.
+func (*SetHashrangeResponse) Descriptor() ([]byte, []int) {
+	return file_dkvs_message_message_proto_rawDescGZIP(), []int{7}
+}
+
 var File_dkvs_message_message_proto protoreflect.FileDescriptor
 
 var file_dkvs_message_message_proto_rawDesc = []byte{
@@ -224,9 +402,19 @@ var file_dkvs_message_message_proto_rawDesc = []byte{
 	0x01, 0x28, 0x0c, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x2a, 0x0a, 0x12, 0x47, 0x65, 0x74, 0x4d,
 	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x14,
 	0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x76,
-	0x61, 0x6c, 0x75, 0x65, 0x42, 0x22, 0x5a, 0x20, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
-	0x6f, 0x6d, 0x2f, 0x70, 0x79, 0x73, 0x65, 0x6c, 0x2f, 0x64, 0x6b, 0x76, 0x73, 0x2f, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x61, 0x6c, 0x75, 0x65, 0x22, 0x28, 0x0a, 0x14, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03,
+	0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x17,
+	0x0a, 0x15, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x39, 0x0a, 0x13, 0x53, 0x65, 0x74, 0x48, 0x61,
+	0x73, 0x68, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10,
+	0x0a, 0x03, 0x6d, 0x69, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x03, 0x6d, 0x69, 0x6e,
+	0x12, 0x10, 0x0a, 0x03, 0x6d, 0x61, 0x78, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x03, 0x6d,
+	0x61, 0x78, 0x22, 0x16, 0x0a, 0x14, 0x53, 0x65, 0x74, 0x48, 0x61, 0x73, 0x68, 0x72, 0x61, 0x6e,
+	0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x22, 0x5a, 0x20, 0x67, 0x69,
+	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x79, 0x73, 0x65, 0x6c, 0x2f, 0x64,
+	0x6b, 0x76, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -241,12 +429,16 @@ func file_dkvs_message_message_proto_rawDescGZIP() []byte {
 	return file_dkvs_message_message_proto_rawDescData
 }
 
-var file_dkvs_message_message_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_dkvs_message_message_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_dkvs_message_message_proto_goTypes = []interface{}{
-	(*StoreMessageRequest)(nil),  // 0: dkvs.message.StoreMessageRequest
-	(*StoreMessageResponse)(nil), // 1: dkvs.message.StoreMessageResponse
-	(*GetMessageRequest)(nil),    // 2: dkvs.message.GetMessageRequest
-	(*GetMessageResponse)(nil),   // 3: dkvs.message.GetMessageResponse
+	(*StoreMessageRequest)(nil),   // 0: dkvs.message.StoreMessageRequest
+	(*StoreMessageResponse)(nil),  // 1: dkvs.message.StoreMessageResponse
+	(*GetMessageRequest)(nil),     // 2: dkvs.message.GetMessageRequest
+	(*GetMessageResponse)(nil),    // 3: dkvs.message.GetMessageResponse
+	(*DeleteMessageRequest)(nil),  // 4: dkvs.message.DeleteMessageRequest
+	(*DeleteMessageResponse)(nil), // 5: dkvs.message.DeleteMessageResponse
+	(*SetHashrangeRequest)(nil),   // 6: dkvs.message.SetHashrangeRequest
+	(*SetHashrangeResponse)(nil),  // 7: dkvs.message.SetHashrangeResponse
 }
 var file_dkvs_message_message_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -310,6 +502,54 @@ func file_dkvs_message_message_proto_init() {
 				return nil
 			}
 		}
+		file_dkvs_message_message_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteMessageRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_dkvs_message_message_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteMessageResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_dkvs_message_message_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetHashrangeRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_dkvs_message_message_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetHashrangeResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -317,7 +557,7 @@ func file_dkvs_message_message_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_dkvs_message_message_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -16,3 +16,15 @@ message GetMessageRequest {
 message GetMessageResponse {
     bytes value = 1;
 }
+
+message DeleteMessageRequest {
+    bytes key = 1;
+}
+message DeleteMessageResponse {}
+
+message SetHashrangeRequest {
+    bytes min = 1;
+    bytes max = 2;
+}
+
+message SetHashrangeResponse {}
