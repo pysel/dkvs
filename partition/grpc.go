@@ -41,6 +41,7 @@ func (ls *ListenServer) SetMessage(ctx context.Context, req *prototypes.SetMessa
 	if req.Key == "" {
 		return nil, ErrNilKey
 	}
+
 	if req.Value == nil {
 		return nil, ErrNilValue
 	}

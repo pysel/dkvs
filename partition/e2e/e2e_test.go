@@ -74,7 +74,7 @@ func TestGRPCServer(t *testing.T) {
 	require.Nil(t, getResp, "GetMessage should return nil response if key is nil")
 
 	// Assert that value was not stored if key is not in partition's hashrange
-	setResp, err = client.SetMessage(ctx, &prototypes.SetMessageRequest{Key: nonDomainKey})
+	setResp, err = client.SetMessage(ctx, &prototypes.SetMessageRequest{Key: nonDomainKey, Value: []byte("value")})
 	require.ErrorContains(t, err, partition.ErrNotThisPartitionKey.Error(), "SetMessage should return error if key is not domain key")
 	require.Nil(t, setResp, "SetMessage should return nil response if key is not domain key")
 
