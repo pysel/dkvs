@@ -1,7 +1,7 @@
 package partition
 
 import (
-	"github.com/pysel/dkvs/db"
+	db "github.com/pysel/dkvs/leveldb"
 )
 
 // Partition is a slave node that stores some range of keys

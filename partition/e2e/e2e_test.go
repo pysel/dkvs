@@ -48,7 +48,7 @@ func TestGRPCServer(t *testing.T) {
 
 	defer closer()
 	defer os.RemoveAll(testDBPath)
-	domainKey := "Partition key"
+	domainKey := "Partition key" // a hash of this text lays in [from; to]
 	nonDomainKey := "Not partition key."
 
 	// Assert that value was stored correctly
