@@ -3,7 +3,6 @@ package balancer
 import (
 	"crypto/sha256"
 
-	pclient "github.com/pysel/dkvs/balancer/partition-client"
 	"github.com/pysel/dkvs/partition"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 )
@@ -22,7 +21,7 @@ func NewBalancer() *Balancer {
 
 // AddPartition adds a partition to the balancer.
 func (b *Balancer) AddPartition(addr string, range_ partition.Range) {
-	client := pclient.NewPartitionClient(addr)
+	client := NewPartitionClient(addr)
 	b.clients[range_] = append(b.clients[range_], client)
 }
 
