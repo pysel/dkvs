@@ -1,6 +1,7 @@
 package partition
 
 import (
+	"crypto/sha256"
 	"math/big"
 )
 
@@ -52,7 +53,8 @@ func NewRange(min, max *big.Int) *Range {
 
 // Contains checks if the given key is in the range.
 func (r *Range) Contains(key []byte) bool {
-	keyInt := new(big.Int).SetBytes(key)
+	shaKey := sha256.Sum256(key)
+	keyInt := new(big.Int).SetBytes(shaKey[:])
 
 	return r.Min.Cmp(keyInt) <= 0 && r.Max.Cmp(keyInt) >= 0
 }

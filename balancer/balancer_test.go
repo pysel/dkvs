@@ -25,6 +25,11 @@ func TestAddGetPartition(t *testing.T) {
 	b.AddPartition(addr.String(), *testutil.DefaultHashrange)
 
 	domainKey := "Partition key"
+	nonDomainKey := "Not partition key."
+
 	keyPartitions := b.GetPartitions([]byte(domainKey))
 	require.Equal(t, 1, len(keyPartitions))
+
+	keyPartitions = b.GetPartitions([]byte(nonDomainKey))
+	require.Equal(t, 0, len(keyPartitions))
 }
