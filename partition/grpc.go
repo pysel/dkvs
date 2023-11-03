@@ -48,10 +48,8 @@ func (ls *ListenServer) SetMessage(ctx context.Context, req *prototypes.SetMessa
 		return nil, ErrNilValue
 	}
 
-	keyBz := []byte(req.Key)
+	shaKey := shaKey(req.Key)
 	valueBz := []byte(req.Value)
-
-	shaKey := sha256.Sum256(keyBz)
 
 	err := ls.Set(shaKey[:], valueBz)
 	if err != nil {
@@ -71,9 +69,7 @@ func (ls *ListenServer) GetMessage(ctx context.Context, req *prototypes.GetMessa
 		return nil, ErrNilKey
 	}
 
-	keyBz := []byte(req.Key)
-
-	shaKey := sha256.Sum256(keyBz)
+	shaKey := shaKey(req.Key)
 
 	value, err := ls.Get(shaKey[:])
 	if err != nil {
@@ -92,9 +88,7 @@ func (ls *ListenServer) DeleteMessage(ctx context.Context, req *prototypes.Delet
 	if req.Key == "" {
 		return nil, ErrNilKey
 	}
-	keyBz := []byte(req.Key)
-
-	shaKey := sha256.Sum256(keyBz)
+	shaKey := shaKey(req.Key)
 
 	err := ls.Delete(shaKey[:])
 	if err != nil {
@@ -112,4 +106,9 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 
 	ls.hashrange = NewRange(new(big.Int).SetBytes(req.Min), new(big.Int).SetBytes(req.Max))
 	return &prototypes.SetHashrangeResponse{}, nil
+}
+
+func shaKey(key string) []byte {
+	checksum := sha256.Sum256([]byte(key))
+	return checksum[:]
 }
