@@ -19,32 +19,37 @@ const (
 )
 
 var (
-	from *big.Int
-	to   *big.Int
+	DefaultFrom      *big.Int
+	DefaultTo        *big.Int
+	DefaultHashrange *partition.Range
 )
 
 func init() {
-	from = new(big.Int).SetInt64(0)
+	DefaultFrom = new(big.Int).SetInt64(0)
 	to_bz := make([]byte, 32)
 	for i := 0; i < 32; i++ {
 		to_bz[i] = 0xFF
 	}
 	full_range := new(big.Int).SetBytes(to_bz) // 2^256 - 1
 
-	to = new(big.Int).Div(full_range, big.NewInt(2)) // half of 2^256 - 1
+	DefaultTo = new(big.Int).Div(full_range, big.NewInt(2)) // half of 2^256 - 1
+	DefaultHashrange = &partition.Range{
+		Min: DefaultFrom,
+		Max: DefaultTo,
+	}
 }
 
-func partitionServer() (*bufconn.Listener, *grpc.Server) {
+func PartitionServer() (*bufconn.Listener, *grpc.Server) {
 	lis := bufconn.Listen(bufSize)
 	s := grpc.NewServer()
-	p := partition.NewPartition(TestDBPath, partition.NewRange(from, to))
+	p := partition.NewPartition(TestDBPath)
 
 	pbpartition.RegisterPartitionServiceServer(s, &partition.ListenServer{Partition: p})
 
 	return lis, s
 }
 
-func runPartitionServer(lis *bufconn.Listener, s *grpc.Server) {
+func RunPartitionServer(lis *bufconn.Listener, s *grpc.Server) {
 	go func() {
 		if err := s.Serve(lis); err != nil {
 			log.Fatalf("Server exited with error: %v", err)
@@ -55,8 +60,8 @@ func runPartitionServer(lis *bufconn.Listener, s *grpc.Server) {
 // partitionClient set ups a partition server and partition client. Returns client and closer function.
 // Client is used to test the rpc calls.
 func SinglePartitionClient(ctx context.Context) (pbpartition.PartitionServiceClient, func()) {
-	lis, s := partitionServer()
-	runPartitionServer(lis, s)
+	lis, s := PartitionServer()
+	RunPartitionServer(lis, s)
 
 	conn, err := grpc.DialContext(ctx, "", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return lis.Dial()

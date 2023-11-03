@@ -11,14 +11,14 @@ type Partition struct {
 }
 
 // NewPartition creates a new partition instance.
-func NewPartition(dbPath string, hashRange *Range) *Partition {
+func NewPartition(dbPath string) *Partition {
 	db, err := db.NewLevelDB(dbPath)
 	if err != nil {
 		panic(err)
 	}
 
 	return &Partition{
-		hashrange: hashRange,
+		hashrange: nil, // balancer should set this
 		DB:        db,
 	}
 }
@@ -61,4 +61,8 @@ func (p *Partition) Has(key []byte) (bool, error) {
 
 func (p *Partition) Close() error {
 	return p.DB.Close()
+}
+
+func (p *Partition) SetHashrange(hashrange *Range) {
+	p.hashrange = hashrange
 }

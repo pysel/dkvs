@@ -49,3 +49,9 @@ func NewRange(min, max *big.Int) *Range {
 
 	return &Range{min, max}
 }
+
+func (r *Range) Contains(key []byte) bool {
+	keyInt := new(big.Int).SetBytes(key)
+
+	return r.Min.Cmp(keyInt) <= 0 && r.Max.Cmp(keyInt) >= 0
+}

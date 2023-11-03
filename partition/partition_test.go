@@ -14,7 +14,9 @@ import (
 var defaultHashRange = partition.NewRange(big.NewInt(0), new(big.Int).Div(partition.MaxInt, big.NewInt(2)))
 
 func TestDatabaseMethods(t *testing.T) {
-	p := partition.NewPartition("test", defaultHashRange)
+	p := partition.NewPartition("test")
+	p.SetHashrange(defaultHashRange)
+
 	defer p.Close()
 	defer require.NoError(t, os.RemoveAll("test"))
 

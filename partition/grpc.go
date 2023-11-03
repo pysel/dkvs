@@ -24,7 +24,7 @@ func RunPartitionServer(port int64, dbPath string, from *big.Int, to *big.Int) {
 		panic(err)
 	}
 
-	partition := NewPartition(dbPath, NewRange(from, to))
+	partition := NewPartition(dbPath)
 
 	grpcServer := grpc.NewServer()
 	reflection.Register(grpcServer)
