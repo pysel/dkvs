@@ -25,7 +25,7 @@ var (
 )
 
 func init() {
-	DefaultFrom = new(big.Int).SetInt64(0)
+	DefaultFrom = new(big.Int).SetInt64(10)
 	to_bz := make([]byte, 32)
 	for i := 0; i < 32; i++ {
 		to_bz[i] = 0xFF

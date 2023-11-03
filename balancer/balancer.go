@@ -1,6 +1,8 @@
 package balancer
 
 import (
+	"crypto/sha256"
+
 	pclient "github.com/pysel/dkvs/balancer/partition-client"
 	"github.com/pysel/dkvs/partition"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
@@ -26,8 +28,9 @@ func (b *Balancer) AddPartition(addr string, range_ partition.Range) {
 
 // GetPartitions returns a list of partitions that contain the given key.
 func (b *Balancer) GetPartitions(key []byte) []pbpartition.PartitionServiceClient {
+	shaKey := sha256.Sum256(key)
 	for range_, clients := range b.clients {
-		if range_.Contains(key) {
+		if range_.Contains(shaKey[:]) {
 			return clients
 		}
 	}

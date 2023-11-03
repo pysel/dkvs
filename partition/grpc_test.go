@@ -13,14 +13,18 @@ import (
 
 func TestGRPCServer(t *testing.T) {
 	ctx := context.Background()
-
 	client, closer := testutil.SinglePartitionClient(ctx)
 	if closer == nil {
 		t.Fatal("Closer should not be nil")
 	}
 
+	client.SetHashrange(ctx, &prototypes.SetHashrangeRequest{
+		Min: testutil.DefaultHashrange.Min.Bytes(),
+		Max: testutil.DefaultHashrange.Max.Bytes(),
+	})
+
 	defer closer()
-	defer os.RemoveAll(testutil.TestDBPath)
+	defer require.NoError(t, os.RemoveAll(testutil.TestDBPath))
 	domainKey := "Partition key" // a hash of this text lays in [from; to]
 	nonDomainKey := "Not partition key."
 

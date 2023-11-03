@@ -1,9 +1,12 @@
-package partition
+package partition_test
 
 import (
+	"crypto/sha256"
 	"math/big"
 	"testing"
 
+	"github.com/pysel/dkvs/partition"
+	"github.com/pysel/dkvs/testutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -12,49 +15,49 @@ func TestNewRange(t *testing.T) {
 	tests := []struct {
 		min            *big.Int
 		max            *big.Int
-		expectedRange  *Range
+		expectedRange  *partition.Range
 		expectingPanic bool
 	}{
 		{
 			min:            big.NewInt(-1),
 			max:            big.NewInt(0),
-			expectedRange:  &Range{},
+			expectedRange:  &partition.Range{},
 			expectingPanic: true,
 		},
 		{
 			min:            big.NewInt(0),
 			max:            big.NewInt(0),
-			expectedRange:  &Range{},
+			expectedRange:  &partition.Range{},
 			expectingPanic: true,
 		},
 		{
 			min:            big.NewInt(0),
 			max:            big.NewInt(1),
-			expectedRange:  &Range{big.NewInt(0), big.NewInt(1)},
+			expectedRange:  &partition.Range{big.NewInt(0), big.NewInt(1)},
 			expectingPanic: false,
 		},
 		{
 			min:            big.NewInt(1),
 			max:            big.NewInt(0),
-			expectedRange:  &Range{},
+			expectedRange:  &partition.Range{},
 			expectingPanic: true,
 		},
 		{
 			min:            big.NewInt(0),
 			max:            tooBig,
-			expectedRange:  &Range{},
+			expectedRange:  &partition.Range{},
 			expectingPanic: true,
 		},
 		{
 			min:            big.NewInt(0),
 			max:            big.NewInt(500),
-			expectedRange:  &Range{big.NewInt(0), big.NewInt(500)},
+			expectedRange:  &partition.Range{big.NewInt(0), big.NewInt(500)},
 			expectingPanic: false,
 		},
 		{
 			min:            big.NewInt(500),
-			max:            MaxInt,
-			expectedRange:  &Range{big.NewInt(500), MaxInt},
+			max:            partition.MaxInt,
+			expectedRange:  &partition.Range{big.NewInt(500), partition.MaxInt},
 			expectingPanic: false,
 		},
 	}
@@ -68,7 +71,63 @@ func TestNewRange(t *testing.T) {
 			}()
 		}
 
-		got := NewRange(test.min, test.max)
+		got := partition.NewRange(test.min, test.max)
 		require.Equal(t, test.expectedRange, got)
+	}
+}
+
+func TestContains(t *testing.T) {
+	domainKey := sha256.Sum256([]byte("Partition key"))
+	nonDomainKey := sha256.Sum256([]byte("Not partition key."))
+
+	tests := []struct {
+		name     string
+		r        *partition.Range
+		hash     []byte
+		expected bool
+	}{
+		{
+			name:     "key is in range",
+			r:        testutil.DefaultHashrange,
+			hash:     domainKey[:],
+			expected: true,
+		},
+		{
+			name:     "key is not in range",
+			r:        testutil.DefaultHashrange,
+			hash:     nonDomainKey[:],
+			expected: false,
+		},
+		{
+			name:     "key is min",
+			r:        testutil.DefaultHashrange,
+			hash:     testutil.DefaultHashrange.Min.Bytes(),
+			expected: true,
+		},
+		{
+			name:     "key is max",
+			r:        testutil.DefaultHashrange,
+			hash:     testutil.DefaultHashrange.Max.Bytes(),
+			expected: true,
+		},
+		{
+			name:     "key is min - 1",
+			r:        testutil.DefaultHashrange,
+			hash:     new(big.Int).Sub(testutil.DefaultHashrange.Min, big.NewInt(1)).Bytes(),
+			expected: false,
+		},
+		{
+			name:     "key is max + 1",
+			r:        testutil.DefaultHashrange,
+			hash:     new(big.Int).Add(testutil.DefaultHashrange.Max, big.NewInt(1)).Bytes(),
+			expected: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := test.r.Contains(test.hash)
+			require.Equal(t, test.expected, got)
+		})
 	}
 }
