@@ -59,4 +59,21 @@ func TestGRPCServer(t *testing.T) {
 	getResp, err = client.GetMessage(ctx, &prototypes.GetMessageRequest{Key: nonDomainKey})
 	require.ErrorContains(t, err, partition.ErrNotThisPartitionKey.Error(), "GetMessage should return error if key is not domain key")
 	require.Nil(t, getResp, "GetMessage should return nil response if key is not domain key")
+
+	// Assert that value was deleted correctly
+	_, err = client.DeleteMessage(ctx, &prototypes.DeleteMessageRequest{Key: domainKey})
+	require.NoError(t, err, "DeleteMessage should not return error")
+
+	// Assert that value was not deleted if key is nil
+	_, err = client.DeleteMessage(ctx, &prototypes.DeleteMessageRequest{})
+	require.ErrorContains(t, err, partition.ErrNilKey.Error(), "DeleteMessage should return error if key is nil")
+
+	// Assert that value was not deleted if key is not in partition's hashrange
+	_, err = client.DeleteMessage(ctx, &prototypes.DeleteMessageRequest{Key: nonDomainKey})
+	require.ErrorContains(t, err, partition.ErrNotThisPartitionKey.Error(), "DeleteMessage should return error if key is not domain key")
+
+	// Assert that deleted value was removed from partition's state
+	getResp, err = client.GetMessage(ctx, &prototypes.GetMessageRequest{Key: domainKey})
+	require.ErrorContains(t, err, "not found", "GetMessage should return error if key is in hashrange of partition")
+	require.Nil(t, getResp, "GetMessage should return nil if no key existed")
 }
