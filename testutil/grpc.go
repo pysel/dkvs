@@ -39,6 +39,7 @@ func init() {
 	}
 }
 
+// PartitionServer creates a listener and a server for the partition service.
 func PartitionServer() (*bufconn.Listener, *grpc.Server) {
 	lis := bufconn.Listen(bufSize)
 	s := grpc.NewServer()
@@ -49,6 +50,7 @@ func PartitionServer() (*bufconn.Listener, *grpc.Server) {
 	return lis, s
 }
 
+// RunPartitionServer runs a goroutine that constantly serves requests on the given listener.
 func RunPartitionServer(lis *bufconn.Listener, s *grpc.Server) {
 	go func() {
 		if err := s.Serve(lis); err != nil {

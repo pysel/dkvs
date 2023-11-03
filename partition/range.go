@@ -50,6 +50,7 @@ func NewRange(min, max *big.Int) *Range {
 	return &Range{min, max}
 }
 
+// Contains checks if the given key is in the range.
 func (r *Range) Contains(key []byte) bool {
 	keyInt := new(big.Int).SetBytes(key)
 

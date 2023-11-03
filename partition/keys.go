@@ -2,6 +2,7 @@ package partition
 
 import "bytes"
 
+// checkKeyRange checks if the key is in the partition's range.
 func (p *Partition) checkKeyRange(key []byte) error {
 	if len(key) != 32 {
 		return ErrInvalidKeySize

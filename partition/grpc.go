@@ -18,6 +18,7 @@ type ListenServer struct {
 	*Partition
 }
 
+// RunPartitionServer starts a partition server on the given port.
 func RunPartitionServer(port int64, dbPath string) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
@@ -33,6 +34,7 @@ func RunPartitionServer(port int64, dbPath string) {
 	grpcServer.Serve(lis)
 }
 
+// SetMessage sets a value for a key.
 func (ls *ListenServer) SetMessage(ctx context.Context, req *prototypes.SetMessageRequest) (*prototypes.SetMessageResponse, error) {
 	if req == nil {
 		return nil, ErrNilRequest
@@ -59,6 +61,7 @@ func (ls *ListenServer) SetMessage(ctx context.Context, req *prototypes.SetMessa
 	return &prototypes.SetMessageResponse{}, nil
 }
 
+// GetMessage gets a value for a key.
 func (ls *ListenServer) GetMessage(ctx context.Context, req *prototypes.GetMessageRequest) (*prototypes.GetMessageResponse, error) {
 	if req == nil {
 		return nil, ErrNilRequest
@@ -80,6 +83,7 @@ func (ls *ListenServer) GetMessage(ctx context.Context, req *prototypes.GetMessa
 	return &prototypes.GetMessageResponse{Value: value}, nil
 }
 
+// DeleteMessage deletes a value for a key.
 func (ls *ListenServer) DeleteMessage(ctx context.Context, req *prototypes.DeleteMessageRequest) (*prototypes.DeleteMessageResponse, error) {
 	if req == nil {
 		return nil, ErrNilRequest
@@ -100,6 +104,7 @@ func (ls *ListenServer) DeleteMessage(ctx context.Context, req *prototypes.Delet
 	return &prototypes.DeleteMessageResponse{}, nil
 }
 
+// SetHashrange sets the hashrange for this partition.
 func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHashrangeRequest) (*prototypes.SetHashrangeResponse, error) {
 	if req == nil {
 		return nil, ErrNilRequest
