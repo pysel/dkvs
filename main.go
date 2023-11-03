@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math/big"
 	"os"
 	"strconv"
 
@@ -38,33 +37,6 @@ func main() {
 
 		dbPath := args[3]
 
-		domain := new(big.Int).Exp(big.NewInt(2), big.NewInt(256), nil) // domain of SHA-256
-
-		percentInt, err := strconv.Atoi(args[4])
-		if err != nil {
-			panic(err)
-		}
-		var from *big.Int
-		if percentInt == 0 {
-			from = big.NewInt(0)
-		} else {
-			// from = domain * percentInt / 100
-			from = new(big.Int).Div(
-				new(big.Int).Mul(domain, big.NewInt(int64(percentInt))),
-				big.NewInt(100),
-			)
-		}
-
-		percentInt, err = strconv.Atoi(args[5])
-		if err != nil {
-			panic(err)
-		}
-
-		to := new(big.Int).Div(
-			new(big.Int).Mul(domain, big.NewInt(int64(percentInt))),
-			big.NewInt(100),
-		)
-
-		partition.RunPartitionServer(int64(port), dbPath, from, to)
+		partition.RunPartitionServer(int64(port), dbPath)
 	}
 }

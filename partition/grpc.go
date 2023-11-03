@@ -18,7 +18,7 @@ type ListenServer struct {
 	*Partition
 }
 
-func RunPartitionServer(port int64, dbPath string, from *big.Int, to *big.Int) {
+func RunPartitionServer(port int64, dbPath string) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		panic(err)
