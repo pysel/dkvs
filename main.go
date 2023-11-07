@@ -14,8 +14,6 @@ If node is a partition, arguments should be (in mentioned order):
   - mode (partition)
   - port
   - db path
-  - from (beginning of scope of keys for this partition)
-  - to (end of scope of keys for this partition)
 */
 func main() {
 	args := os.Args
