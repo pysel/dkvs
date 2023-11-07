@@ -4,11 +4,11 @@ package dkvs.balancer;
 option go_package = "github.com/pysel/dkvs/prototypes/balancer";
 
 service BalancerService {
-    rpc RegisterNode(RegisterNodeRequest) returns (RegisterNodeResponse) {}
+    rpc RegisterPartition(RegisterPartitionRequest) returns (RegisterPartitionResponse) {}
 }
 
-message RegisterNodeRequest {
+message RegisterPartitionRequest {
     string address = 1;
 }
 
-message RegisterNodeResponse {}
+message RegisterPartitionResponse {}

@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BalancerServiceClient interface {
-	RegisterNode(ctx context.Context, in *RegisterNodeRequest, opts ...grpc.CallOption) (*RegisterNodeResponse, error)
+	RegisterPartition(ctx context.Context, in *RegisterPartitionRequest, opts ...grpc.CallOption) (*RegisterPartitionResponse, error)
 }
 
 type balancerServiceClient struct {
@@ -33,9 +33,9 @@ func NewBalancerServiceClient(cc grpc.ClientConnInterface) BalancerServiceClient
 	return &balancerServiceClient{cc}
 }
 
-func (c *balancerServiceClient) RegisterNode(ctx context.Context, in *RegisterNodeRequest, opts ...grpc.CallOption) (*RegisterNodeResponse, error) {
-	out := new(RegisterNodeResponse)
-	err := c.cc.Invoke(ctx, "/dkvs.balancer.BalancerService/RegisterNode", in, out, opts...)
+func (c *balancerServiceClient) RegisterPartition(ctx context.Context, in *RegisterPartitionRequest, opts ...grpc.CallOption) (*RegisterPartitionResponse, error) {
+	out := new(RegisterPartitionResponse)
+	err := c.cc.Invoke(ctx, "/dkvs.balancer.BalancerService/RegisterPartition", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *balancerServiceClient) RegisterNode(ctx context.Context, in *RegisterNo
 // All implementations must embed UnimplementedBalancerServiceServer
 // for forward compatibility
 type BalancerServiceServer interface {
-	RegisterNode(context.Context, *RegisterNodeRequest) (*RegisterNodeResponse, error)
+	RegisterPartition(context.Context, *RegisterPartitionRequest) (*RegisterPartitionResponse, error)
 	mustEmbedUnimplementedBalancerServiceServer()
 }
 
@@ -54,8 +54,8 @@ type BalancerServiceServer interface {
 type UnimplementedBalancerServiceServer struct {
 }
 
-func (UnimplementedBalancerServiceServer) RegisterNode(context.Context, *RegisterNodeRequest) (*RegisterNodeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterNode not implemented")
+func (UnimplementedBalancerServiceServer) RegisterPartition(context.Context, *RegisterPartitionRequest) (*RegisterPartitionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterPartition not implemented")
 }
 func (UnimplementedBalancerServiceServer) mustEmbedUnimplementedBalancerServiceServer() {}
 
@@ -70,20 +70,20 @@ func RegisterBalancerServiceServer(s grpc.ServiceRegistrar, srv BalancerServiceS
 	s.RegisterService(&BalancerService_ServiceDesc, srv)
 }
 
-func _BalancerService_RegisterNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegisterNodeRequest)
+func _BalancerService_RegisterPartition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterPartitionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BalancerServiceServer).RegisterNode(ctx, in)
+		return srv.(BalancerServiceServer).RegisterPartition(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/dkvs.balancer.BalancerService/RegisterNode",
+		FullMethod: "/dkvs.balancer.BalancerService/RegisterPartition",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BalancerServiceServer).RegisterNode(ctx, req.(*RegisterNodeRequest))
+		return srv.(BalancerServiceServer).RegisterPartition(ctx, req.(*RegisterPartitionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -96,8 +96,8 @@ var BalancerService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*BalancerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "RegisterNode",
-			Handler:    _BalancerService_RegisterNode_Handler,
+			MethodName: "RegisterPartition",
+			Handler:    _BalancerService_RegisterPartition_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

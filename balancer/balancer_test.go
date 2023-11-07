@@ -16,13 +16,13 @@ func SetupPartition() net.Addr {
 	return lis.Addr()
 }
 
-func TestAddGetPartition(t *testing.T) {
+func TestRegisterGetPartition(t *testing.T) {
 	defer os.RemoveAll(testutil.TestDBPath)
 
 	addr := SetupPartition()
 	b := balancer.NewBalancer()
 
-	b.AddPartition(addr.String(), *testutil.DefaultHashrange)
+	b.RegisterPartition(addr.String(), *testutil.DefaultHashrange)
 
 	domainKey := "Partition key"
 	nonDomainKey := "Not partition key."

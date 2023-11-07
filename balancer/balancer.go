@@ -20,7 +20,7 @@ func NewBalancer() *Balancer {
 }
 
 // AddPartition adds a partition to the balancer.
-func (b *Balancer) AddPartition(addr string, range_ partition.Range) {
+func (b *Balancer) RegisterPartition(addr string, range_ partition.Range) {
 	client := NewPartitionClient(addr)
 	b.clients[range_] = append(b.clients[range_], client)
 }
