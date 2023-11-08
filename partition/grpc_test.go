@@ -18,10 +18,12 @@ func TestGRPCServer(t *testing.T) {
 		t.Fatal("Closer should not be nil")
 	}
 
-	client.SetHashrange(ctx, &prototypes.SetHashrangeRequest{
+	_, err := client.SetHashrange(ctx, &prototypes.SetHashrangeRequest{
 		Min: testutil.DefaultHashrange.Min.Bytes(),
 		Max: testutil.DefaultHashrange.Max.Bytes(),
 	})
+
+	require.NoError(t, err)
 
 	defer closer()
 	defer require.NoError(t, os.RemoveAll(testutil.TestDBPath))
@@ -29,7 +31,7 @@ func TestGRPCServer(t *testing.T) {
 	nonDomainKey := "Not partition key."
 
 	// Assert that value was stored correctly
-	_, err := client.SetMessage(ctx, &prototypes.SetMessageRequest{
+	_, err = client.SetMessage(ctx, &prototypes.SetMessageRequest{
 		Key:   domainKey,
 		Value: []byte("value"),
 	})
