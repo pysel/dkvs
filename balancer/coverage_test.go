@@ -63,6 +63,18 @@ func TestAddTick(t *testing.T) {
 			},
 			expectedTickValue: fullInt,
 		},
+		"Add tick at the end": {
+			toAdd:    newTick(new(big.Int).Mul(fullInt, big.NewInt(2))),
+			coverage: defaultCoverage_,
+			isMin:    false,
+			isMax:    true,
+			expectedTick: &tick{
+				minOf: 0,
+				maxOf: 1,
+				value: new(big.Int).Mul(fullInt, big.NewInt(2)),
+			},
+			expectedTickValue: new(big.Int).Mul(fullInt, big.NewInt(2)),
+		},
 	}
 
 	for name, test := range tests {
