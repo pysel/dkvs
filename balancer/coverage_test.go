@@ -16,6 +16,49 @@ var (
 	fullInt          = new(big.Int).Mul(testutil.DefaultMax, big.NewInt(2))
 )
 
+func TestGetTickByValue(t *testing.T) {
+	defaultCoverage_ := defaulCoverage(t)
+
+	tests := map[string]struct {
+		value    *big.Int
+		coverage *coverage
+		expected *tick
+	}{
+		"Get tick at the beginning": {
+			value:    zeroInt,
+			coverage: defaultCoverage_,
+			expected: defaultCoverage_.tick,
+		},
+		"Get tick at the end": {
+			value:    fullInt,
+			coverage: defaultCoverage_,
+			expected: defaultCoverage_.tick.next().next().next().next(),
+		},
+		"Get tick in the middle": {
+			value:    quarterInt,
+			coverage: defaultCoverage_,
+			expected: defaultCoverage_.tick.next(),
+		},
+		"Get tick that doesn't exist": {
+			value:    new(big.Int).SetInt64(-1),
+			coverage: defaultCoverage_,
+			expected: nil,
+		},
+	}
+
+	for name, test := range tests {
+		test := test
+		t.Run(name, func(t *testing.T) {
+			tick := test.coverage.getTickByValue(test.value)
+			if test.expected != nil {
+				tickDeepEqual(t, tick, test.expected)
+			} else {
+				require.Nil(t, test.expected)
+			}
+		})
+	}
+}
+
 func TestAddTick(t *testing.T) {
 	defaultCoverage_ := defaulCoverage(t)
 
