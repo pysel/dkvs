@@ -2,6 +2,7 @@ package balancer
 
 import (
 	"crypto/sha256"
+	"math/big"
 
 	"github.com/pysel/dkvs/partition"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
@@ -21,6 +22,7 @@ type Balancer struct {
 	coverage *coverage
 }
 
+// NewBalancer returns a new balancer instance.
 func NewBalancer(goalPartitions int) *Balancer {
 	return &Balancer{
 		clients:          make(map[partition.Range][]pbpartition.PartitionServiceClient),
@@ -51,4 +53,16 @@ func (b *Balancer) GetPartitions(key []byte) []pbpartition.PartitionServiceClien
 	}
 
 	return nil
+}
+
+// setupCoverage creates necessary ticks for coverage based on goalPartitions
+func (b *Balancer) setupCoverage() {
+	// add initial tick
+	b.coverage.addTick(newTick(big.NewInt(0)), false, false)
+	// Create a tick for each partition
+	for i := 1; i <= b.goalPartitions; i++ {
+		fraction := new(big.Int).Div(big.NewInt(int64(i)), big.NewInt(int64(b.goalPartitions)))
+		value := new(big.Int).Mul(fraction, partition.MaxInt)
+		b.coverage.addTick(newTick(value), false, false)
+	}
 }
