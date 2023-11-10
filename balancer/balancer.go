@@ -24,12 +24,16 @@ type Balancer struct {
 
 // NewBalancer returns a new balancer instance.
 func NewBalancer(goalPartitions int) *Balancer {
-	return &Balancer{
+	b := &Balancer{
 		clients:          make(map[partition.Range][]pbpartition.PartitionServiceClient),
 		goalPartitions:   goalPartitions,
 		activePartitions: 0,
 		coverage:         GetCoverage(),
 	}
+
+	b.setupCoverage()
+
+	return b
 }
 
 // AddPartition adds a partition to the balancer.
@@ -59,8 +63,8 @@ func (b *Balancer) GetPartitions(key []byte) []pbpartition.PartitionServiceClien
 func (b *Balancer) setupCoverage() {
 	// Create a tick for each partition
 	for i := 0; i <= b.goalPartitions; i++ {
-		fraction := new(big.Int).Div(big.NewInt(int64(i)), big.NewInt(int64(b.goalPartitions)))
-		value := new(big.Int).Mul(fraction, partition.MaxInt)
+		numerator := new(big.Int).Mul(big.NewInt(int64(i)), partition.MaxInt)
+		value := new(big.Int).Div(numerator, big.NewInt(int64(b.goalPartitions)))
 		b.coverage.addTick(newTick(value), false, false)
 	}
 }

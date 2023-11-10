@@ -1,11 +1,13 @@
 package balancer_test
 
 import (
+	"math/big"
 	"net"
 	"os"
 	"testing"
 
 	"github.com/pysel/dkvs/balancer"
+	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/testutil"
 	"github.com/stretchr/testify/require"
 )
@@ -33,4 +35,24 @@ func TestRegisterGetPartition(t *testing.T) {
 
 	keyPartitions = b10.GetPartitions([]byte(nonDomainKey))
 	require.Equal(t, 0, len(keyPartitions))
+}
+
+func TestBalancerInit(t *testing.T) {
+	goalPartitions := 3
+
+	b := balancer.NewBalancer(goalPartitions)
+	require.Equal(t, b.GetTicksAmount(), goalPartitions+1)
+
+	expectedFirstTickValue := big.NewInt(0)
+	require.NotNil(t, b.GetTickByValue(expectedFirstTickValue))
+
+	expectedSecondTickValue := new(big.Int).Div(partition.MaxInt, big.NewInt(3))
+	require.NotNil(t, b.GetTickByValue(expectedSecondTickValue))
+
+	expectedThirdTickNumerator := new(big.Int).Mul(partition.MaxInt, big.NewInt(2))
+	expectedThirdTickValue := new(big.Int).Div(expectedThirdTickNumerator, big.NewInt(3))
+	require.NotNil(t, b.GetTickByValue(expectedThirdTickValue))
+
+	expectedFourthTickValue := partition.MaxInt
+	require.NotNil(t, b.GetTickByValue(expectedFourthTickValue))
 }
