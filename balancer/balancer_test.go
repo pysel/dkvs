@@ -35,6 +35,10 @@ func TestRegisterGetPartition(t *testing.T) {
 
 	keyPartitions = b10.GetPartitions([]byte(nonDomainKey))
 	require.Equal(t, 0, len(keyPartitions))
+
+	b0 := balancer.NewBalancer(0)
+	err = b0.RegisterPartition(addr.String(), *testutil.DefaultHashrange)
+	require.Error(t, err)
 }
 
 func TestBalancerInit(t *testing.T) {

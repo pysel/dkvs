@@ -61,6 +61,11 @@ func (b *Balancer) GetPartitions(key []byte) []pbpartition.PartitionServiceClien
 
 // setupCoverage creates necessary ticks for coverage based on goalPartitions
 func (b *Balancer) setupCoverage() {
+	if b.goalPartitions == 0 {
+		b.coverage.addTick(newTick(big.NewInt(0)), false, false)
+		b.coverage.addTick(newTick(partition.MaxInt), false, false)
+		return
+	}
 	// Create a tick for each partition
 	for i := 0; i <= b.goalPartitions; i++ {
 		numerator := new(big.Int).Mul(big.NewInt(int64(i)), partition.MaxInt)
