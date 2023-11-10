@@ -14,13 +14,13 @@ type BalancerServer struct {
 	*Balancer
 }
 
-func RunBalancerServer(port int64) {
+func RunBalancerServer(port int64, partitions int) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		panic(err)
 	}
 
-	balancer := NewBalancer()
+	balancer := NewBalancer(partitions)
 
 	s := grpc.NewServer()
 	reflection.Register(s)
