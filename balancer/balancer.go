@@ -16,6 +16,9 @@ type Balancer struct {
 	goalPartitions int
 	// activePartitions is the number of currently registered partitions
 	activePartitions int
+
+	// coverage is used for tracking the tracked ranges
+	coverage *coverage
 }
 
 func NewBalancer(goalPartitions int) *Balancer {
@@ -23,6 +26,7 @@ func NewBalancer(goalPartitions int) *Balancer {
 		clients:          make(map[partition.Range][]pbpartition.PartitionServiceClient),
 		goalPartitions:   goalPartitions,
 		activePartitions: 0,
+		coverage:         GetCoverage(),
 	}
 }
 
