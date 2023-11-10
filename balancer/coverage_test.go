@@ -140,7 +140,7 @@ func TestAddTick(t *testing.T) {
 //
 // 0-----1/4-----1/2     3/4-----1
 func defaulCoverage(t *testing.T) *coverage {
-	coverage := GetCoverage()
+	coverage := &coverage{nil, 0}
 
 	// zeroNull corresponds to tick at 0
 	zeroNull := newTick(zeroInt)
