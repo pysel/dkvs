@@ -21,7 +21,7 @@ const (
 )
 
 // StoreMessage is a message that is sent to a node that should store a key
-type SetMessageRequest struct {
+type SetRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -30,8 +30,8 @@ type SetMessageRequest struct {
 	Value []byte `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 }
 
-func (x *SetMessageRequest) Reset() {
-	*x = SetMessageRequest{}
+func (x *SetRequest) Reset() {
+	*x = SetRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_dkvs_message_message_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -39,13 +39,13 @@ func (x *SetMessageRequest) Reset() {
 	}
 }
 
-func (x *SetMessageRequest) String() string {
+func (x *SetRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SetMessageRequest) ProtoMessage() {}
+func (*SetRequest) ProtoMessage() {}
 
-func (x *SetMessageRequest) ProtoReflect() protoreflect.Message {
+func (x *SetRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_dkvs_message_message_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -57,33 +57,33 @@ func (x *SetMessageRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SetMessageRequest.ProtoReflect.Descriptor instead.
-func (*SetMessageRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use SetRequest.ProtoReflect.Descriptor instead.
+func (*SetRequest) Descriptor() ([]byte, []int) {
 	return file_dkvs_message_message_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *SetMessageRequest) GetKey() string {
+func (x *SetRequest) GetKey() string {
 	if x != nil {
 		return x.Key
 	}
 	return ""
 }
 
-func (x *SetMessageRequest) GetValue() []byte {
+func (x *SetRequest) GetValue() []byte {
 	if x != nil {
 		return x.Value
 	}
 	return nil
 }
 
-type SetMessageResponse struct {
+type SetResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *SetMessageResponse) Reset() {
-	*x = SetMessageResponse{}
+func (x *SetResponse) Reset() {
+	*x = SetResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_dkvs_message_message_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -91,13 +91,13 @@ func (x *SetMessageResponse) Reset() {
 	}
 }
 
-func (x *SetMessageResponse) String() string {
+func (x *SetResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SetMessageResponse) ProtoMessage() {}
+func (*SetResponse) ProtoMessage() {}
 
-func (x *SetMessageResponse) ProtoReflect() protoreflect.Message {
+func (x *SetResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_dkvs_message_message_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -109,12 +109,12 @@ func (x *SetMessageResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SetMessageResponse.ProtoReflect.Descriptor instead.
-func (*SetMessageResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use SetResponse.ProtoReflect.Descriptor instead.
+func (*SetResponse) Descriptor() ([]byte, []int) {
 	return file_dkvs_message_message_proto_rawDescGZIP(), []int{1}
 }
 
-type GetMessageRequest struct {
+type GetRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -122,8 +122,8 @@ type GetMessageRequest struct {
 	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 }
 
-func (x *GetMessageRequest) Reset() {
-	*x = GetMessageRequest{}
+func (x *GetRequest) Reset() {
+	*x = GetRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_dkvs_message_message_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -131,13 +131,13 @@ func (x *GetMessageRequest) Reset() {
 	}
 }
 
-func (x *GetMessageRequest) String() string {
+func (x *GetRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetMessageRequest) ProtoMessage() {}
+func (*GetRequest) ProtoMessage() {}
 
-func (x *GetMessageRequest) ProtoReflect() protoreflect.Message {
+func (x *GetRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_dkvs_message_message_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -149,19 +149,19 @@ func (x *GetMessageRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetMessageRequest.ProtoReflect.Descriptor instead.
-func (*GetMessageRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetRequest.ProtoReflect.Descriptor instead.
+func (*GetRequest) Descriptor() ([]byte, []int) {
 	return file_dkvs_message_message_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetMessageRequest) GetKey() string {
+func (x *GetRequest) GetKey() string {
 	if x != nil {
 		return x.Key
 	}
 	return ""
 }
 
-type GetMessageResponse struct {
+type GetResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -169,8 +169,8 @@ type GetMessageResponse struct {
 	Value []byte `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
 }
 
-func (x *GetMessageResponse) Reset() {
-	*x = GetMessageResponse{}
+func (x *GetResponse) Reset() {
+	*x = GetResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_dkvs_message_message_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -178,13 +178,13 @@ func (x *GetMessageResponse) Reset() {
 	}
 }
 
-func (x *GetMessageResponse) String() string {
+func (x *GetResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetMessageResponse) ProtoMessage() {}
+func (*GetResponse) ProtoMessage() {}
 
-func (x *GetMessageResponse) ProtoReflect() protoreflect.Message {
+func (x *GetResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_dkvs_message_message_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -196,19 +196,19 @@ func (x *GetMessageResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetMessageResponse.ProtoReflect.Descriptor instead.
-func (*GetMessageResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetResponse.ProtoReflect.Descriptor instead.
+func (*GetResponse) Descriptor() ([]byte, []int) {
 	return file_dkvs_message_message_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *GetMessageResponse) GetValue() []byte {
+func (x *GetResponse) GetValue() []byte {
 	if x != nil {
 		return x.Value
 	}
 	return nil
 }
 
-type DeleteMessageRequest struct {
+type DeleteRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -216,8 +216,8 @@ type DeleteMessageRequest struct {
 	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 }
 
-func (x *DeleteMessageRequest) Reset() {
-	*x = DeleteMessageRequest{}
+func (x *DeleteRequest) Reset() {
+	*x = DeleteRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_dkvs_message_message_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -225,13 +225,13 @@ func (x *DeleteMessageRequest) Reset() {
 	}
 }
 
-func (x *DeleteMessageRequest) String() string {
+func (x *DeleteRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DeleteMessageRequest) ProtoMessage() {}
+func (*DeleteRequest) ProtoMessage() {}
 
-func (x *DeleteMessageRequest) ProtoReflect() protoreflect.Message {
+func (x *DeleteRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_dkvs_message_message_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -243,26 +243,26 @@ func (x *DeleteMessageRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DeleteMessageRequest.ProtoReflect.Descriptor instead.
-func (*DeleteMessageRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use DeleteRequest.ProtoReflect.Descriptor instead.
+func (*DeleteRequest) Descriptor() ([]byte, []int) {
 	return file_dkvs_message_message_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *DeleteMessageRequest) GetKey() string {
+func (x *DeleteRequest) GetKey() string {
 	if x != nil {
 		return x.Key
 	}
 	return ""
 }
 
-type DeleteMessageResponse struct {
+type DeleteResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *DeleteMessageResponse) Reset() {
-	*x = DeleteMessageResponse{}
+func (x *DeleteResponse) Reset() {
+	*x = DeleteResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_dkvs_message_message_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -270,13 +270,13 @@ func (x *DeleteMessageResponse) Reset() {
 	}
 }
 
-func (x *DeleteMessageResponse) String() string {
+func (x *DeleteResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DeleteMessageResponse) ProtoMessage() {}
+func (*DeleteResponse) ProtoMessage() {}
 
-func (x *DeleteMessageResponse) ProtoReflect() protoreflect.Message {
+func (x *DeleteResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_dkvs_message_message_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -288,8 +288,8 @@ func (x *DeleteMessageResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DeleteMessageResponse.ProtoReflect.Descriptor instead.
-func (*DeleteMessageResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use DeleteResponse.ProtoReflect.Descriptor instead.
+func (*DeleteResponse) Descriptor() ([]byte, []int) {
 	return file_dkvs_message_message_proto_rawDescGZIP(), []int{5}
 }
 
@@ -391,30 +391,27 @@ var File_dkvs_message_message_proto protoreflect.FileDescriptor
 var file_dkvs_message_message_proto_rawDesc = []byte{
 	0x0a, 0x1a, 0x64, 0x6b, 0x76, 0x73, 0x2f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2f, 0x6d,
 	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0c, 0x64, 0x6b,
-	0x76, 0x73, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x3b, 0x0a, 0x11, 0x53, 0x65,
-	0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
-	0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65,
-	0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c,
-	0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x14, 0x0a, 0x12, 0x53, 0x65, 0x74, 0x4d, 0x65,
-	0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x25, 0x0a,
-	0x11, 0x47, 0x65, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x03, 0x6b, 0x65, 0x79, 0x22, 0x2a, 0x0a, 0x12, 0x47, 0x65, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61,
-	0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61,
-	0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65,
-	0x22, 0x28, 0x0a, 0x14, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
-	0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x17, 0x0a, 0x15, 0x44, 0x65,
-	0x6c, 0x65, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x22, 0x39, 0x0a, 0x13, 0x53, 0x65, 0x74, 0x48, 0x61, 0x73, 0x68, 0x72, 0x61,
-	0x6e, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x69,
-	0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x03, 0x6d, 0x69, 0x6e, 0x12, 0x10, 0x0a, 0x03,
-	0x6d, 0x61, 0x78, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x03, 0x6d, 0x61, 0x78, 0x22, 0x16,
-	0x0a, 0x14, 0x53, 0x65, 0x74, 0x48, 0x61, 0x73, 0x68, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x22, 0x5a, 0x20, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x79, 0x73, 0x65, 0x6c, 0x2f, 0x64, 0x6b, 0x76, 0x73, 0x2f,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x76, 0x73, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x34, 0x0a, 0x0a, 0x53, 0x65,
+	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61,
+	0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65,
+	0x22, 0x0d, 0x0a, 0x0b, 0x53, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+	0x1e, 0x0a, 0x0a, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a,
+	0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22,
+	0x23, 0x0a, 0x0b, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x14,
+	0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x76,
+	0x61, 0x6c, 0x75, 0x65, 0x22, 0x21, 0x0a, 0x0d, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x10, 0x0a, 0x0e, 0x44, 0x65, 0x6c, 0x65, 0x74,
+	0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x39, 0x0a, 0x13, 0x53, 0x65, 0x74,
+	0x48, 0x61, 0x73, 0x68, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x12, 0x10, 0x0a, 0x03, 0x6d, 0x69, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x03, 0x6d,
+	0x69, 0x6e, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x61, 0x78, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52,
+	0x03, 0x6d, 0x61, 0x78, 0x22, 0x16, 0x0a, 0x14, 0x53, 0x65, 0x74, 0x48, 0x61, 0x73, 0x68, 0x72,
+	0x61, 0x6e, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x22, 0x5a, 0x20,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x79, 0x73, 0x65, 0x6c,
+	0x2f, 0x64, 0x6b, 0x76, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x74, 0x79, 0x70, 0x65, 0x73,
+	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -431,14 +428,14 @@ func file_dkvs_message_message_proto_rawDescGZIP() []byte {
 
 var file_dkvs_message_message_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_dkvs_message_message_proto_goTypes = []interface{}{
-	(*SetMessageRequest)(nil),     // 0: dkvs.message.SetMessageRequest
-	(*SetMessageResponse)(nil),    // 1: dkvs.message.SetMessageResponse
-	(*GetMessageRequest)(nil),     // 2: dkvs.message.GetMessageRequest
-	(*GetMessageResponse)(nil),    // 3: dkvs.message.GetMessageResponse
-	(*DeleteMessageRequest)(nil),  // 4: dkvs.message.DeleteMessageRequest
-	(*DeleteMessageResponse)(nil), // 5: dkvs.message.DeleteMessageResponse
-	(*SetHashrangeRequest)(nil),   // 6: dkvs.message.SetHashrangeRequest
-	(*SetHashrangeResponse)(nil),  // 7: dkvs.message.SetHashrangeResponse
+	(*SetRequest)(nil),           // 0: dkvs.message.SetRequest
+	(*SetResponse)(nil),          // 1: dkvs.message.SetResponse
+	(*GetRequest)(nil),           // 2: dkvs.message.GetRequest
+	(*GetResponse)(nil),          // 3: dkvs.message.GetResponse
+	(*DeleteRequest)(nil),        // 4: dkvs.message.DeleteRequest
+	(*DeleteResponse)(nil),       // 5: dkvs.message.DeleteResponse
+	(*SetHashrangeRequest)(nil),  // 6: dkvs.message.SetHashrangeRequest
+	(*SetHashrangeResponse)(nil), // 7: dkvs.message.SetHashrangeResponse
 }
 var file_dkvs_message_message_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -455,7 +452,7 @@ func file_dkvs_message_message_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_dkvs_message_message_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetMessageRequest); i {
+			switch v := v.(*SetRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -467,7 +464,7 @@ func file_dkvs_message_message_proto_init() {
 			}
 		}
 		file_dkvs_message_message_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetMessageResponse); i {
+			switch v := v.(*SetResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -479,7 +476,7 @@ func file_dkvs_message_message_proto_init() {
 			}
 		}
 		file_dkvs_message_message_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMessageRequest); i {
+			switch v := v.(*GetRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -491,7 +488,7 @@ func file_dkvs_message_message_proto_init() {
 			}
 		}
 		file_dkvs_message_message_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMessageResponse); i {
+			switch v := v.(*GetResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -503,7 +500,7 @@ func file_dkvs_message_message_proto_init() {
 			}
 		}
 		file_dkvs_message_message_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteMessageRequest); i {
+			switch v := v.(*DeleteRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -515,7 +512,7 @@ func file_dkvs_message_message_proto_init() {
 			}
 		}
 		file_dkvs_message_message_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteMessageResponse); i {
+			switch v := v.(*DeleteResponse); i {
 			case 0:
 				return &v.state
 			case 1:

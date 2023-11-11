@@ -8,6 +8,7 @@ package balancer
 
 import (
 	context "context"
+	prototypes "github.com/pysel/dkvs/prototypes"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -23,9 +24,9 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BalancerServiceClient interface {
 	// ----- To be relayed requests -----
-	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
-	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error)
-	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
+	Get(ctx context.Context, in *prototypes.GetRequest, opts ...grpc.CallOption) (*prototypes.GetResponse, error)
+	Set(ctx context.Context, in *prototypes.SetRequest, opts ...grpc.CallOption) (*prototypes.SetResponse, error)
+	Delete(ctx context.Context, in *prototypes.DeleteRequest, opts ...grpc.CallOption) (*prototypes.DeleteResponse, error)
 	// RegisterPartition is called by a partition to register itself with the balancer
 	// The balancer will set partition's range and run a new client of this partition's server
 	RegisterPartition(ctx context.Context, in *RegisterPartitionRequest, opts ...grpc.CallOption) (*RegisterPartitionResponse, error)
@@ -39,8 +40,8 @@ func NewBalancerServiceClient(cc grpc.ClientConnInterface) BalancerServiceClient
 	return &balancerServiceClient{cc}
 }
 
-func (c *balancerServiceClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
-	out := new(GetResponse)
+func (c *balancerServiceClient) Get(ctx context.Context, in *prototypes.GetRequest, opts ...grpc.CallOption) (*prototypes.GetResponse, error) {
+	out := new(prototypes.GetResponse)
 	err := c.cc.Invoke(ctx, "/dkvs.balancer.BalancerService/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -48,8 +49,8 @@ func (c *balancerServiceClient) Get(ctx context.Context, in *GetRequest, opts ..
 	return out, nil
 }
 
-func (c *balancerServiceClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error) {
-	out := new(SetResponse)
+func (c *balancerServiceClient) Set(ctx context.Context, in *prototypes.SetRequest, opts ...grpc.CallOption) (*prototypes.SetResponse, error) {
+	out := new(prototypes.SetResponse)
 	err := c.cc.Invoke(ctx, "/dkvs.balancer.BalancerService/Set", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -57,8 +58,8 @@ func (c *balancerServiceClient) Set(ctx context.Context, in *SetRequest, opts ..
 	return out, nil
 }
 
-func (c *balancerServiceClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error) {
-	out := new(DeleteResponse)
+func (c *balancerServiceClient) Delete(ctx context.Context, in *prototypes.DeleteRequest, opts ...grpc.CallOption) (*prototypes.DeleteResponse, error) {
+	out := new(prototypes.DeleteResponse)
 	err := c.cc.Invoke(ctx, "/dkvs.balancer.BalancerService/Delete", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -80,9 +81,9 @@ func (c *balancerServiceClient) RegisterPartition(ctx context.Context, in *Regis
 // for forward compatibility
 type BalancerServiceServer interface {
 	// ----- To be relayed requests -----
-	Get(context.Context, *GetRequest) (*GetResponse, error)
-	Set(context.Context, *SetRequest) (*SetResponse, error)
-	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
+	Get(context.Context, *prototypes.GetRequest) (*prototypes.GetResponse, error)
+	Set(context.Context, *prototypes.SetRequest) (*prototypes.SetResponse, error)
+	Delete(context.Context, *prototypes.DeleteRequest) (*prototypes.DeleteResponse, error)
 	// RegisterPartition is called by a partition to register itself with the balancer
 	// The balancer will set partition's range and run a new client of this partition's server
 	RegisterPartition(context.Context, *RegisterPartitionRequest) (*RegisterPartitionResponse, error)
@@ -93,13 +94,13 @@ type BalancerServiceServer interface {
 type UnimplementedBalancerServiceServer struct {
 }
 
-func (UnimplementedBalancerServiceServer) Get(context.Context, *GetRequest) (*GetResponse, error) {
+func (UnimplementedBalancerServiceServer) Get(context.Context, *prototypes.GetRequest) (*prototypes.GetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
-func (UnimplementedBalancerServiceServer) Set(context.Context, *SetRequest) (*SetResponse, error) {
+func (UnimplementedBalancerServiceServer) Set(context.Context, *prototypes.SetRequest) (*prototypes.SetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
 }
-func (UnimplementedBalancerServiceServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
+func (UnimplementedBalancerServiceServer) Delete(context.Context, *prototypes.DeleteRequest) (*prototypes.DeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedBalancerServiceServer) RegisterPartition(context.Context, *RegisterPartitionRequest) (*RegisterPartitionResponse, error) {
@@ -119,7 +120,7 @@ func RegisterBalancerServiceServer(s grpc.ServiceRegistrar, srv BalancerServiceS
 }
 
 func _BalancerService_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRequest)
+	in := new(prototypes.GetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -131,13 +132,13 @@ func _BalancerService_Get_Handler(srv interface{}, ctx context.Context, dec func
 		FullMethod: "/dkvs.balancer.BalancerService/Get",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BalancerServiceServer).Get(ctx, req.(*GetRequest))
+		return srv.(BalancerServiceServer).Get(ctx, req.(*prototypes.GetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _BalancerService_Set_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetRequest)
+	in := new(prototypes.SetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -149,13 +150,13 @@ func _BalancerService_Set_Handler(srv interface{}, ctx context.Context, dec func
 		FullMethod: "/dkvs.balancer.BalancerService/Set",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BalancerServiceServer).Set(ctx, req.(*SetRequest))
+		return srv.(BalancerServiceServer).Set(ctx, req.(*prototypes.SetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _BalancerService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteRequest)
+	in := new(prototypes.DeleteRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -167,7 +168,7 @@ func _BalancerService_Delete_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/dkvs.balancer.BalancerService/Delete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BalancerServiceServer).Delete(ctx, req.(*DeleteRequest))
+		return srv.(BalancerServiceServer).Delete(ctx, req.(*prototypes.DeleteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

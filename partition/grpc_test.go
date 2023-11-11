@@ -8,6 +8,7 @@ import (
 	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/prototypes"
 	"github.com/pysel/dkvs/testutil"
+	"github.com/pysel/dkvs/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -31,51 +32,51 @@ func TestGRPCServer(t *testing.T) {
 	nonDomainKey := "Not partition key."
 
 	// Assert that value was stored correctly
-	_, err = client.SetMessage(ctx, &prototypes.SetMessageRequest{
+	_, err = client.Set(ctx, &prototypes.SetRequest{
 		Key:   domainKey,
 		Value: []byte("value"),
 	})
 	require.NoError(t, err, "SetMessage should not return error")
 
 	// Assert that value was stored correctly
-	getResp, err := client.GetMessage(ctx, &prototypes.GetMessageRequest{Key: domainKey})
+	getResp, err := client.Get(ctx, &prototypes.GetRequest{Key: domainKey})
 	require.NoError(t, err, "GetMessage should not return error")
 	require.Equal(t, []byte("value"), getResp.Value, "GetMessage should return correct value")
 
 	// Assert that value was not stored if key is nil
-	setResp, err := client.SetMessage(ctx, &prototypes.SetMessageRequest{})
-	require.ErrorContains(t, err, partition.ErrNilKey.Error(), "SetMessage should return error if key is nil")
+	setResp, err := client.Set(ctx, &prototypes.SetRequest{})
+	require.ErrorContains(t, err, types.ErrNilKey.Error(), "SetMessage should return error if key is nil")
 	require.Nil(t, setResp, "SetMessage should return nil response if key is nil")
 
 	// Assert that get operation won't succeed if key is nil
-	getResp, err = client.GetMessage(ctx, &prototypes.GetMessageRequest{})
-	require.ErrorContains(t, err, partition.ErrNilKey.Error(), "GetMessage should return error if key is nil")
+	getResp, err = client.Get(ctx, &prototypes.GetRequest{})
+	require.ErrorContains(t, err, types.ErrNilKey.Error(), "GetMessage should return error if key is nil")
 	require.Nil(t, getResp, "GetMessage should return nil response if key is nil")
 
 	// Assert that value was not stored if key is not in partition's hashrange
-	setResp, err = client.SetMessage(ctx, &prototypes.SetMessageRequest{Key: nonDomainKey, Value: []byte("value")})
+	setResp, err = client.Set(ctx, &prototypes.SetRequest{Key: nonDomainKey, Value: []byte("value")})
 	require.ErrorContains(t, err, partition.ErrNotThisPartitionKey.Error(), "SetMessage should return error if key is not domain key")
 	require.Nil(t, setResp, "SetMessage should return nil response if key is not domain key")
 
 	// Assert that get operation won't succeed if key is not in partition's hashrange
-	getResp, err = client.GetMessage(ctx, &prototypes.GetMessageRequest{Key: nonDomainKey})
+	getResp, err = client.Get(ctx, &prototypes.GetRequest{Key: nonDomainKey})
 	require.ErrorContains(t, err, partition.ErrNotThisPartitionKey.Error(), "GetMessage should return error if key is not domain key")
 	require.Nil(t, getResp, "GetMessage should return nil response if key is not domain key")
 
 	// Assert that value was deleted correctly
-	_, err = client.DeleteMessage(ctx, &prototypes.DeleteMessageRequest{Key: domainKey})
+	_, err = client.Delete(ctx, &prototypes.DeleteRequest{Key: domainKey})
 	require.NoError(t, err, "DeleteMessage should not return error")
 
 	// Assert that value was not deleted if key is nil
-	_, err = client.DeleteMessage(ctx, &prototypes.DeleteMessageRequest{})
-	require.ErrorContains(t, err, partition.ErrNilKey.Error(), "DeleteMessage should return error if key is nil")
+	_, err = client.Delete(ctx, &prototypes.DeleteRequest{})
+	require.ErrorContains(t, err, types.ErrNilKey.Error(), "DeleteMessage should return error if key is nil")
 
 	// Assert that value was not deleted if key is not in partition's hashrange
-	_, err = client.DeleteMessage(ctx, &prototypes.DeleteMessageRequest{Key: nonDomainKey})
+	_, err = client.Delete(ctx, &prototypes.DeleteRequest{Key: nonDomainKey})
 	require.ErrorContains(t, err, partition.ErrNotThisPartitionKey.Error(), "DeleteMessage should return error if key is not domain key")
 
 	// Assert that deleted value was removed from partition's state
-	getResp, err = client.GetMessage(ctx, &prototypes.GetMessageRequest{Key: domainKey})
+	getResp, err = client.Get(ctx, &prototypes.GetRequest{Key: domainKey})
 	require.ErrorContains(t, err, "not found", "GetMessage should return error if key is in hashrange of partition")
 	require.Nil(t, getResp, "GetMessage should return nil if no key existed")
 }

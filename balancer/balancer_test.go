@@ -22,7 +22,7 @@ func TestRegisterGetPartition(t *testing.T) {
 	defer os.RemoveAll(testutil.TestDBPath)
 
 	addr := SetupPartition()
-	b10 := balancer.NewBalancer(10)
+	b10 := balancer.NewBalancerTest(10)
 
 	err := b10.RegisterPartition(addr.String(), *testutil.DefaultHashrange)
 	require.NoError(t, err)
@@ -36,7 +36,7 @@ func TestRegisterGetPartition(t *testing.T) {
 	keyPartitions = b10.GetPartitions([]byte(nonDomainKey))
 	require.Equal(t, 0, len(keyPartitions))
 
-	b0 := balancer.NewBalancer(0)
+	b0 := balancer.NewBalancerTest(0)
 	err = b0.RegisterPartition(addr.String(), *testutil.DefaultHashrange)
 	require.Error(t, err)
 }
@@ -44,7 +44,7 @@ func TestRegisterGetPartition(t *testing.T) {
 func TestBalancerInit(t *testing.T) {
 	goalReplicaRanges := 3
 
-	b := balancer.NewBalancer(goalReplicaRanges)
+	b := balancer.NewBalancerTest(goalReplicaRanges)
 	require.Equal(t, b.GetTicksAmount(), goalReplicaRanges+1)
 
 	expectedFirstTickValue := big.NewInt(0)
@@ -62,13 +62,13 @@ func TestBalancerInit(t *testing.T) {
 }
 
 func TestGetNextPartitionRange(t *testing.T) {
-	b := balancer.NewBalancer(1)
+	b := balancer.NewBalancerTest(1)
 	nextPartitionRange, err := b.GetNextPartitionRange()
 	require.NoError(t, err)
 	// defaultHashrange is full sha256 domain, in case of 1 node, it's domain should be full
 	require.Equal(t, nextPartitionRange, testutil.FullHashrange)
 
-	b2 := balancer.NewBalancer(2)
+	b2 := balancer.NewBalancerTest(2)
 	nextPartitionRange, err = b2.GetNextPartitionRange()
 	require.NoError(t, err)
 	// defaultHashrange is full sha256 domain, in case of 2 nodes, first node's domain should be half

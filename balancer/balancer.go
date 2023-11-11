@@ -92,3 +92,16 @@ func (b *Balancer) getNextPartitionRange() (*partition.Range, error) {
 
 	return nil, ErrCoverageNotProperlySetUp
 }
+
+// getRangeFromDigest returns a range to which the given digest belongs
+func (b *Balancer) getRangeFromDigest(digest []byte) (*partition.Range, error) {
+	for tick := b.coverage.tick; tick != nil; tick = tick.next() {
+		if tick.value.Cmp(new(big.Int).SetBytes(digest)) == -1 && tick.next().value.Cmp(new(big.Int).SetBytes(digest)) == 1 {
+			min := tick.value
+			max := tick.next().value
+			return partition.NewRange(min, max), nil
+		}
+	}
+
+	return nil, ErrDigestNotCovered
+}

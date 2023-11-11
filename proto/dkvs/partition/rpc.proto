@@ -6,9 +6,9 @@ import "dkvs/message/message.proto";
 option go_package = "github.com/pysel/dkvs/prototypes/partition";
 
 service PartitionService {
-    rpc SetMessage(dkvs.message.SetMessageRequest) returns (dkvs.message.SetMessageResponse);
-    rpc GetMessage(dkvs.message.GetMessageRequest) returns (dkvs.message.GetMessageResponse);
-    rpc DeleteMessage(dkvs.message.DeleteMessageRequest) returns (dkvs.message.DeleteMessageResponse);
+    rpc Set(dkvs.message.SetRequest) returns (dkvs.message.SetResponse);
+    rpc Get(dkvs.message.GetRequest) returns (dkvs.message.GetResponse);
+    rpc Delete(dkvs.message.DeleteRequest) returns (dkvs.message.DeleteResponse);
 
     // SetHashrange sets this node's hashrange to the given range.
     rpc SetHashrange(dkvs.message.SetHashrangeRequest) returns (dkvs.message.SetHashrangeResponse);
