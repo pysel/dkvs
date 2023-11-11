@@ -10,10 +10,10 @@ import (
 
 var (
 	zeroInt          = new(big.Int).SetInt64(0)
-	quarterInt       = new(big.Int).Div(testutil.DefaultMax, big.NewInt(2))
-	halfInt          = testutil.DefaultMax
+	quarterInt       = new(big.Int).Div(testutil.HalfShaDomain, big.NewInt(2))
+	halfInt          = testutil.HalfShaDomain
 	threeQuartersInt = new(big.Int).Mul(quarterInt, big.NewInt(3))
-	fullInt          = new(big.Int).Mul(testutil.DefaultMax, big.NewInt(2))
+	fullInt          = new(big.Int).Mul(testutil.HalfShaDomain, big.NewInt(2))
 )
 
 func TestGetTickByValue(t *testing.T) {

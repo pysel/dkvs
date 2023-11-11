@@ -13,8 +13,8 @@ type Balancer struct {
 	// Multiple partitions can be mapped to the same range.
 	clients map[partition.Range][]pbpartition.PartitionServiceClient
 
-	// goalPartitions is the number of partitions we are expecting
-	goalPartitions int
+	// goalReplicaRanges is the number of different sets of replicas that should be created
+	goalReplicaRanges int
 	// activePartitions is the number of currently registered partitions
 	activePartitions int
 
@@ -23,12 +23,12 @@ type Balancer struct {
 }
 
 // NewBalancer returns a new balancer instance.
-func NewBalancer(goalPartitions int) *Balancer {
+func NewBalancer(goalReplicaRanges int) *Balancer {
 	b := &Balancer{
-		clients:          make(map[partition.Range][]pbpartition.PartitionServiceClient),
-		goalPartitions:   goalPartitions,
-		activePartitions: 0,
-		coverage:         GetCoverage(),
+		clients:           make(map[partition.Range][]pbpartition.PartitionServiceClient),
+		goalReplicaRanges: goalReplicaRanges,
+		activePartitions:  0,
+		coverage:          GetCoverage(),
 	}
 
 	b.setupCoverage()
@@ -38,12 +38,14 @@ func NewBalancer(goalPartitions int) *Balancer {
 
 // AddPartition adds a partition to the balancer.
 func (b *Balancer) RegisterPartition(addr string, range_ partition.Range) error {
-	if b.activePartitions == b.goalPartitions {
+	if b.activePartitions == b.goalReplicaRanges {
 		return ErrPartitionOverflow
 	}
 
 	client := NewPartitionClient(addr)
 	b.clients[range_] = append(b.clients[range_], client)
+	b.activePartitions++
+
 	return nil
 }
 
@@ -59,17 +61,34 @@ func (b *Balancer) GetPartitions(key []byte) []pbpartition.PartitionServiceClien
 	return nil
 }
 
-// setupCoverage creates necessary ticks for coverage based on goalPartitions
+// setupCoverage creates necessary ticks for coverage based on goalReplicaRanges
 func (b *Balancer) setupCoverage() {
-	if b.goalPartitions == 0 {
+	if b.goalReplicaRanges == 0 {
 		b.coverage.addTick(newTick(big.NewInt(0)), false, false)
 		b.coverage.addTick(newTick(partition.MaxInt), false, false)
 		return
 	}
 	// Create a tick for each partition
-	for i := 0; i <= b.goalPartitions; i++ {
+	for i := 0; i <= b.goalReplicaRanges; i++ {
 		numerator := new(big.Int).Mul(big.NewInt(int64(i)), partition.MaxInt)
-		value := new(big.Int).Div(numerator, big.NewInt(int64(b.goalPartitions)))
+		value := new(big.Int).Div(numerator, big.NewInt(int64(b.goalReplicaRanges)))
 		b.coverage.addTick(newTick(value), false, false)
 	}
+}
+
+// getNextPartitionRange returns a range to which the next partition should be assigned
+func (b *Balancer) getNextPartitionRange() (*partition.Range, error) {
+	remainder := b.activePartitions % b.goalReplicaRanges
+	tickIndexMin := remainder
+	index := 0
+	for tick := b.coverage.tick; tick != nil; tick = tick.next() {
+		if index == tickIndexMin {
+			min := tick.value
+			max := tick.next().value
+			return partition.NewRange(min, max), nil
+		}
+		index++
+	}
+
+	return nil, ErrCoverageNotProperlySetUp
 }

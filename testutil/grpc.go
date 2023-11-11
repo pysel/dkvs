@@ -19,23 +19,29 @@ const (
 )
 
 var (
-	DefaultMin       *big.Int // zero
-	DefaultMax       *big.Int // half of sha-2 domain
+	Min10            *big.Int // zero
+	HalfShaDomain    *big.Int // half of sha-2 domain
 	DefaultHashrange *partition.Range
+	FullHashrange    *partition.Range
 )
 
 func init() {
-	DefaultMin = new(big.Int).SetInt64(10)
+	Min10 = new(big.Int).SetInt64(10)
 	to_bz := make([]byte, 32)
 	for i := 0; i < 32; i++ {
 		to_bz[i] = 0xFF
 	}
 	full_range := new(big.Int).SetBytes(to_bz) // 2^256 - 1
 
-	DefaultMax = new(big.Int).Div(full_range, big.NewInt(2)) // half of 2^256 - 1
+	HalfShaDomain = new(big.Int).Div(full_range, big.NewInt(2)) // half of 2^256 - 1
 	DefaultHashrange = &partition.Range{
-		Min: DefaultMin,
-		Max: DefaultMax,
+		Min: Min10,
+		Max: HalfShaDomain,
+	}
+
+	FullHashrange = &partition.Range{
+		Min: big.NewInt(0),
+		Max: full_range,
 	}
 }
 
