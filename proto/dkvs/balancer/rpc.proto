@@ -4,6 +4,15 @@ package dkvs.balancer;
 option go_package = "github.com/pysel/dkvs/prototypes/balancer";
 
 service BalancerService {
+    // ----- To be relayed requests -----
+    rpc Get(GetRequest) returns (GetResponse) {}
+    rpc Set(SetRequest) returns (SetResponse) {}
+    rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+
+    // ----- To be handled by balancer -----
+
+    // RegisterPartition is called by a partition to register itself with the balancer
+    // The balancer will set partition's range and run a new client of this partition's server
     rpc RegisterPartition(RegisterPartitionRequest) returns (RegisterPartitionResponse) {}
 }
 
@@ -12,3 +21,24 @@ message RegisterPartitionRequest {
 }
 
 message RegisterPartitionResponse {}
+
+message GetRequest {
+    string key = 1;
+}
+
+message GetResponse {
+    bytes value = 1;
+}
+
+message SetRequest {
+    string key = 1;
+    bytes value = 2;
+}
+
+message SetResponse {}
+
+message DeleteRequest {
+    string key = 1;
+}
+
+message DeleteResponse {}
