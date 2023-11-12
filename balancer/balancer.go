@@ -8,6 +8,7 @@ import (
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 )
 
+// Balancer is a node that is responsible for registering partitions and relaying requests to appropriate ones.
 type Balancer struct {
 	// A mapping from ranges to partitions.
 	// Multiple partitions can be mapped to the same range.

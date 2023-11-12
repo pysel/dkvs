@@ -4,7 +4,7 @@ import (
 	db "github.com/pysel/dkvs/leveldb"
 )
 
-// Partition is a slave node that stores some range of keys
+// Partition is a node that is responsible for some range of keys.
 type Partition struct {
 	hashrange *Range
 	db.DB
