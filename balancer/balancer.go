@@ -43,7 +43,7 @@ func (b *Balancer) RegisterPartition(addr string, range_ partition.Range) error 
 		return ErrPartitionOverflow
 	}
 
-	client := NewPartitionClient(addr)
+	client := partition.NewPartitionClient(addr)
 	b.clients[range_] = append(b.clients[range_], client)
 	b.activePartitions++
 
