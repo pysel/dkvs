@@ -22,7 +22,7 @@ message GetRequest {
     uint64 lamport = 2;
 }
 message GetResponse {
-    bytes value = 1;
+    bytes stored_value = 1;
 }
 
 message DeleteRequest {
