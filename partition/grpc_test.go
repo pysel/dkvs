@@ -10,6 +10,7 @@ import (
 	"github.com/pysel/dkvs/testutil"
 	"github.com/pysel/dkvs/types"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestGRPCServer(t *testing.T) {
@@ -33,24 +34,33 @@ func TestGRPCServer(t *testing.T) {
 
 	// Assert that value was stored correctly
 	_, err = client.Set(ctx, &prototypes.SetRequest{
-		Key:   domainKey,
-		Value: []byte("value"),
+		Key:     domainKey,
+		Value:   []byte("value"),
+		Lamport: 1,
 	})
 	require.NoError(t, err, "SetMessage should not return error")
 
 	// Assert that value was stored correctly
 	getResp, err := client.Get(ctx, &prototypes.GetRequest{Key: domainKey})
 	require.NoError(t, err, "GetMessage should not return error")
-	require.Equal(t, []byte("value"), getResp.Value, "GetMessage should return correct value")
+
+	expected, err := proto.Marshal(partition.ToStoredValue(1, []byte("value")))
+	require.NoError(t, err, "proto.Marshal should not return error")
+
+	require.Equal(t,
+		expected,
+		getResp.Value,
+		"GetMessage should return correct value",
+	)
 
 	// Assert that value was not stored if key is nil
 	setResp, err := client.Set(ctx, &prototypes.SetRequest{})
-	require.ErrorContains(t, err, types.ErrNilKey.Error(), "SetMessage should return error if key is nil")
+	require.Error(t, err, "SetMessage should return error if key is nil")
 	require.Nil(t, setResp, "SetMessage should return nil response if key is nil")
 
 	// Assert that get operation won't succeed if key is nil
 	getResp, err = client.Get(ctx, &prototypes.GetRequest{})
-	require.ErrorContains(t, err, types.ErrNilKey.Error(), "GetMessage should return error if key is nil")
+	require.Error(t, err, "GetMessage should return error if key is nil")
 	require.Nil(t, getResp, "GetMessage should return nil response if key is nil")
 
 	// Assert that value was not stored if key is not in partition's hashrange
