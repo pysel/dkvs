@@ -9,8 +9,3 @@ var (
 	ErrRangeNotYetCovered       = errors.New("range is not yet covered by any partition")
 	ErrAllReplicasFailed        = errors.New("all replicas failed to process request")
 )
-
-// GRPC errors
-var (
-	ErrNilRequest = errors.New("request is nil")
-)
