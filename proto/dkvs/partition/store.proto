@@ -4,6 +4,6 @@ package dkvs.partition;
 option go_package = "github.com/pysel/dkvs/prototypes/partition";
 
 message StoredValue {
-    bytes lamport = 1;
-    bytes value = 2;
+    bytes value = 1;
+    uint64 lamport = 2;
 }

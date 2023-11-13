@@ -3,9 +3,12 @@ package balancer
 import (
 	"context"
 	"crypto/sha256"
+	"fmt"
 
 	"github.com/pysel/dkvs/prototypes"
 	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
+	pbpartition "github.com/pysel/dkvs/prototypes/partition"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/pysel/dkvs/types"
 )
@@ -50,19 +53,30 @@ func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (
 	}
 
 	var response *prototypes.GetResponse
-	errCounter := 0
+	maxLamport := uint64(0)
 	for _, client := range responsibleClients {
 		resp, err := client.Get(ctx, &prototypes.GetRequest{Key: key})
 		if err != nil {
-			errCounter++
 			continue
 		}
 
-		response = resp
-		break // break here since other replicas would return the same value
+		// since returned value will be a tuple of lamport timestamp and value, check which returned value
+		// has the highest lamport timestamp
+		var storedValue pbpartition.StoredValue
+		err = proto.Unmarshal(resp.Value, &storedValue)
+		if err != nil {
+			// TODO: partition is in incorrect state, should remove it from active set
+			fmt.Println("Error unmarshalling value from partition", err)
+			continue
+		}
+
+		if storedValue.Lamport > maxLamport {
+			maxLamport = storedValue.Lamport
+			response = resp
+		}
 	}
 
-	if errCounter == len(responsibleClients) {
+	if response == nil {
 		return nil, ErrAllReplicasFailed
 	}
 

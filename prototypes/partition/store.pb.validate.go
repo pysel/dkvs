@@ -57,9 +57,9 @@ func (m *StoredValue) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Lamport
-
 	// no validation rules for Value
+
+	// no validation rules for Lamport
 
 	if len(errors) > 0 {
 		return StoredValueMultiError(errors)
