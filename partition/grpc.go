@@ -38,16 +38,8 @@ func RunPartitionServer(port int64, dbPath string) {
 
 // SetMessage sets a value for a key.
 func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (*prototypes.SetResponse, error) {
-	if req == nil {
-		return nil, types.ErrNilRequest
-	}
-
-	if req.Key == "" {
-		return nil, types.ErrNilKey
-	}
-
-	if req.Value == nil {
-		return nil, types.ErrNilValue
+	if err := req.Validate(); err != nil {
+		return nil, err
 	}
 
 	shaKey := shaKey(req.Key)
@@ -68,12 +60,8 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (*p
 
 // GetMessage gets a value for a key.
 func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (*prototypes.GetResponse, error) {
-	if req == nil {
-		return nil, types.ErrNilRequest
-	}
-
-	if req.Key == "" {
-		return nil, types.ErrNilKey
+	if err := req.Validate(); err != nil {
+		return nil, err
 	}
 
 	shaKey := shaKey(req.Key)

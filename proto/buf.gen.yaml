@@ -9,3 +9,8 @@ plugins:
     opt:
       - paths=import
       - require_unimplemented_servers=false
+  - name: validate 
+    out: .
+    opt:
+      - paths=import
+      - lang=go
