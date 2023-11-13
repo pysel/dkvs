@@ -12,6 +12,7 @@ import (
 	"github.com/pysel/dkvs/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/proto"
 )
 
 type ListenServer struct {
@@ -50,9 +51,14 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (*p
 	}
 
 	shaKey := shaKey(req.Key)
-	valueBz := []byte(req.Value)
 
-	err := ls.Partition.Set(shaKey[:], valueBz)
+	storedValue := toStoredValue(req.Lamport, req.Value)
+	marshalled, err := proto.Marshal(storedValue)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ls.Partition.Set(shaKey[:], marshalled)
 	if err != nil {
 		return nil, err
 	}

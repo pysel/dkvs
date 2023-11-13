@@ -1,17 +1,25 @@
 syntax = "proto3";
 package dkvs.message;
 
+import "validate/validate.proto";
+
 option go_package = "github.com/pysel/dkvs/prototypes";
 
 // StoreMessage is a message that is sent to a node that should store a key
 message SetRequest {
     string key = 1;
     bytes value = 2;
+
+    // a lamport timestamp of this message
+    uint64 lamport = 3 ;
 }
 message SetResponse {}
 
 message GetRequest {
     string key = 1;
+
+    // a lamport timestamp of this message
+    uint64 lamport = 2;
 }
 message GetResponse {
     bytes value = 1;
