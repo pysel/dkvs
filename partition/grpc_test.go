@@ -49,7 +49,7 @@ func TestGRPCServer(t *testing.T) {
 
 	require.Equal(t,
 		expected,
-		getResp.StoredValue,
+		getResp.Value,
 		"GetMessage should return correct value",
 	)
 

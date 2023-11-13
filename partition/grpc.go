@@ -66,12 +66,12 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (*p
 
 	shaKey := shaKey(req.Key)
 
-	storedValue, err := ls.Partition.Get(shaKey[:])
+	value, err := ls.Partition.Get(shaKey[:])
 	if err != nil {
 		return nil, err
 	}
 
-	return &prototypes.GetResponse{StoredValue: storedValue}, nil
+	return &prototypes.GetResponse{Value: value}, nil
 }
 
 // DeleteMessage deletes a value for a key.

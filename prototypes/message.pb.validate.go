@@ -391,7 +391,7 @@ func (m *GetResponse) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for StoredValue
+	// no validation rules for Value
 
 	if len(errors) > 0 {
 		return GetResponseMultiError(errors)
