@@ -34,3 +34,296 @@ var (
 	_ = anypb.Any{}
 	_ = sort.Sort
 )
+
+// Validate checks the field values on PrepareCommitRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PrepareCommitRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PrepareCommitRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PrepareCommitRequestMultiError, or nil if none found.
+func (m *PrepareCommitRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PrepareCommitRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	switch v := m.Message.(type) {
+	case *PrepareCommitRequest_SetRequest:
+		if v == nil {
+			err := PrepareCommitRequestValidationError{
+				field:  "Message",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetSetRequest()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, PrepareCommitRequestValidationError{
+						field:  "SetRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, PrepareCommitRequestValidationError{
+						field:  "SetRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetSetRequest()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return PrepareCommitRequestValidationError{
+					field:  "SetRequest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *PrepareCommitRequest_DeleteRequest:
+		if v == nil {
+			err := PrepareCommitRequestValidationError{
+				field:  "Message",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetDeleteRequest()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, PrepareCommitRequestValidationError{
+						field:  "DeleteRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, PrepareCommitRequestValidationError{
+						field:  "DeleteRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetDeleteRequest()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return PrepareCommitRequestValidationError{
+					field:  "DeleteRequest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	default:
+		_ = v // ensures v is used
+	}
+
+	if len(errors) > 0 {
+		return PrepareCommitRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// PrepareCommitRequestMultiError is an error wrapping multiple validation
+// errors returned by PrepareCommitRequest.ValidateAll() if the designated
+// constraints aren't met.
+type PrepareCommitRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PrepareCommitRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PrepareCommitRequestMultiError) AllErrors() []error { return m }
+
+// PrepareCommitRequestValidationError is the validation error returned by
+// PrepareCommitRequest.Validate if the designated constraints aren't met.
+type PrepareCommitRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PrepareCommitRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PrepareCommitRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PrepareCommitRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PrepareCommitRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PrepareCommitRequestValidationError) ErrorName() string {
+	return "PrepareCommitRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PrepareCommitRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPrepareCommitRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PrepareCommitRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PrepareCommitRequestValidationError{}
+
+// Validate checks the field values on PrepareCommitResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PrepareCommitResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PrepareCommitResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PrepareCommitResponseMultiError, or nil if none found.
+func (m *PrepareCommitResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PrepareCommitResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Ok
+
+	if len(errors) > 0 {
+		return PrepareCommitResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// PrepareCommitResponseMultiError is an error wrapping multiple validation
+// errors returned by PrepareCommitResponse.ValidateAll() if the designated
+// constraints aren't met.
+type PrepareCommitResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PrepareCommitResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PrepareCommitResponseMultiError) AllErrors() []error { return m }
+
+// PrepareCommitResponseValidationError is the validation error returned by
+// PrepareCommitResponse.Validate if the designated constraints aren't met.
+type PrepareCommitResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PrepareCommitResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PrepareCommitResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PrepareCommitResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PrepareCommitResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PrepareCommitResponseValidationError) ErrorName() string {
+	return "PrepareCommitResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PrepareCommitResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPrepareCommitResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PrepareCommitResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PrepareCommitResponseValidationError{}

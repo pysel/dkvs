@@ -26,6 +26,8 @@ type PartitionServiceClient interface {
 	Set(ctx context.Context, in *prototypes.SetRequest, opts ...grpc.CallOption) (*prototypes.SetResponse, error)
 	Get(ctx context.Context, in *prototypes.GetRequest, opts ...grpc.CallOption) (*prototypes.GetResponse, error)
 	Delete(ctx context.Context, in *prototypes.DeleteRequest, opts ...grpc.CallOption) (*prototypes.DeleteResponse, error)
+	// Two-phase commit
+	PrepareCommit(ctx context.Context, in *PrepareCommitRequest, opts ...grpc.CallOption) (*PrepareCommitResponse, error)
 	// SetHashrange sets this node's hashrange to the given range.
 	SetHashrange(ctx context.Context, in *prototypes.SetHashrangeRequest, opts ...grpc.CallOption) (*prototypes.SetHashrangeResponse, error)
 }
@@ -65,6 +67,15 @@ func (c *partitionServiceClient) Delete(ctx context.Context, in *prototypes.Dele
 	return out, nil
 }
 
+func (c *partitionServiceClient) PrepareCommit(ctx context.Context, in *PrepareCommitRequest, opts ...grpc.CallOption) (*PrepareCommitResponse, error) {
+	out := new(PrepareCommitResponse)
+	err := c.cc.Invoke(ctx, "/dkvs.partition.PartitionService/PrepareCommit", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *partitionServiceClient) SetHashrange(ctx context.Context, in *prototypes.SetHashrangeRequest, opts ...grpc.CallOption) (*prototypes.SetHashrangeResponse, error) {
 	out := new(prototypes.SetHashrangeResponse)
 	err := c.cc.Invoke(ctx, "/dkvs.partition.PartitionService/SetHashrange", in, out, opts...)
@@ -81,6 +92,8 @@ type PartitionServiceServer interface {
 	Set(context.Context, *prototypes.SetRequest) (*prototypes.SetResponse, error)
 	Get(context.Context, *prototypes.GetRequest) (*prototypes.GetResponse, error)
 	Delete(context.Context, *prototypes.DeleteRequest) (*prototypes.DeleteResponse, error)
+	// Two-phase commit
+	PrepareCommit(context.Context, *PrepareCommitRequest) (*PrepareCommitResponse, error)
 	// SetHashrange sets this node's hashrange to the given range.
 	SetHashrange(context.Context, *prototypes.SetHashrangeRequest) (*prototypes.SetHashrangeResponse, error)
 }
@@ -97,6 +110,9 @@ func (UnimplementedPartitionServiceServer) Get(context.Context, *prototypes.GetR
 }
 func (UnimplementedPartitionServiceServer) Delete(context.Context, *prototypes.DeleteRequest) (*prototypes.DeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedPartitionServiceServer) PrepareCommit(context.Context, *PrepareCommitRequest) (*PrepareCommitResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PrepareCommit not implemented")
 }
 func (UnimplementedPartitionServiceServer) SetHashrange(context.Context, *prototypes.SetHashrangeRequest) (*prototypes.SetHashrangeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetHashrange not implemented")
@@ -167,6 +183,24 @@ func _PartitionService_Delete_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PartitionService_PrepareCommit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrepareCommitRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PartitionServiceServer).PrepareCommit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dkvs.partition.PartitionService/PrepareCommit",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PartitionServiceServer).PrepareCommit(ctx, req.(*PrepareCommitRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PartitionService_SetHashrange_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(prototypes.SetHashrangeRequest)
 	if err := dec(in); err != nil {
@@ -203,6 +237,10 @@ var PartitionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Delete",
 			Handler:    _PartitionService_Delete_Handler,
+		},
+		{
+			MethodName: "PrepareCommit",
+			Handler:    _PartitionService_PrepareCommit_Handler,
 		},
 		{
 			MethodName: "SetHashrange",

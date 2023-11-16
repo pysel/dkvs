@@ -10,6 +10,20 @@ service PartitionService {
     rpc Get(dkvs.message.GetRequest) returns (dkvs.message.GetResponse);
     rpc Delete(dkvs.message.DeleteRequest) returns (dkvs.message.DeleteResponse);
 
+    // Two-phase commit 
+    rpc PrepareCommit(PrepareCommitRequest) returns (PrepareCommitResponse);
+
     // SetHashrange sets this node's hashrange to the given range.
     rpc SetHashrange(dkvs.message.SetHashrangeRequest) returns (dkvs.message.SetHashrangeResponse);
+}
+
+message PrepareCommitRequest {
+    oneof message {
+        dkvs.message.SetRequest set_request = 1;
+        dkvs.message.DeleteRequest delete_request = 2;
+    }
+}
+
+message PrepareCommitResponse {
+    bool ok = 1;
 }
