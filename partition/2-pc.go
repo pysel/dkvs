@@ -17,5 +17,5 @@ func (ls *ListenServer) PrepareCommit(ctx context.Context, req *pbpartition.Prep
 
 	// lock a db until locked message is committed or aborted
 	ls.isLocked = true
-	return &pbpartition.PrepareCommitResponse{}, nil
+	return &pbpartition.PrepareCommitResponse{Ok: true}, nil
 }
