@@ -8,4 +8,8 @@ var (
 	ErrDigestNotCovered         = errors.New("digest is not covered by any range")
 	ErrRangeNotYetCovered       = errors.New("range is not yet covered by any partition")
 	ErrAllReplicasFailed        = errors.New("all replicas failed to process request")
+
+	// 2PC
+	ErrPrepareCommitAborted = errors.New("prepare commit aborted")
+	ErrCommitAborted        = errors.New("commit aborted")
 )

@@ -82,3 +82,16 @@ func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (
 
 	return response, nil
 }
+
+func (bs *BalancerServer) Set(ctx context.Context, req *prototypes.SetRequest) (*prototypes.SetResponse, error) {
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
+	err := bs.SetAtomic(ctx, req.Key, req.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	return &prototypes.SetResponse{}, nil
+}

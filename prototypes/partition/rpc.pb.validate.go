@@ -58,7 +58,7 @@ func (m *PrepareCommitRequest) validate(all bool) error {
 	var errors []error
 
 	switch v := m.Message.(type) {
-	case *PrepareCommitRequest_SetRequest:
+	case *PrepareCommitRequest_Set:
 		if v == nil {
 			err := PrepareCommitRequestValidationError{
 				field:  "Message",
@@ -71,11 +71,11 @@ func (m *PrepareCommitRequest) validate(all bool) error {
 		}
 
 		if all {
-			switch v := interface{}(m.GetSetRequest()).(type) {
+			switch v := interface{}(m.GetSet()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, PrepareCommitRequestValidationError{
-						field:  "SetRequest",
+						field:  "Set",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -83,23 +83,23 @@ func (m *PrepareCommitRequest) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, PrepareCommitRequestValidationError{
-						field:  "SetRequest",
+						field:  "Set",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
 				}
 			}
-		} else if v, ok := interface{}(m.GetSetRequest()).(interface{ Validate() error }); ok {
+		} else if v, ok := interface{}(m.GetSet()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return PrepareCommitRequestValidationError{
-					field:  "SetRequest",
+					field:  "Set",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
 			}
 		}
 
-	case *PrepareCommitRequest_DeleteRequest:
+	case *PrepareCommitRequest_Delete:
 		if v == nil {
 			err := PrepareCommitRequestValidationError{
 				field:  "Message",
@@ -112,11 +112,11 @@ func (m *PrepareCommitRequest) validate(all bool) error {
 		}
 
 		if all {
-			switch v := interface{}(m.GetDeleteRequest()).(type) {
+			switch v := interface{}(m.GetDelete()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, PrepareCommitRequestValidationError{
-						field:  "DeleteRequest",
+						field:  "Delete",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -124,16 +124,16 @@ func (m *PrepareCommitRequest) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, PrepareCommitRequestValidationError{
-						field:  "DeleteRequest",
+						field:  "Delete",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
 				}
 			}
-		} else if v, ok := interface{}(m.GetDeleteRequest()).(interface{ Validate() error }); ok {
+		} else if v, ok := interface{}(m.GetDelete()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return PrepareCommitRequestValidationError{
-					field:  "DeleteRequest",
+					field:  "Delete",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -327,3 +327,407 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = PrepareCommitResponseValidationError{}
+
+// Validate checks the field values on AbortCommitRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *AbortCommitRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AbortCommitRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AbortCommitRequestMultiError, or nil if none found.
+func (m *AbortCommitRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AbortCommitRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return AbortCommitRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// AbortCommitRequestMultiError is an error wrapping multiple validation errors
+// returned by AbortCommitRequest.ValidateAll() if the designated constraints
+// aren't met.
+type AbortCommitRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AbortCommitRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AbortCommitRequestMultiError) AllErrors() []error { return m }
+
+// AbortCommitRequestValidationError is the validation error returned by
+// AbortCommitRequest.Validate if the designated constraints aren't met.
+type AbortCommitRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AbortCommitRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AbortCommitRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AbortCommitRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AbortCommitRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AbortCommitRequestValidationError) ErrorName() string {
+	return "AbortCommitRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AbortCommitRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAbortCommitRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AbortCommitRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AbortCommitRequestValidationError{}
+
+// Validate checks the field values on AbortCommitResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *AbortCommitResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AbortCommitResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AbortCommitResponseMultiError, or nil if none found.
+func (m *AbortCommitResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AbortCommitResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return AbortCommitResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// AbortCommitResponseMultiError is an error wrapping multiple validation
+// errors returned by AbortCommitResponse.ValidateAll() if the designated
+// constraints aren't met.
+type AbortCommitResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AbortCommitResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AbortCommitResponseMultiError) AllErrors() []error { return m }
+
+// AbortCommitResponseValidationError is the validation error returned by
+// AbortCommitResponse.Validate if the designated constraints aren't met.
+type AbortCommitResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AbortCommitResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AbortCommitResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AbortCommitResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AbortCommitResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AbortCommitResponseValidationError) ErrorName() string {
+	return "AbortCommitResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AbortCommitResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAbortCommitResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AbortCommitResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AbortCommitResponseValidationError{}
+
+// Validate checks the field values on CommitRequest with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *CommitRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CommitRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in CommitRequestMultiError, or
+// nil if none found.
+func (m *CommitRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CommitRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return CommitRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CommitRequestMultiError is an error wrapping multiple validation errors
+// returned by CommitRequest.ValidateAll() if the designated constraints
+// aren't met.
+type CommitRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CommitRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CommitRequestMultiError) AllErrors() []error { return m }
+
+// CommitRequestValidationError is the validation error returned by
+// CommitRequest.Validate if the designated constraints aren't met.
+type CommitRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CommitRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CommitRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CommitRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CommitRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CommitRequestValidationError) ErrorName() string { return "CommitRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e CommitRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCommitRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CommitRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CommitRequestValidationError{}
+
+// Validate checks the field values on CommitResponse with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *CommitResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CommitResponse with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in CommitResponseMultiError,
+// or nil if none found.
+func (m *CommitResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CommitResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return CommitResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// CommitResponseMultiError is an error wrapping multiple validation errors
+// returned by CommitResponse.ValidateAll() if the designated constraints
+// aren't met.
+type CommitResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CommitResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CommitResponseMultiError) AllErrors() []error { return m }
+
+// CommitResponseValidationError is the validation error returned by
+// CommitResponse.Validate if the designated constraints aren't met.
+type CommitResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CommitResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CommitResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CommitResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CommitResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CommitResponseValidationError) ErrorName() string { return "CommitResponseValidationError" }
+
+// Error satisfies the builtin error interface
+func (e CommitResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCommitResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CommitResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CommitResponseValidationError{}

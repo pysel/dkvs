@@ -28,6 +28,8 @@ type PartitionServiceClient interface {
 	Delete(ctx context.Context, in *prototypes.DeleteRequest, opts ...grpc.CallOption) (*prototypes.DeleteResponse, error)
 	// Two-phase commit
 	PrepareCommit(ctx context.Context, in *PrepareCommitRequest, opts ...grpc.CallOption) (*PrepareCommitResponse, error)
+	AbortCommit(ctx context.Context, in *AbortCommitRequest, opts ...grpc.CallOption) (*AbortCommitResponse, error)
+	Commit(ctx context.Context, in *CommitRequest, opts ...grpc.CallOption) (*CommitResponse, error)
 	// SetHashrange sets this node's hashrange to the given range.
 	SetHashrange(ctx context.Context, in *prototypes.SetHashrangeRequest, opts ...grpc.CallOption) (*prototypes.SetHashrangeResponse, error)
 }
@@ -76,6 +78,24 @@ func (c *partitionServiceClient) PrepareCommit(ctx context.Context, in *PrepareC
 	return out, nil
 }
 
+func (c *partitionServiceClient) AbortCommit(ctx context.Context, in *AbortCommitRequest, opts ...grpc.CallOption) (*AbortCommitResponse, error) {
+	out := new(AbortCommitResponse)
+	err := c.cc.Invoke(ctx, "/dkvs.partition.PartitionService/AbortCommit", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *partitionServiceClient) Commit(ctx context.Context, in *CommitRequest, opts ...grpc.CallOption) (*CommitResponse, error) {
+	out := new(CommitResponse)
+	err := c.cc.Invoke(ctx, "/dkvs.partition.PartitionService/Commit", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *partitionServiceClient) SetHashrange(ctx context.Context, in *prototypes.SetHashrangeRequest, opts ...grpc.CallOption) (*prototypes.SetHashrangeResponse, error) {
 	out := new(prototypes.SetHashrangeResponse)
 	err := c.cc.Invoke(ctx, "/dkvs.partition.PartitionService/SetHashrange", in, out, opts...)
@@ -94,6 +114,8 @@ type PartitionServiceServer interface {
 	Delete(context.Context, *prototypes.DeleteRequest) (*prototypes.DeleteResponse, error)
 	// Two-phase commit
 	PrepareCommit(context.Context, *PrepareCommitRequest) (*PrepareCommitResponse, error)
+	AbortCommit(context.Context, *AbortCommitRequest) (*AbortCommitResponse, error)
+	Commit(context.Context, *CommitRequest) (*CommitResponse, error)
 	// SetHashrange sets this node's hashrange to the given range.
 	SetHashrange(context.Context, *prototypes.SetHashrangeRequest) (*prototypes.SetHashrangeResponse, error)
 }
@@ -113,6 +135,12 @@ func (UnimplementedPartitionServiceServer) Delete(context.Context, *prototypes.D
 }
 func (UnimplementedPartitionServiceServer) PrepareCommit(context.Context, *PrepareCommitRequest) (*PrepareCommitResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PrepareCommit not implemented")
+}
+func (UnimplementedPartitionServiceServer) AbortCommit(context.Context, *AbortCommitRequest) (*AbortCommitResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AbortCommit not implemented")
+}
+func (UnimplementedPartitionServiceServer) Commit(context.Context, *CommitRequest) (*CommitResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Commit not implemented")
 }
 func (UnimplementedPartitionServiceServer) SetHashrange(context.Context, *prototypes.SetHashrangeRequest) (*prototypes.SetHashrangeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetHashrange not implemented")
@@ -201,6 +229,42 @@ func _PartitionService_PrepareCommit_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PartitionService_AbortCommit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AbortCommitRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PartitionServiceServer).AbortCommit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dkvs.partition.PartitionService/AbortCommit",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PartitionServiceServer).AbortCommit(ctx, req.(*AbortCommitRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PartitionService_Commit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CommitRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PartitionServiceServer).Commit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dkvs.partition.PartitionService/Commit",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PartitionServiceServer).Commit(ctx, req.(*CommitRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PartitionService_SetHashrange_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(prototypes.SetHashrangeRequest)
 	if err := dec(in); err != nil {
@@ -241,6 +305,14 @@ var PartitionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PrepareCommit",
 			Handler:    _PartitionService_PrepareCommit_Handler,
+		},
+		{
+			MethodName: "AbortCommit",
+			Handler:    _PartitionService_AbortCommit_Handler,
+		},
+		{
+			MethodName: "Commit",
+			Handler:    _PartitionService_Commit_Handler,
 		},
 		{
 			MethodName: "SetHashrange",
