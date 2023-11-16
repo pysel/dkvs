@@ -42,6 +42,11 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (*p
 		return nil, err
 	}
 
+	if ls.isLocked {
+		ls.backlog = append(ls.backlog, req)
+		return &prototypes.SetResponse{}, nil
+	}
+
 	shaKey := shaKey(req.Key)
 
 	storedValue := toStoredValue(req.Lamport, req.Value)
@@ -83,6 +88,12 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 	if req.Key == "" {
 		return nil, types.ErrNilKey
 	}
+
+	if ls.isLocked {
+		ls.backlog = append(ls.backlog, req)
+		return &prototypes.DeleteResponse{}, nil
+	}
+
 	shaKey := shaKey(req.Key)
 
 	err := ls.Partition.Delete(shaKey[:])

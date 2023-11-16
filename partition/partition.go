@@ -2,12 +2,18 @@ package partition
 
 import (
 	db "github.com/pysel/dkvs/leveldb"
+	"google.golang.org/protobuf/proto"
 )
 
 // Partition is a node that is responsible for some range of keys.
 type Partition struct {
 	hashrange *Range
 	db.DB
+
+	// isLocked indicates whether the partition is locked.
+	isLocked bool
+	// set of messages that could not have been processed yet for some reason.
+	backlog []proto.Message
 }
 
 // NewPartition creates a new partition instance.
