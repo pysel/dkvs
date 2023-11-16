@@ -81,12 +81,8 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (*p
 
 // DeleteMessage deletes a value for a key.
 func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteRequest) (*prototypes.DeleteResponse, error) {
-	if req == nil {
-		return nil, types.ErrNilRequest
-	}
-
-	if req.Key == "" {
-		return nil, types.ErrNilKey
+	if err := req.Validate(); err != nil {
+		return nil, err
 	}
 
 	if ls.isLocked {
