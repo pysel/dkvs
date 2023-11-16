@@ -14,6 +14,9 @@ type Partition struct {
 	isLocked bool
 	// set of messages that could not have been processed yet for some reason.
 	backlog []proto.Message
+
+	// message that this partition is currently locked in in two-phase commit prepare step.
+	lockedMessage proto.Message
 }
 
 // NewPartition creates a new partition instance.
