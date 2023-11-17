@@ -36,8 +36,9 @@ func (b *Balancer) prepareCommit(partitionClients []pbpartition.PartitionService
 	channel := make(chan error, len(partitionClients))
 	for _, client := range partitionClients {
 		wg.Add(1)
+		clientCopy := client
 		go func() {
-			resp, err := client.PrepareCommit(context.Background(), &pbpartition.PrepareCommitRequest{})
+			resp, err := clientCopy.PrepareCommit(context.Background(), &pbpartition.PrepareCommitRequest{})
 			if err != nil {
 				channel <- err
 			}
@@ -69,8 +70,9 @@ func (b *Balancer) commit(ctx context.Context, partitionClients []pbpartition.Pa
 	channel := make(chan error, len(partitionClients))
 	for _, client := range partitionClients {
 		wg.Add(1)
+		clientCopy := client
 		go func() {
-			_, err := client.Commit(ctx, &pbpartition.CommitRequest{})
+			_, err := clientCopy.Commit(ctx, &pbpartition.CommitRequest{})
 			if err != nil {
 				channel <- err
 			} else {
@@ -94,8 +96,9 @@ func (b *Balancer) abortCommit(ctx context.Context, partitionClients []pbpartiti
 	channel := make(chan error, len(partitionClients))
 	for _, client := range partitionClients {
 		wg.Add(1)
+		clientCopy := client
 		go func() {
-			_, err := client.AbortCommit(ctx, &pbpartition.AbortCommitRequest{})
+			_, err := clientCopy.AbortCommit(ctx, &pbpartition.AbortCommitRequest{})
 			if err != nil {
 				// TODO: some error handling here
 				fmt.Println(err, "TODO: Unimplemented branch")
