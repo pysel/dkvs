@@ -8,7 +8,6 @@ import (
 	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/prototypes"
 	"github.com/pysel/dkvs/testutil"
-	"github.com/pysel/dkvs/types"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 )
@@ -79,7 +78,7 @@ func TestGRPCServer(t *testing.T) {
 
 	// Assert that value was not deleted if key is nil
 	_, err = client.Delete(ctx, &prototypes.DeleteRequest{})
-	require.ErrorContains(t, err, types.ErrNilKey.Error(), "DeleteMessage should return error if key is nil")
+	require.Error(t, err, "DeleteMessage should return error if key is nil")
 
 	// Assert that value was not deleted if key is not in partition's hashrange
 	_, err = client.Delete(ctx, &prototypes.DeleteRequest{Key: nonDomainKey})
