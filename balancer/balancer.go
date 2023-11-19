@@ -39,10 +39,6 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 
 // AddPartition adds a partition to the balancer.
 func (b *Balancer) RegisterPartition(addr string, range_ *partition.Range) error {
-	if b.activePartitions == b.goalReplicaRanges {
-		return ErrPartitionOverflow
-	}
-
 	client := partition.NewPartitionClient(addr)
 	b.clients[range_] = append(b.clients[range_], client)
 	b.activePartitions++
