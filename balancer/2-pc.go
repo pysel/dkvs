@@ -6,15 +6,17 @@ import (
 	"sync"
 
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
+	"github.com/pysel/dkvs/types"
 )
 
 func (b *Balancer) SetAtomic(ctx context.Context, key string, value []byte) error {
-	range_, err := b.getRangeFromDigest([]byte(key))
+	shaKey := types.ShaKey(key)
+	range_, err := b.getRangeFromDigest(shaKey[:])
 	if err != nil {
 		return err
 	}
 
-	clients := b.clients[*range_]
+	clients := b.clients[range_]
 	if len(clients) == 0 {
 		return ErrRangeNotYetCovered
 	}
@@ -38,6 +40,7 @@ func (b *Balancer) prepareCommit(partitionClients []pbpartition.PartitionService
 		wg.Add(1)
 		clientCopy := client
 		go func() {
+			defer wg.Done()
 			resp, err := clientCopy.PrepareCommit(context.Background(), &pbpartition.PrepareCommitRequest{})
 			if err != nil {
 				channel <- err
@@ -72,6 +75,7 @@ func (b *Balancer) commit(ctx context.Context, partitionClients []pbpartition.Pa
 		wg.Add(1)
 		clientCopy := client
 		go func() {
+			defer wg.Done()
 			_, err := clientCopy.Commit(ctx, &pbpartition.CommitRequest{})
 			if err != nil {
 				channel <- err
@@ -98,10 +102,11 @@ func (b *Balancer) abortCommit(ctx context.Context, partitionClients []pbpartiti
 		wg.Add(1)
 		clientCopy := client
 		go func() {
+			defer wg.Done()
 			_, err := clientCopy.AbortCommit(ctx, &pbpartition.AbortCommitRequest{})
 			if err != nil {
 				// TODO: some error handling here
-				fmt.Println(err, "TODO: Unimplemented branch")
+				fmt.Println(err, "TODO: Unimplemented branch 1")
 			}
 
 			channel <- nil
@@ -112,7 +117,7 @@ func (b *Balancer) abortCommit(ctx context.Context, partitionClients []pbpartiti
 
 	for i := 0; i < len(partitionClients); i++ {
 		if <-channel != nil {
-			fmt.Println("TODO: Unimplemented branch")
+			fmt.Println("TODO: Unimplemented branch 2")
 			return
 		}
 	}

@@ -24,20 +24,20 @@ func TestRegisterGetPartition(t *testing.T) {
 	addr := SetupPartition(testutil.TestDBPath)
 	b10 := balancer.NewBalancerTest(10)
 
-	err := b10.RegisterPartition(addr.String(), *testutil.DefaultHashrange)
+	err := b10.RegisterPartition(addr.String(), testutil.DefaultHashrange)
 	require.NoError(t, err)
 
 	domainKey := "Partition key"
 	nonDomainKey := "Not partition key."
 
-	keyPartitions := b10.GetPartitions([]byte(domainKey))
+	keyPartitions := b10.GetPartitionsByKey([]byte(domainKey))
 	require.Equal(t, 1, len(keyPartitions))
 
-	keyPartitions = b10.GetPartitions([]byte(nonDomainKey))
+	keyPartitions = b10.GetPartitionsByKey([]byte(nonDomainKey))
 	require.Equal(t, 0, len(keyPartitions))
 
 	b0 := balancer.NewBalancerTest(0)
-	err = b0.RegisterPartition(addr.String(), *testutil.DefaultHashrange)
+	err = b0.RegisterPartition(addr.String(), testutil.DefaultHashrange)
 	require.Error(t, err)
 }
 

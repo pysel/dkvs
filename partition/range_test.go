@@ -1,12 +1,12 @@
 package partition_test
 
 import (
-	"crypto/sha256"
 	"math/big"
 	"testing"
 
 	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/testutil"
+	"github.com/pysel/dkvs/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -77,8 +77,8 @@ func TestNewRange(t *testing.T) {
 }
 
 func TestContains(t *testing.T) {
-	domainKey := sha256.Sum256([]byte("Partition key"))
-	nonDomainKey := sha256.Sum256([]byte("Not partition key."))
+	domainKey := types.ShaKey("Partition key")
+	nonDomainKey := types.ShaKey("Not partition key.")
 
 	tests := []struct {
 		name     string
@@ -109,12 +109,6 @@ func TestContains(t *testing.T) {
 			r:        testutil.DefaultHashrange,
 			hash:     testutil.DefaultHashrange.Max.Bytes(),
 			expected: true,
-		},
-		{
-			name:     "key is min - 1",
-			r:        testutil.DefaultHashrange,
-			hash:     new(big.Int).Sub(testutil.DefaultHashrange.Min, big.NewInt(1)).Bytes(),
-			expected: false,
 		},
 		{
 			name:     "key is max + 1",

@@ -2,7 +2,6 @@ package balancer
 
 import (
 	"context"
-	"crypto/sha256"
 	"fmt"
 
 	"github.com/pysel/dkvs/prototypes"
@@ -19,7 +18,7 @@ func (bs *BalancerServer) RegisterPartition(ctx context.Context, req *pbbalancer
 		return nil, err
 	}
 
-	err = bs.Balancer.RegisterPartition(req.Address, *range_)
+	err = bs.Balancer.RegisterPartition(req.Address, range_)
 	if err != nil {
 		return nil, err
 	}
@@ -41,13 +40,13 @@ func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (
 		return nil, types.ErrNilKey
 	}
 
-	shaKey := sha256.Sum256([]byte(key))
+	shaKey := types.ShaKey(key)
 	range_, err := bs.getRangeFromDigest(shaKey[:])
 	if err != nil {
 		return nil, err
 	}
 
-	responsibleClients := bs.clients[*range_]
+	responsibleClients := bs.clients[range_]
 	if len(responsibleClients) == 0 {
 		return nil, ErrRangeNotYetCovered
 	}

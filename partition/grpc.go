@@ -2,7 +2,6 @@ package partition
 
 import (
 	"context"
-	"crypto/sha256"
 	"fmt"
 	"math/big"
 	"net"
@@ -36,7 +35,7 @@ func RunPartitionServer(port int64, dbPath string) {
 	grpcServer.Serve(lis)
 }
 
-// SetMessage sets a value for a key.
+// Set sets a value for a key.
 func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (*prototypes.SetResponse, error) {
 	if err := req.Validate(); err != nil {
 		return nil, err
@@ -47,7 +46,7 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (*p
 		return &prototypes.SetResponse{}, nil
 	}
 
-	shaKey := shaKey(req.Key)
+	shaKey := types.ShaKey(req.Key)
 
 	storedValue := toStoredValue(req.Lamport, req.Value)
 	marshalled, err := proto.Marshal(storedValue)
@@ -63,13 +62,13 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (*p
 	return &prototypes.SetResponse{}, nil
 }
 
-// GetMessage gets a value for a key.
+// Get gets a value for a key.
 func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (*prototypes.GetResponse, error) {
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
 
-	shaKey := shaKey(req.Key)
+	shaKey := types.ShaKey(req.Key)
 
 	value, err := ls.Partition.Get(shaKey[:])
 	if err != nil {
@@ -79,7 +78,7 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (*p
 	return &prototypes.GetResponse{Value: value}, nil
 }
 
-// DeleteMessage deletes a value for a key.
+// Delete deletes a value for a key.
 func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteRequest) (*prototypes.DeleteResponse, error) {
 	if err := req.Validate(); err != nil {
 		return nil, err
@@ -90,7 +89,7 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 		return &prototypes.DeleteResponse{}, nil
 	}
 
-	shaKey := shaKey(req.Key)
+	shaKey := types.ShaKey(req.Key)
 
 	err := ls.Partition.Delete(shaKey[:])
 	if err != nil {
@@ -108,9 +107,4 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 
 	ls.hashrange = NewRange(new(big.Int).SetBytes(req.Min), new(big.Int).SetBytes(req.Max))
 	return &prototypes.SetHashrangeResponse{}, nil
-}
-
-func shaKey(key string) []byte {
-	checksum := sha256.Sum256([]byte(key))
-	return checksum[:]
 }

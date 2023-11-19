@@ -12,7 +12,7 @@ import (
 type Balancer struct {
 	// A mapping from ranges to partitions.
 	// Multiple partitions can be mapped to the same range.
-	clients map[partition.Range][]pbpartition.PartitionServiceClient
+	clients map[*partition.Range][]pbpartition.PartitionServiceClient
 
 	// goalReplicaRanges is the number of different sets of replicas that should be created
 	goalReplicaRanges int
@@ -26,7 +26,7 @@ type Balancer struct {
 // NewBalancer returns a new balancer instance.
 func NewBalancer(goalReplicaRanges int) *Balancer {
 	b := &Balancer{
-		clients:           make(map[partition.Range][]pbpartition.PartitionServiceClient),
+		clients:           make(map[*partition.Range][]pbpartition.PartitionServiceClient),
 		goalReplicaRanges: goalReplicaRanges,
 		activePartitions:  0,
 		coverage:          GetCoverage(),
@@ -38,7 +38,7 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 }
 
 // AddPartition adds a partition to the balancer.
-func (b *Balancer) RegisterPartition(addr string, range_ partition.Range) error {
+func (b *Balancer) RegisterPartition(addr string, range_ *partition.Range) error {
 	if b.activePartitions == b.goalReplicaRanges {
 		return ErrPartitionOverflow
 	}
@@ -51,7 +51,7 @@ func (b *Balancer) RegisterPartition(addr string, range_ partition.Range) error 
 }
 
 // GetPartitions returns a list of partitions that contain the given key.
-func (b *Balancer) GetPartitions(key []byte) []pbpartition.PartitionServiceClient {
+func (b *Balancer) GetPartitionsByKey(key []byte) []pbpartition.PartitionServiceClient {
 	shaKey := sha256.Sum256(key)
 	for range_, clients := range b.clients {
 		if range_.Contains(shaKey[:]) {
@@ -69,6 +69,7 @@ func (b *Balancer) setupCoverage() {
 		b.coverage.addTick(newTick(partition.MaxInt), false, false)
 		return
 	}
+
 	// Create a tick for each partition
 	for i := 0; i <= b.goalReplicaRanges; i++ {
 		numerator := new(big.Int).Mul(big.NewInt(int64(i)), partition.MaxInt)
@@ -96,11 +97,9 @@ func (b *Balancer) getNextPartitionRange() (*partition.Range, error) {
 
 // getRangeFromDigest returns a range to which the given digest belongs
 func (b *Balancer) getRangeFromDigest(digest []byte) (*partition.Range, error) {
-	for tick := b.coverage.tick; tick != nil; tick = tick.next() {
-		if tick.value.Cmp(new(big.Int).SetBytes(digest)) == -1 && tick.next().value.Cmp(new(big.Int).SetBytes(digest)) == 1 {
-			min := tick.value
-			max := tick.next().value
-			return partition.NewRange(min, max), nil
+	for range_ := range b.clients {
+		if range_.Contains(digest) {
+			return range_, nil
 		}
 	}
 
