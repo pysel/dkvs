@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func SetupPartition() net.Addr {
-	lis, s := testutil.PartitionServer()
+func SetupPartition(dbPath string) net.Addr {
+	lis, s := testutil.PartitionServer(dbPath)
 	testutil.RunPartitionServer(lis, s)
 	return lis.Addr()
 }
@@ -21,7 +21,7 @@ func SetupPartition() net.Addr {
 func TestRegisterGetPartition(t *testing.T) {
 	defer os.RemoveAll(testutil.TestDBPath)
 
-	addr := SetupPartition()
+	addr := SetupPartition(testutil.TestDBPath)
 	b10 := balancer.NewBalancerTest(10)
 
 	err := b10.RegisterPartition(addr.String(), *testutil.DefaultHashrange)

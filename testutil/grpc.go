@@ -46,10 +46,10 @@ func init() {
 }
 
 // PartitionServer creates a listener and a server for the partition service.
-func PartitionServer() (*bufconn.Listener, *grpc.Server) {
+func PartitionServer(dbPath string) (*bufconn.Listener, *grpc.Server) {
 	lis := bufconn.Listen(bufSize)
 	s := grpc.NewServer()
-	p := partition.NewPartition(TestDBPath)
+	p := partition.NewPartition(dbPath)
 
 	pbpartition.RegisterPartitionServiceServer(s, &partition.ListenServer{Partition: p})
 
@@ -68,7 +68,7 @@ func RunPartitionServer(lis *bufconn.Listener, s *grpc.Server) {
 // partitionClient set ups a partition server and partition client. Returns client and closer function.
 // Client is used to test the rpc calls.
 func SinglePartitionClient(ctx context.Context) (pbpartition.PartitionServiceClient, func()) {
-	lis, s := PartitionServer()
+	lis, s := PartitionServer(TestDBPath)
 	RunPartitionServer(lis, s)
 
 	conn, err := grpc.DialContext(ctx, "", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
