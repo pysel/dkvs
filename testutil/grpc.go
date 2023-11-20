@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/big"
 	"net"
+	"strconv"
 
 	"github.com/pysel/dkvs/partition"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
@@ -45,8 +46,23 @@ func init() {
 	}
 }
 
-// PartitionServer creates a listener and a server for the partition service.
-func PartitionServer(dbPath string) (*bufconn.Listener, *grpc.Server) {
+func RunPartitionServer(port int64, dbPath string) net.Addr {
+	lis, err := net.Listen("tcp", net.JoinHostPort("localhost", strconv.Itoa(int(port))))
+	if err != nil {
+		panic(err)
+	}
+
+	p := partition.NewPartition(dbPath)
+
+	grpcServer := grpc.NewServer()
+	pbpartition.RegisterPartitionServiceServer(grpcServer, &partition.ListenServer{Partition: p})
+	go grpcServer.Serve(lis)
+
+	return lis.Addr()
+}
+
+// BufferedPartitionServer creates a listener and a server for the partition service.
+func BufferedPartitionServer(dbPath string) (*bufconn.Listener, *grpc.Server) {
 	lis := bufconn.Listen(bufSize)
 	s := grpc.NewServer()
 	p := partition.NewPartition(dbPath)
@@ -56,8 +72,8 @@ func PartitionServer(dbPath string) (*bufconn.Listener, *grpc.Server) {
 	return lis, s
 }
 
-// RunPartitionServer runs a goroutine that constantly serves requests on the given listener.
-func RunPartitionServer(lis *bufconn.Listener, s *grpc.Server) {
+// RunBufferedPartitionServer runs a goroutine that constantly serves requests on the given listener.
+func RunBufferedPartitionServer(lis *bufconn.Listener, s *grpc.Server) {
 	go func() {
 		if err := s.Serve(lis); err != nil {
 			log.Fatalf("Server exited with error: %v", err)
@@ -68,8 +84,8 @@ func RunPartitionServer(lis *bufconn.Listener, s *grpc.Server) {
 // partitionClient set ups a partition server and partition client. Returns client and closer function.
 // Client is used to test the rpc calls.
 func SinglePartitionClient(ctx context.Context) (pbpartition.PartitionServiceClient, func()) {
-	lis, s := PartitionServer(TestDBPath)
-	RunPartitionServer(lis, s)
+	lis, s := BufferedPartitionServer(TestDBPath)
+	RunBufferedPartitionServer(lis, s)
 
 	conn, err := grpc.DialContext(ctx, "", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return lis.Dial()
