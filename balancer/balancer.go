@@ -3,11 +3,14 @@ package balancer
 import (
 	"context"
 	"crypto/sha256"
+	"fmt"
 	"math/big"
 
 	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/prototypes"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
+	"github.com/pysel/dkvs/types"
+	"google.golang.org/protobuf/proto"
 )
 
 // Balancer is a node that is responsible for registering partitions and relaying requests to appropriate ones.
@@ -68,6 +71,49 @@ func (b *Balancer) GetPartitionsByKey(key []byte) []pbpartition.PartitionService
 	}
 
 	return nil
+}
+
+func (b *Balancer) Get(ctx context.Context, key string) (*prototypes.GetResponse, error) {
+	shaKey := types.ShaKey(key)
+	range_, err := b.getRangeFromDigest(shaKey[:])
+	if err != nil {
+		return nil, err
+	}
+
+	responsibleClients := b.clients[range_]
+	if len(responsibleClients) == 0 {
+		return nil, ErrRangeNotYetCovered
+	}
+
+	var response *prototypes.GetResponse
+	maxLamport := uint64(0)
+	for _, client := range responsibleClients {
+		resp, err := client.Get(ctx, &prototypes.GetRequest{Key: key})
+		if err != nil {
+			continue
+		}
+
+		// since returned value will be a tuple of lamport timestamp and value, check which returned value
+		// has the highest lamport timestamp
+		var storedValue pbpartition.StoredValue
+		err = proto.Unmarshal(resp.Value, &storedValue)
+		if err != nil {
+			// TODO: partition is in incorrect state, should potentially remove it from active set
+			fmt.Println("Error unmarshalling value from partition", err)
+			continue
+		}
+
+		if storedValue.Lamport >= maxLamport {
+			maxLamport = storedValue.Lamport
+			response = resp
+		}
+	}
+
+	if response == nil {
+		return nil, ErrAllReplicasFailed
+	}
+
+	return response, nil
 }
 
 // setupCoverage creates necessary ticks for coverage based on goalReplicaRanges

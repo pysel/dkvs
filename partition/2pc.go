@@ -32,15 +32,20 @@ func (ls *ListenServer) Commit(ctx context.Context, req *pbpartition.CommitReque
 		return nil, ErrNoLockedMessage
 	}
 
+	var err error
+	ls.isLocked = false // unlock db to allow sets and deletes
 	if deleteMsg, ok := ls.lockedMessage.(*prototypes.DeleteRequest); ok {
-		ls.Delete(ctx, deleteMsg)
+		_, err = ls.Delete(ctx, deleteMsg)
 	} else if setMsg, ok := ls.lockedMessage.(*prototypes.SetRequest); ok {
-		ls.Set(ctx, setMsg)
+		_, err = ls.Set(ctx, setMsg)
 	} else {
 		return nil, ErrUnsupported2PCMsg
 	}
 
-	ls.isLocked = false
+	if err != nil {
+		return nil, err
+	}
+
 	ls.lockedMessage = nil
 	return &pbpartition.CommitResponse{}, nil
 }

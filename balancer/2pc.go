@@ -5,23 +5,17 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/pysel/dkvs/partition"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
-	"github.com/pysel/dkvs/types"
 )
 
-func (b *Balancer) SetAtomic(ctx context.Context, key string, value []byte) error {
-	shaKey := types.ShaKey(key)
-	range_, err := b.getRangeFromDigest(shaKey[:])
-	if err != nil {
-		return err
-	}
-
+func (b *Balancer) AtomicMessage(ctx context.Context, range_ *partition.Range, msg *pbpartition.PrepareCommitRequest) error {
 	clients := b.clients[range_]
 	if len(clients) == 0 {
 		return ErrRangeNotYetCovered
 	}
 
-	err = b.prepareCommit(clients, key, value)
+	err := b.prepareCommit(clients, msg)
 	// if >= 1 partition aborted, abort all
 	if err != nil {
 		b.abortCommit(ctx, clients)
@@ -33,7 +27,7 @@ func (b *Balancer) SetAtomic(ctx context.Context, key string, value []byte) erro
 }
 
 // prepareCommit sends a prepare commit request to all partitions that are responsible for the given key and awaits for their responses.
-func (b *Balancer) prepareCommit(partitionClients []pbpartition.PartitionServiceClient, key string, value []byte) error {
+func (b *Balancer) prepareCommit(partitionClients []pbpartition.PartitionServiceClient, msg *pbpartition.PrepareCommitRequest) error {
 	var wg sync.WaitGroup
 	channel := make(chan error, len(partitionClients))
 	for _, client := range partitionClients {
@@ -41,7 +35,7 @@ func (b *Balancer) prepareCommit(partitionClients []pbpartition.PartitionService
 		clientCopy := client
 		go func() {
 			defer wg.Done()
-			resp, err := clientCopy.PrepareCommit(context.Background(), &pbpartition.PrepareCommitRequest{})
+			resp, err := clientCopy.PrepareCommit(context.Background(), msg)
 			if err != nil {
 				channel <- err
 			}

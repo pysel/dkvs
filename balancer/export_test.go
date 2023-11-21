@@ -19,6 +19,10 @@ func (b *Balancer) GetNextPartitionRange() (*partition.Range, *tick, *tick) {
 	return b.coverage.getNextPartitionRange()
 }
 
+func (b *Balancer) GetRangeFromDigest(digest []byte) (*partition.Range, error) {
+	return b.getRangeFromDigest(digest)
+}
+
 // NewBalancerTest returns a new balancer instance with an independent coverage every time.
 func NewBalancerTest(goalReplicaRanges int) *Balancer {
 	b := &Balancer{
