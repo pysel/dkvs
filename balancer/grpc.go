@@ -25,16 +25,11 @@ func (bs *BalancerServer) RegisterPartition(ctx context.Context, req *pbbalancer
 // ----- To be relayed requests -----
 
 func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (*prototypes.GetResponse, error) {
-	if req == nil {
-		return nil, types.ErrNilRequest
+	if err := req.Validate(); err != nil {
+		return nil, err
 	}
 
 	key := req.Key
-
-	if key == "" {
-		return nil, types.ErrNilKey
-	}
-
 	shaKey := types.ShaKey(key)
 	range_, err := bs.getRangeFromDigest(shaKey[:])
 	if err != nil {
