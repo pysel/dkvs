@@ -29,8 +29,7 @@ func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (
 		return nil, err
 	}
 
-	key := req.Key
-	shaKey := types.ShaKey(key)
+	shaKey := types.ShaKey(req.Key)
 	range_, err := bs.getRangeFromDigest(shaKey[:])
 	if err != nil {
 		return nil, err
@@ -44,7 +43,7 @@ func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (
 	var response *prototypes.GetResponse
 	maxLamport := uint64(0)
 	for _, client := range responsibleClients {
-		resp, err := client.Get(ctx, &prototypes.GetRequest{Key: key})
+		resp, err := client.Get(ctx, &prototypes.GetRequest{Key: req.Key})
 		fmt.Println(resp, err)
 		if err != nil {
 			continue
