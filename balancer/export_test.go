@@ -15,12 +15,8 @@ func (b *Balancer) GetTicksAmount() int {
 	return b.coverage.size
 }
 
-func (b *Balancer) GetNextPartitionRange() (*partition.Range, error) {
-	return b.getNextPartitionRange()
-}
-
-func (b *Balancer) SetActivePartitions(amount int) {
-	b.activePartitions = amount
+func (b *Balancer) GetNextPartitionRange() (*partition.Range, *tick, *tick) {
+	return b.coverage.getNextPartitionRange()
 }
 
 // NewBalancerTest returns a new balancer instance with an independent coverage every time.

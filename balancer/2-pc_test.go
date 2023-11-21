@@ -10,7 +10,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var TestDBPath2 = "test2"
+var (
+	TestDBPath2 = "test2"
+)
 
 func TestTwoPhaseCommit(t *testing.T) {
 	defer os.RemoveAll(testutil.TestDBPath)
@@ -18,14 +20,14 @@ func TestTwoPhaseCommit(t *testing.T) {
 
 	ctx := context.Background()
 
-	partitionAddr1 := SetupPartition(testutil.TestDBPath)
-	partitionAddr2 := SetupPartition(TestDBPath2)
+	partitionAddr1 := testutil.RunPartitionServer(0, testutil.TestDBPath)
+	partitionAddr2 := testutil.RunPartitionServer(0, TestDBPath2)
 
 	balancer := balancer.NewBalancerTest(2)
-	err := balancer.RegisterPartition(partitionAddr1.String(), testutil.DefaultHashrange)
+	err := balancer.RegisterPartition(ctx, partitionAddr1.String())
 	require.NoError(t, err)
 
-	err = balancer.RegisterPartition(partitionAddr2.String(), testutil.DefaultHashrange)
+	err = balancer.RegisterPartition(ctx, partitionAddr2.String())
 	require.NoError(t, err)
 
 	domainKey := "Partition key"

@@ -211,3 +211,19 @@ func tickDeepEqual(t *testing.T, expected, actual *tick) {
 	require.Equal(t, expected.minOf, actual.minOf)
 	require.Equal(t, expected.maxOf, actual.maxOf)
 }
+
+func (c *coverage) getTickByValue(value *big.Int) *tick {
+	curTick := c.tick
+	if curTick.value.Cmp(value) == 0 {
+		return curTick
+	}
+
+	for curTick != nil && curTick.value.Cmp(value) != 1 {
+		if curTick.value.Cmp(value) == 0 {
+			return curTick
+		}
+		curTick = curTick.next()
+	}
+
+	return nil
+}

@@ -14,7 +14,7 @@ type BalancerServer struct {
 	*Balancer
 }
 
-func RunBalancerServer(port int64, partitions int) {
+func RunBalancerServer(port int64, partitions int) net.Addr {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		panic(err)
@@ -26,4 +26,6 @@ func RunBalancerServer(port int64, partitions int) {
 	reflection.Register(s)
 	pbbalancer.RegisterBalancerServiceServer(s, &BalancerServer{Balancer: balancer})
 	go s.Serve(lis)
+
+	return lis.Addr()
 }

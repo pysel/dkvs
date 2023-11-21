@@ -1,8 +1,8 @@
 package balancer_test
 
 import (
+	"context"
 	"math/big"
-	"net"
 	"os"
 	"testing"
 
@@ -12,33 +12,24 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func SetupPartition(dbPath string) net.Addr {
-	lis, s := testutil.PartitionServer(dbPath)
-	testutil.RunPartitionServer(lis, s)
-	return lis.Addr()
-}
-
 func TestRegisterGetPartition(t *testing.T) {
 	defer os.RemoveAll(testutil.TestDBPath)
+	ctx := context.Background()
 
-	addr := SetupPartition(testutil.TestDBPath)
-	b10 := balancer.NewBalancerTest(10)
+	addr := testutil.RunPartitionServer(0, testutil.TestDBPath)
+	b2 := balancer.NewBalancerTest(2)
 
-	err := b10.RegisterPartition(addr.String(), testutil.DefaultHashrange)
+	err := b2.RegisterPartition(ctx, addr.String())
 	require.NoError(t, err)
 
 	domainKey := "Partition key"
 	nonDomainKey := "Not partition key."
 
-	keyPartitions := b10.GetPartitionsByKey([]byte(domainKey))
+	keyPartitions := b2.GetPartitionsByKey([]byte(domainKey))
 	require.Equal(t, 1, len(keyPartitions))
 
-	keyPartitions = b10.GetPartitionsByKey([]byte(nonDomainKey))
+	keyPartitions = b2.GetPartitionsByKey([]byte(nonDomainKey))
 	require.Equal(t, 0, len(keyPartitions))
-
-	b0 := balancer.NewBalancerTest(0)
-	err = b0.RegisterPartition(addr.String(), testutil.DefaultHashrange)
-	require.Error(t, err)
 }
 
 func TestBalancerInit(t *testing.T) {
@@ -62,28 +53,31 @@ func TestBalancerInit(t *testing.T) {
 }
 
 func TestGetNextPartitionRange(t *testing.T) {
-	b := balancer.NewBalancerTest(1)
-	nextPartitionRange, err := b.GetNextPartitionRange()
-	require.NoError(t, err)
-	// defaultHashrange is full sha256 domain, in case of 1 node, it's domain should be full
-	require.Equal(t, nextPartitionRange, testutil.FullHashrange)
+	defer os.RemoveAll(testutil.TestDBPath)
+	defer os.RemoveAll(TestDBPath2)
 
+	addr1 := testutil.RunPartitionServer(0, testutil.TestDBPath)
+	addr2 := testutil.RunPartitionServer(0, TestDBPath2)
+
+	ctx := context.Background()
+
+	// SUT
 	b2 := balancer.NewBalancerTest(2)
-	nextPartitionRange, err = b2.GetNextPartitionRange()
-	require.NoError(t, err)
+	nextPartitionRange, _, _ := b2.GetNextPartitionRange()
 	// defaultHashrange is full sha256 domain, in case of 2 nodes, first node's domain should be half
 	require.Equal(t, nextPartitionRange, partition.NewRange(big.NewInt(0), testutil.HalfShaDomain))
 
-	b2.SetActivePartitions(1)
-	nextPartitionRange, err = b2.GetNextPartitionRange()
-	require.NoError(t, err)
+	// Register first Partition
+	b2.RegisterPartition(ctx, addr1.String())
+
+	nextPartitionRange, _, _ = b2.GetNextPartitionRange()
 	// defaultHashrange is full sha256 domain, in case of 2 nodes, second node's domain should be the second half
 	require.Equal(t, nextPartitionRange, partition.NewRange(testutil.HalfShaDomain, testutil.FullHashrange.Max))
 
-	b2.SetActivePartitions(5)
-	nextPartitionRange, err = b2.GetNextPartitionRange()
-	require.NoError(t, err)
-	// if partitions are already covering the whole domain, next partition should be a replica of the second one
-	// (since 5 mod 2 is 1)
-	require.Equal(t, nextPartitionRange, partition.NewRange(testutil.HalfShaDomain, testutil.FullHashrange.Max))
+	// Register second Partition
+	b2.RegisterPartition(ctx, addr2.String())
+
+	// If all ranges are covered, newer partitions should start coverting the domain from the beginning
+	nextPartitionRange, _, _ = b2.GetNextPartitionRange()
+	require.Equal(t, nextPartitionRange, partition.NewRange(big.NewInt(0), testutil.HalfShaDomain))
 }

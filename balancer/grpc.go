@@ -13,12 +13,7 @@ import (
 )
 
 func (bs *BalancerServer) RegisterPartition(ctx context.Context, req *pbbalancer.RegisterPartitionRequest) (*pbbalancer.RegisterPartitionResponse, error) {
-	range_, err := bs.getNextPartitionRange()
-	if err != nil {
-		return nil, err
-	}
-
-	err = bs.Balancer.RegisterPartition(req.Address, range_)
+	err := bs.Balancer.RegisterPartition(ctx, req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -55,6 +50,7 @@ func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (
 	maxLamport := uint64(0)
 	for _, client := range responsibleClients {
 		resp, err := client.Get(ctx, &prototypes.GetRequest{Key: key})
+		fmt.Println(resp, err)
 		if err != nil {
 			continue
 		}

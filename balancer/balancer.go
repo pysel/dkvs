@@ -1,10 +1,12 @@
 package balancer
 
 import (
+	"context"
 	"crypto/sha256"
 	"math/big"
 
 	"github.com/pysel/dkvs/partition"
+	"github.com/pysel/dkvs/prototypes"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 )
 
@@ -38,10 +40,20 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 }
 
 // AddPartition adds a partition to the balancer.
-func (b *Balancer) RegisterPartition(addr string, range_ *partition.Range) error {
+func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 	client := partition.NewPartitionClient(addr)
-	b.clients[range_] = append(b.clients[range_], client)
+
+	partitionRange, lowerTick, upperTick := b.coverage.getNextPartitionRange()
+	_, err := client.SetHashrange(ctx, &prototypes.SetHashrangeRequest{Min: partitionRange.Min.Bytes(), Max: partitionRange.Max.Bytes()})
+	if err != nil {
+		return err
+	}
+
+	b.clients[partitionRange] = append(b.clients[partitionRange], client)
 	b.activePartitions++
+
+	// on sucess, inrease min and max values of ticks
+	b.coverage.bumpTicks(lowerTick, upperTick)
 
 	return nil
 }
@@ -72,23 +84,6 @@ func (b *Balancer) setupCoverage() {
 		value := new(big.Int).Div(numerator, big.NewInt(int64(b.goalReplicaRanges)))
 		b.coverage.addTick(newTick(value), false, false)
 	}
-}
-
-// getNextPartitionRange returns a range to which the next partition should be assigned
-func (b *Balancer) getNextPartitionRange() (*partition.Range, error) {
-	remainder := b.activePartitions % b.goalReplicaRanges
-	tickIndexMin := remainder
-	index := 0
-	for tick := b.coverage.tick; tick != nil; tick = tick.next() {
-		if index == tickIndexMin {
-			min := tick.value
-			max := tick.next().value
-			return partition.NewRange(min, max), nil
-		}
-		index++
-	}
-
-	return nil, ErrCoverageNotProperlySetUp
 }
 
 // getRangeFromDigest returns a range to which the given digest belongs

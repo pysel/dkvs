@@ -3,6 +3,8 @@ package balancer
 import (
 	"fmt"
 	"math/big"
+
+	"github.com/pysel/dkvs/partition"
 )
 
 var CreatedCoverage *coverage
@@ -113,18 +115,28 @@ func (c *coverage) addTick(t *tick, isMin, isMax bool) {
 	c.size++
 }
 
-func (c *coverage) getTickByValue(value *big.Int) *tick {
-	curTick := c.tick
-	if curTick.value.Cmp(value) == 0 {
-		return curTick
-	}
-
-	for curTick != nil && curTick.value.Cmp(value) != 1 {
-		if curTick.value.Cmp(value) == 0 {
-			return curTick
+// getNextPartitionRange is used when assigning a range to a newly registered partition
+func (c *coverage) getNextPartitionRange() (*partition.Range, *tick, *tick) {
+	// initially assume that first interval is minimal
+	minCovered := c.tick.minOf + c.tick.next().maxOf
+	minLowerTick := c.tick
+	minUpperTick := c.tick.next()
+	minRange := partition.NewRange(minLowerTick.value, minUpperTick.value)
+	for tick := c.tick; tick.next() != nil; tick = tick.next() {
+		coveredBy := tick.minOf + tick.next().maxOf
+		if coveredBy < minCovered {
+			minRange = partition.NewRange(tick.value, tick.next().value)
+			minCovered = coveredBy
+			minLowerTick = tick
+			minUpperTick = tick.next()
 		}
-		curTick = curTick.next()
 	}
 
-	return nil
+	// minLowerTick and minUpperTick are returned to be increased by 1 if a partition is successfully registered
+	return minRange, minLowerTick, minUpperTick
+}
+
+func (c *coverage) bumpTicks(lowerTick, upperTick *tick) {
+	lowerTick.minOf++
+	upperTick.maxOf++
 }
