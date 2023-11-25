@@ -3,14 +3,12 @@ package balancer
 import (
 	"context"
 	"crypto/sha256"
-	"fmt"
 	"math/big"
 
 	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/prototypes"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 	"github.com/pysel/dkvs/types"
-	"google.golang.org/protobuf/proto"
 )
 
 // Balancer is a node that is responsible for registering partitions and relaying requests to appropriate ones.
@@ -95,17 +93,10 @@ func (b *Balancer) Get(ctx context.Context, key string) (*prototypes.GetResponse
 
 		// since returned value will be a tuple of lamport timestamp and value, check which returned value
 		// has the highest lamport timestamp
-		var storedValue pbpartition.StoredValue
-		err = proto.Unmarshal(resp.Value, &storedValue)
-		if err != nil {
-			// TODO: partition is in incorrect state, should potentially remove it from active set
-			fmt.Println("Error unmarshalling value from partition", err)
-			continue
-		}
 
-		if storedValue.Lamport >= maxLamport {
-			maxLamport = storedValue.Lamport
-			response = resp
+		if resp.StoredValue.Lamport >= maxLamport {
+			maxLamport = resp.StoredValue.Lamport
+			response = &prototypes.GetResponse{StoredValue: resp.StoredValue}
 		}
 	}
 

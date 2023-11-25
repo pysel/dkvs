@@ -9,7 +9,6 @@ import (
 	"github.com/pysel/dkvs/prototypes"
 	"github.com/pysel/dkvs/testutil"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/proto"
 )
 
 func TestGRPCServer(t *testing.T) {
@@ -43,12 +42,10 @@ func TestGRPCServer(t *testing.T) {
 	getResp, err := client.Get(ctx, &prototypes.GetRequest{Key: domainKey})
 	require.NoError(t, err, "GetMessage should not return error")
 
-	expected, err := proto.Marshal(partition.ToStoredValue(1, []byte("value")))
-	require.NoError(t, err, "proto.Marshal should not return error")
-
+	expected := partition.ToStoredValue(1, []byte("value"))
 	require.Equal(t,
 		expected,
-		getResp.Value,
+		getResp.StoredValue,
 		"GetMessage should return correct value",
 	)
 

@@ -2,6 +2,7 @@ syntax = "proto3";
 package dkvs.message;
 
 import "validate/validate.proto";
+import "dkvs/message/store.proto";
 
 option go_package = "github.com/pysel/dkvs/prototypes";
 
@@ -22,7 +23,7 @@ message GetRequest {
     uint64 lamport = 2;
 }
 message GetResponse {
-    bytes value = 1;
+    dkvs.message.StoredValue stored_value = 1;
 }
 
 message DeleteRequest {

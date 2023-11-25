@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/pysel/dkvs/balancer"
+	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/prototypes"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 	"github.com/pysel/dkvs/testutil"
@@ -54,5 +55,7 @@ func TestTwoPhaseCommit(t *testing.T) {
 	// Assert that value was stored correctly
 	getResp, err := b.Get(ctx, domainKey)
 	require.NoError(t, err)
-	require.Equal(t, []byte("value"), getResp.Value)
+
+	expected := partition.ToStoredValue(0, []byte("value"))
+	require.Equal(t, expected, getResp.StoredValue)
 }

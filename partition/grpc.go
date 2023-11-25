@@ -48,7 +48,7 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (*p
 
 	shaKey := types.ShaKey(req.Key)
 
-	storedValue := toStoredValue(req.Lamport, req.Value)
+	storedValue := ToStoredValue(req.Lamport, req.Value)
 	marshalled, err := proto.Marshal(storedValue)
 	if err != nil {
 		return nil, err
@@ -75,7 +75,13 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (*p
 		return nil, err
 	}
 
-	return &prototypes.GetResponse{Value: value}, nil
+	var storedValue prototypes.StoredValue
+	err = proto.Unmarshal(value, &storedValue)
+	if err != nil {
+		return nil, err
+	}
+
+	return &prototypes.GetResponse{StoredValue: &storedValue}, nil
 }
 
 // Delete deletes a value for a key.
