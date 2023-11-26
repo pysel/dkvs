@@ -62,3 +62,30 @@ func (bs *BalancerServer) Set(ctx context.Context, req *prototypes.SetRequest) (
 
 	return &prototypes.SetResponse{}, nil
 }
+
+func (bs *BalancerServer) Delete(ctx context.Context, req *prototypes.DeleteRequest) (*prototypes.DeleteResponse, error) {
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
+	shaKey := types.ShaKey(req.Key)
+	range_, err := bs.getRangeFromDigest(shaKey[:])
+	if err != nil {
+		return nil, err
+	}
+
+	msg := &pbpartition.PrepareCommitRequest{
+		Message: &pbpartition.PrepareCommitRequest_Delete{
+			Delete: &prototypes.DeleteRequest{
+				Key: req.Key,
+			},
+		},
+	}
+
+	err = bs.AtomicMessage(ctx, range_, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &prototypes.DeleteResponse{}, nil
+}

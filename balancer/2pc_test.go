@@ -39,7 +39,7 @@ func TestTwoPhaseCommit(t *testing.T) {
 	range_, err := b.GetRangeFromDigest(shaKey[:])
 	require.NoError(t, err)
 
-	msg := &pbpartition.PrepareCommitRequest{
+	msgSet := &pbpartition.PrepareCommitRequest{
 		Message: &pbpartition.PrepareCommitRequest_Set{
 			Set: &prototypes.SetRequest{
 				Key:     domainKey,
@@ -49,7 +49,7 @@ func TestTwoPhaseCommit(t *testing.T) {
 		},
 	}
 
-	err = b.AtomicMessage(ctx, range_, msg)
+	err = b.AtomicMessage(ctx, range_, msgSet)
 	require.NoError(t, err)
 
 	// Assert that value was stored correctly
@@ -58,4 +58,21 @@ func TestTwoPhaseCommit(t *testing.T) {
 
 	expected := partition.ToStoredValue(0, []byte("value"))
 	require.Equal(t, expected, getResp.StoredValue)
+
+	msgDelete := &pbpartition.PrepareCommitRequest{
+		Message: &pbpartition.PrepareCommitRequest_Delete{
+			Delete: &prototypes.DeleteRequest{
+				Key: domainKey,
+			},
+		},
+	}
+
+	err = b.AtomicMessage(ctx, range_, msgDelete)
+	require.NoError(t, err)
+
+	// Assert that value was deleted correctly
+	getResp, err = b.Get(ctx, domainKey)
+	require.NoError(t, err)
+
+	require.Nil(t, getResp.StoredValue.Value)
 }

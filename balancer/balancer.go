@@ -93,7 +93,6 @@ func (b *Balancer) Get(ctx context.Context, key string) (*prototypes.GetResponse
 
 		// since returned value will be a tuple of lamport timestamp and value, check which returned value
 		// has the highest lamport timestamp
-
 		if resp.StoredValue.Lamport >= maxLamport {
 			maxLamport = resp.StoredValue.Lamport
 			response = &prototypes.GetResponse{StoredValue: resp.StoredValue}

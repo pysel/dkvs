@@ -16,7 +16,12 @@ type LevelDB struct {
 }
 
 func (ldb *LevelDB) Get(key []byte) ([]byte, error) {
-	return ldb.DB.Get(key, nil)
+	val, err := ldb.DB.Get(key, nil)
+	if err != nil && err == leveldb.ErrNotFound {
+		return val, nil
+	}
+
+	return val, err
 }
 
 func (ldb *LevelDB) Set(key []byte, value []byte) error {
