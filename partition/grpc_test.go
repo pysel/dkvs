@@ -83,6 +83,6 @@ func TestGRPCServer(t *testing.T) {
 
 	// Assert that deleted value was removed from partition's state
 	getResp, err = client.Get(ctx, &prototypes.GetRequest{Key: domainKey})
-	require.ErrorContains(t, err, "not found", "GetMessage should return error if key is in hashrange of partition")
-	require.Nil(t, getResp, "GetMessage should return nil if no key existed")
+	require.NoError(t, err)
+	require.Nil(t, getResp.StoredValue)
 }

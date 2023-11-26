@@ -15,19 +15,21 @@ import (
 )
 
 var (
-	TestDBPath2 = "test2"
+	TestDBPath2    = "test2"
+	TestDBBalancer = "balancer"
 )
 
 func TestTwoPhaseCommit(t *testing.T) {
 	defer os.RemoveAll(testutil.TestDBPath)
 	defer os.RemoveAll(TestDBPath2)
+	defer os.RemoveAll(TestDBBalancer + t.Name())
 
 	ctx := context.Background()
 
 	partitionAddr1 := testutil.RunPartitionServer(0, testutil.TestDBPath)
 	partitionAddr2 := testutil.RunPartitionServer(0, TestDBPath2)
 
-	b := balancer.NewBalancerTest(2)
+	b := balancer.NewBalancerTest(t, 2)
 	err := b.RegisterPartition(ctx, partitionAddr1.String())
 	require.NoError(t, err)
 
@@ -74,5 +76,5 @@ func TestTwoPhaseCommit(t *testing.T) {
 	getResp, err = b.Get(ctx, domainKey)
 	require.NoError(t, err)
 
-	require.Nil(t, getResp.StoredValue.Value)
+	require.Nil(t, getResp.StoredValue)
 }

@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"math/big"
 
+	db "github.com/pysel/dkvs/leveldb"
 	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/prototypes"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
@@ -13,6 +14,9 @@ import (
 
 // Balancer is a node that is responsible for registering partitions and relaying requests to appropriate ones.
 type Balancer struct {
+	// Database instance
+	db.DB
+
 	// A mapping from ranges to partitions.
 	// Multiple partitions can be mapped to the same range.
 	clients map[*partition.Range][]pbpartition.PartitionServiceClient
@@ -28,7 +32,13 @@ type Balancer struct {
 
 // NewBalancer returns a new balancer instance.
 func NewBalancer(goalReplicaRanges int) *Balancer {
+	db, err := db.NewLevelDB("balancer")
+	if err != nil {
+		panic(err)
+	}
+
 	b := &Balancer{
+		DB:                db,
 		clients:           make(map[*partition.Range][]pbpartition.PartitionServiceClient),
 		goalReplicaRanges: goalReplicaRanges,
 		activePartitions:  0,
@@ -40,7 +50,7 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 	return b
 }
 
-// AddPartition adds a partition to the balancer.
+// RegisterPartition adds a partition to the balancer.
 func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 	client := partition.NewPartitionClient(addr)
 
@@ -88,6 +98,9 @@ func (b *Balancer) Get(ctx context.Context, key string) (*prototypes.GetResponse
 	for _, client := range responsibleClients {
 		resp, err := client.Get(ctx, &prototypes.GetRequest{Key: key})
 		if err != nil {
+			continue
+		} else if resp.StoredValue == nil {
+			response = resp
 			continue
 		}
 

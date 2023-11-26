@@ -58,6 +58,6 @@ func TestDatabaseMethods(t *testing.T) {
 	require.NoError(t, err) // partition's key, should delete correctly
 
 	value, err = p.Get(hashedPartitionKey[:])
-	require.Error(t, err) // partition's key, should return error
-	require.Equal(t, value, []byte{})
+	require.NoError(t, err) // partition's key, should return error
+	require.Nil(t, value)
 }

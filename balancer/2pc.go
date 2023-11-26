@@ -9,18 +9,40 @@ import (
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 )
 
+var (
+	PrepareCommitDecisionKey = []byte("PrepareCommitDecisionKey")
+)
+
 func (b *Balancer) AtomicMessage(ctx context.Context, range_ *partition.Range, msg *pbpartition.PrepareCommitRequest) error {
 	clients := b.clients[range_]
 	if len(clients) == 0 {
 		return ErrRangeNotYetCovered
 	}
 
+	// synchronous prepare commit step
 	err := b.prepareCommit(clients, msg)
-	// if >= 1 partition aborted, abort all
+
+	// If >= 1 partition aborted, abort all
+	// Before aborting/committing, save decision to disk so that we can recover from a crash
 	if err != nil {
+		err := b.DB.Set(PrepareCommitDecisionKey, []byte("abort"))
+		if err != nil {
+			return ErrDecisionNotSavedToDisk{Reason: err, Decision: []byte("abort")}
+		}
+
 		b.abortCommit(ctx, clients)
 	} else {
+		err := b.DB.Set(PrepareCommitDecisionKey, []byte("commit"))
+		if err != nil {
+			return ErrDecisionNotSavedToDisk{Reason: err, Decision: []byte("commit")}
+		}
+
 		b.commit(ctx, clients)
+	}
+
+	err = b.DB.Delete(PrepareCommitDecisionKey)
+	if err != nil {
+		return ErrDecisionWasNotCleared{Reason: err}
 	}
 
 	return nil

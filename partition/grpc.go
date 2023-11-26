@@ -74,6 +74,9 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (*p
 	if err != nil {
 		return nil, err
 	}
+	if value == nil {
+		return &prototypes.GetResponse{StoredValue: nil}, nil
+	}
 
 	var storedValue prototypes.StoredValue
 	err = proto.Unmarshal(value, &storedValue)

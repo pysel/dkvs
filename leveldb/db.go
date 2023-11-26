@@ -18,7 +18,7 @@ type LevelDB struct {
 func (ldb *LevelDB) Get(key []byte) ([]byte, error) {
 	val, err := ldb.DB.Get(key, nil)
 	if err != nil && err == leveldb.ErrNotFound {
-		return val, nil
+		return nil, nil
 	}
 
 	return val, err
@@ -35,6 +35,10 @@ func (ldb *LevelDB) Delete(key []byte) error {
 func (ldb *LevelDB) Has(key []byte) bool {
 	has, _ := ldb.DB.Has(key, nil)
 	return has
+}
+
+func (ldb *LevelDB) Close() error {
+	return ldb.DB.Close()
 }
 
 // NewGoLevelDB returns a new instance of GoLevelDB.

@@ -14,10 +14,12 @@ import (
 
 func TestRegisterGetPartition(t *testing.T) {
 	defer os.RemoveAll(testutil.TestDBPath)
+	defer os.RemoveAll(TestDBBalancer + t.Name())
+
 	ctx := context.Background()
 
 	addr := testutil.RunPartitionServer(0, testutil.TestDBPath)
-	b2 := balancer.NewBalancerTest(2)
+	b2 := balancer.NewBalancerTest(t, 2)
 
 	err := b2.RegisterPartition(ctx, addr.String())
 	require.NoError(t, err)
@@ -33,9 +35,11 @@ func TestRegisterGetPartition(t *testing.T) {
 }
 
 func TestBalancerInit(t *testing.T) {
+	defer os.RemoveAll(TestDBBalancer + t.Name())
+
 	goalReplicaRanges := 3
 
-	b := balancer.NewBalancerTest(goalReplicaRanges)
+	b := balancer.NewBalancerTest(t, goalReplicaRanges)
 	require.Equal(t, b.GetTicksAmount(), goalReplicaRanges+1)
 
 	expectedFirstTickValue := big.NewInt(0)
@@ -55,6 +59,7 @@ func TestBalancerInit(t *testing.T) {
 func TestGetNextPartitionRange(t *testing.T) {
 	defer os.RemoveAll(testutil.TestDBPath)
 	defer os.RemoveAll(TestDBPath2)
+	defer os.RemoveAll(TestDBBalancer + t.Name())
 
 	addr1 := testutil.RunPartitionServer(0, testutil.TestDBPath)
 	addr2 := testutil.RunPartitionServer(0, TestDBPath2)
@@ -62,7 +67,7 @@ func TestGetNextPartitionRange(t *testing.T) {
 	ctx := context.Background()
 
 	// SUT
-	b2 := balancer.NewBalancerTest(2)
+	b2 := balancer.NewBalancerTest(t, 2)
 	nextPartitionRange, _, _ := b2.GetNextPartitionRange()
 	// defaultHashrange is full sha256 domain, in case of 2 nodes, first node's domain should be half
 	require.Equal(t, nextPartitionRange, partition.NewRange(big.NewInt(0), testutil.HalfShaDomain))
