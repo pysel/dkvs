@@ -14,6 +14,7 @@ var (
 	ErrCommitAborted        = errors.New("commit aborted")
 )
 
+// ErrDecisionNotSavedToDisk is returned when a balancer's decision was not saved to disk during 2PC.
 type ErrDecisionNotSavedToDisk struct {
 	Reason   error
 	Decision []byte
@@ -27,6 +28,7 @@ func (e ErrDecisionNotSavedToDisk) Unwrap() error {
 	return e.Reason
 }
 
+// ErrDecisionWasNotCleared is returned when a balancer's decision was not cleared from disk after a two-phase commit has ended.
 type ErrDecisionWasNotCleared struct {
 	Reason error
 }
