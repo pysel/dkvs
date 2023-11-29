@@ -21,11 +21,6 @@ type Balancer struct {
 	// Multiple partitions can be mapped to the same range.
 	clients map[*partition.Range][]pbpartition.PartitionServiceClient
 
-	// goalReplicaRanges is the number of different sets of replicas that should be created
-	goalReplicaRanges int
-	// activePartitions is the number of currently registered partitions
-	activePartitions int
-
 	// coverage is used for tracking the tracked ranges
 	coverage *coverage
 }
@@ -38,14 +33,12 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 	}
 
 	b := &Balancer{
-		DB:                db,
-		clients:           make(map[*partition.Range][]pbpartition.PartitionServiceClient),
-		goalReplicaRanges: goalReplicaRanges,
-		activePartitions:  0,
-		coverage:          GetCoverage(),
+		DB:       db,
+		clients:  make(map[*partition.Range][]pbpartition.PartitionServiceClient),
+		coverage: GetCoverage(),
 	}
 
-	b.setupCoverage()
+	b.setupCoverage(goalReplicaRanges)
 
 	return b
 }
@@ -61,7 +54,6 @@ func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 	}
 
 	b.clients[partitionRange] = append(b.clients[partitionRange], client)
-	b.activePartitions++
 
 	// on sucess, inrease min and max values of ticks
 	b.coverage.bumpTicks(lowerTick, upperTick)
@@ -121,17 +113,17 @@ func (b *Balancer) Get(ctx context.Context, key string) (*prototypes.GetResponse
 }
 
 // setupCoverage creates necessary ticks for coverage based on goalReplicaRanges
-func (b *Balancer) setupCoverage() {
-	if b.goalReplicaRanges == 0 {
+func (b *Balancer) setupCoverage(goalReplicaRanges int) {
+	if goalReplicaRanges == 0 {
 		b.coverage.addTick(newTick(big.NewInt(0)), false, false)
 		b.coverage.addTick(newTick(partition.MaxInt), false, false)
 		return
 	}
 
 	// Create a tick for each partition
-	for i := 0; i <= b.goalReplicaRanges; i++ {
+	for i := 0; i <= goalReplicaRanges; i++ {
 		numerator := new(big.Int).Mul(big.NewInt(int64(i)), partition.MaxInt)
-		value := new(big.Int).Div(numerator, big.NewInt(int64(b.goalReplicaRanges)))
+		value := new(big.Int).Div(numerator, big.NewInt(int64(goalReplicaRanges)))
 		b.coverage.addTick(newTick(value), false, false)
 	}
 }

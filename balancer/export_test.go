@@ -39,14 +39,12 @@ func NewBalancerTest(t *testing.T, goalReplicaRanges int) *Balancer {
 	require.NoError(t, err)
 
 	b := &Balancer{
-		DB:                db,
-		clients:           make(map[*partition.Range][]pbpartition.PartitionServiceClient),
-		goalReplicaRanges: goalReplicaRanges,
-		activePartitions:  0,
-		coverage:          &coverage{},
+		DB:       db,
+		clients:  make(map[*partition.Range][]pbpartition.PartitionServiceClient),
+		coverage: &coverage{},
 	}
 
-	b.setupCoverage()
+	b.setupCoverage(goalReplicaRanges)
 
 	return b
 }
