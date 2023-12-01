@@ -14,6 +14,7 @@ type BalancerServer struct {
 	*Balancer
 }
 
+// RunBalancerServer creates a new grpc server and registers the balancer service.
 func RegisterBalancerServer(b *Balancer) *grpc.Server {
 	s := grpc.NewServer()
 	reflection.Register(s)
@@ -22,6 +23,7 @@ func RegisterBalancerServer(b *Balancer) *grpc.Server {
 	return s
 }
 
+// listenOnPort starts a grpc server listening on the given port.
 func listenOnPort(s *grpc.Server, port int64) net.Addr {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
