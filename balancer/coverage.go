@@ -131,3 +131,11 @@ func (c *coverage) bumpTicks(lowerTick, upperTick *pbbalancer.Tick) {
 	lowerTick.MinOf++
 	upperTick.MaxOf++
 }
+
+// ToProto converts coverage to protobuf coverage
+func (c *coverage) ToProto() *pbbalancer.Coverage {
+	return &pbbalancer.Coverage{
+		Tick: c.Tick,
+		Size: int64(c.size),
+	}
+}
