@@ -11,7 +11,7 @@ import (
 )
 
 // Half of MaxInt
-var defaultHashRange = partition.NewRange(big.NewInt(0), new(big.Int).Div(partition.MaxInt, big.NewInt(2)))
+var defaultHashRange = partition.NewRange(big.NewInt(0).Bytes(), new(big.Int).Div(partition.MaxInt, big.NewInt(2)).Bytes())
 
 func TestDatabaseMethods(t *testing.T) {
 	p := partition.NewPartition("test")

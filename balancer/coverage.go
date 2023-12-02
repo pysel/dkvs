@@ -1,48 +1,39 @@
 package balancer
 
 import (
+	"bytes"
 	"fmt"
 	"math/big"
 
 	"github.com/pysel/dkvs/partition"
+	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
 )
 
 var CreatedCoverage *coverage
 
-type tick struct {
-	value               *big.Int
-	minOf               int
-	maxOf               int
-	previousInitialized *tick
-	nextInitialized     *tick
-}
-
-func newTick(value *big.Int) *tick {
-	return &tick{
-		minOf:               0,
-		maxOf:               0,
-		value:               value,
-		nextInitialized:     nil,
-		previousInitialized: nil,
+func newTick(value *big.Int) *pbbalancer.Tick {
+	return &pbbalancer.Tick{
+		MinOf:               0,
+		MaxOf:               0,
+		Value:               value.Bytes(),
+		NextInitialized:     nil,
+		PreviousInitialized: nil,
 	}
-}
-
-func (t *tick) next() *tick {
-	return t.nextInitialized
 }
 
 // coverage is a linked list of initialized ticks.
 type coverage struct {
-	*tick
-	size int
+	*pbbalancer.Tick
+	size int // TODO: consider removing this
 }
 
 func (c *coverage) String() string {
-	curTick := c.tick
+	curTick := c.Tick
 	str := ""
 	for curTick != nil {
-		str += fmt.Sprintf("%v", curTick.value)
-		curTick = curTick.next()
+		bigInt := new(big.Int).SetBytes(curTick.Value)
+		str += fmt.Sprintf("%v", bigInt)
+		curTick = curTick.NextInitialized
 		if curTick != nil {
 			str += " -> "
 		}
@@ -60,75 +51,75 @@ func GetCoverage() *coverage {
 }
 
 // addTick iterates over the list of ticks until
-func (c *coverage) addTick(t *tick, isMin, isMax bool) {
+func (c *coverage) addTick(t *pbbalancer.Tick, isMin, isMax bool) {
 	if isMin {
-		t.minOf++
+		t.MinOf++
 	}
 
 	if isMax {
-		t.maxOf++
+		t.MaxOf++
 	}
 
 	// Cover case when to-add tick is the first one
-	if c.tick == nil {
+	if c.Tick == nil {
 		c.size++
-		c.tick = t
+		c.Tick = t
 		return
 	}
 
-	curTick := c.tick
-	if curTick.value.Cmp(t.value) == 0 {
-		curTick.minOf += t.minOf
-		curTick.maxOf += t.maxOf
+	curTick := c.Tick
+	if bytes.Equal(curTick.Value, t.Value) {
+		curTick.MinOf += t.MinOf
+		curTick.MaxOf += t.MaxOf
 		return
-	} else if curTick.value.Cmp(t.value) == 1 { // means tick is lower than every value in list => add to the beginning
-		curTick.previousInitialized = t
-		t.nextInitialized = curTick
+	} else if bytes.Compare(curTick.Value, t.Value) == 1 { // means tick is lower than every value in list => add to the beginning
+		curTick.PreviousInitialized = t
+		t.NextInitialized = curTick
 		c.size++
-		c.tick = t
+		c.Tick = t
 		return
 	}
-	nextTick := curTick.next()
+	nextTick := curTick.NextInitialized
 
 	for nextTick != nil {
-		if nextTick.value.Cmp(t.value) == 1 {
-			curTick.nextInitialized = t
-			nextTick.previousInitialized = t
+		if bytes.Compare(nextTick.Value, t.Value) == 1 {
+			curTick.NextInitialized = t
+			nextTick.PreviousInitialized = t
 
-			t.nextInitialized = nextTick
-			t.previousInitialized = curTick
+			t.NextInitialized = nextTick
+			t.PreviousInitialized = curTick
 
 			c.size++
 			return
-		} else if nextTick.value.Cmp(t.value) == 0 { // means tick is already covered
-			nextTick.minOf += t.minOf
-			nextTick.maxOf += t.maxOf
+		} else if bytes.Equal(nextTick.Value, t.Value) { // means tick is already covered
+			nextTick.MinOf += t.MinOf
+			nextTick.MaxOf += t.MaxOf
 			return
 		}
-		curTick = curTick.next()
-		nextTick = curTick.next()
+		curTick = curTick.NextInitialized
+		nextTick = curTick.NextInitialized
 	}
 
 	// if not returned at this point, means the value of a t is higher than every value in list => add to the end
-	curTick.nextInitialized = t
-	t.previousInitialized = curTick
+	curTick.NextInitialized = t
+	t.PreviousInitialized = curTick
 	c.size++
 }
 
 // getNextPartitionRange is used when assigning a range to a newly registered partition
-func (c *coverage) getNextPartitionRange() (*partition.Range, *tick, *tick) {
+func (c *coverage) getNextPartitionRange() (*partition.Range, *pbbalancer.Tick, *pbbalancer.Tick) {
 	// initially assume that first interval is minimal
-	minCovered := c.tick.minOf + c.tick.next().maxOf
-	minLowerTick := c.tick
-	minUpperTick := c.tick.next()
-	minRange := partition.NewRange(minLowerTick.value, minUpperTick.value)
-	for tick := c.tick; tick.next() != nil; tick = tick.next() {
-		coveredBy := tick.minOf + tick.next().maxOf
+	minCovered := c.Tick.MinOf + c.Tick.NextInitialized.MaxOf
+	minLowerTick := c.Tick
+	minUpperTick := c.Tick.NextInitialized
+	minRange := partition.NewRange(minLowerTick.Value, minUpperTick.Value)
+	for tick := c.Tick; tick.NextInitialized != nil; tick = tick.NextInitialized {
+		coveredBy := tick.MinOf + tick.NextInitialized.MaxOf
 		if coveredBy < minCovered {
-			minRange = partition.NewRange(tick.value, tick.next().value)
+			minRange = partition.NewRange(tick.Value, tick.NextInitialized.Value)
 			minCovered = coveredBy
 			minLowerTick = tick
-			minUpperTick = tick.next()
+			minUpperTick = tick.NextInitialized
 		}
 	}
 
@@ -136,7 +127,7 @@ func (c *coverage) getNextPartitionRange() (*partition.Range, *tick, *tick) {
 	return minRange, minLowerTick, minUpperTick
 }
 
-func (c *coverage) bumpTicks(lowerTick, upperTick *tick) {
-	lowerTick.minOf++
-	upperTick.maxOf++
+func (c *coverage) bumpTicks(lowerTick, upperTick *pbbalancer.Tick) {
+	lowerTick.MinOf++
+	upperTick.MaxOf++
 }

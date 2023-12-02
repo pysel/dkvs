@@ -71,7 +71,7 @@ func TestNewRange(t *testing.T) {
 			}()
 		}
 
-		got := partition.NewRange(test.min, test.max)
+		got := partition.NewRange(test.min.Bytes(), test.max.Bytes())
 		require.Equal(t, test.expectedRange, got)
 	}
 }

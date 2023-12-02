@@ -3,7 +3,6 @@ package partition
 import (
 	"context"
 	"fmt"
-	"math/big"
 	"net"
 
 	"github.com/pysel/dkvs/prototypes"
@@ -114,6 +113,6 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 		return nil, types.ErrNilRequest
 	}
 
-	ls.hashrange = NewRange(new(big.Int).SetBytes(req.Min), new(big.Int).SetBytes(req.Max))
+	ls.hashrange = NewRange(req.Min, req.Max)
 	return &prototypes.SetHashrangeResponse{}, nil
 }

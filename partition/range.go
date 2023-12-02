@@ -26,7 +26,10 @@ func init() {
 }
 
 // NewRange is a constructor for Range.
-func NewRange(min, max *big.Int) *Range {
+func NewRange(minb, maxb []byte) *Range {
+	min := new(big.Int).SetBytes(minb)
+	max := new(big.Int).SetBytes(maxb)
+
 	if min.Cmp(MinInt) == -1 {
 		// min should be >= 0, since SHA-2 only produces positive hashes.
 		panic("min is negative")
