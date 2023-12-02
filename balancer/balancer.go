@@ -10,6 +10,7 @@ import (
 	"github.com/pysel/dkvs/prototypes"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 	"github.com/pysel/dkvs/types"
+	"google.golang.org/protobuf/proto"
 )
 
 // Balancer is a node that is responsible for registering partitions and relaying requests to appropriate ones.
@@ -113,11 +114,11 @@ func (b *Balancer) Get(ctx context.Context, key string) (*prototypes.GetResponse
 }
 
 // setupCoverage creates necessary ticks for coverage based on goalReplicaRanges
-func (b *Balancer) setupCoverage(goalReplicaRanges int) {
+func (b *Balancer) setupCoverage(goalReplicaRanges int) error {
 	if goalReplicaRanges == 0 {
 		b.coverage.addTick(newTick(big.NewInt(0)), false, false)
 		b.coverage.addTick(newTick(partition.MaxInt), false, false)
-		return
+		return nil
 	}
 
 	// Create a tick for each partition
@@ -126,6 +127,13 @@ func (b *Balancer) setupCoverage(goalReplicaRanges int) {
 		value := new(big.Int).Div(numerator, big.NewInt(int64(goalReplicaRanges)))
 		b.coverage.addTick(newTick(value), false, false)
 	}
+
+	coverageBz, err := proto.Marshal(b.coverage.ToProto())
+	if err != nil {
+		return err
+	}
+
+	return b.DB.Set(CoverageKey, coverageBz)
 }
 
 // getRangeFromDigest returns a range to which the given digest belongs

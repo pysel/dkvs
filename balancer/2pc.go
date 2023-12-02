@@ -9,10 +9,6 @@ import (
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 )
 
-var (
-	PrepareCommitDecisionKey = []byte("PrepareCommitDecisionKey")
-)
-
 // AtomicMessage sends a message to all partitions that are responsible for the given key and awaits for their responses.
 // On successfull ack from all nodes, sends a commit message, else sends an abort message.
 func (b *Balancer) AtomicMessage(ctx context.Context, range_ *partition.Range, msg *pbpartition.PrepareCommitRequest) error {
