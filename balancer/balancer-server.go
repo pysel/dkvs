@@ -16,7 +16,7 @@ type BalancerServer struct {
 	*Balancer
 }
 
-// RunBalancerServer creates a new grpc server and registers the balancer service.
+// RegisterBalancerServer creates a new grpc server and registers the balancer service.
 func RegisterBalancerServer(b *Balancer) *grpc.Server {
 	s := grpc.NewServer()
 	reflection.Register(s)

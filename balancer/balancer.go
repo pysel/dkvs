@@ -62,10 +62,10 @@ func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 	// on sucess, inrease min and max values of ticks
 	b.coverage.bumpTicks(lowerTick)
 
-	return nil
+	return b.saveCoverage()
 }
 
-// GetPartitions returns a list of partitions that contain the given key.
+// GetPartitionsByKey returns a list of partitions that contain the given key.
 func (b *Balancer) GetPartitionsByKey(key []byte) []pbpartition.PartitionServiceClient {
 	shaKey := sha256.Sum256(key)
 	for range_, clients := range b.clients {
@@ -131,12 +131,7 @@ func (b *Balancer) setupCoverage(goalReplicaRanges int) error {
 		b.coverage.addTick(newTick(value, 0))
 	}
 
-	coverageBz, err := proto.Marshal(b.coverage.ToProto())
-	if err != nil {
-		return err
-	}
-
-	return b.DB.Set(CoverageKey, coverageBz)
+	return b.saveCoverage()
 }
 
 // getRangeFromDigest returns a range to which the given digest belongs
@@ -148,4 +143,14 @@ func (b *Balancer) getRangeFromDigest(digest []byte) (*partition.Range, error) {
 	}
 
 	return nil, ErrDigestNotCovered
+}
+
+// saveCoverage saves the current coverage to disk
+func (b *Balancer) saveCoverage() error {
+	coverageBz, err := proto.Marshal(b.coverage.ToProto())
+	if err != nil {
+		return err
+	}
+
+	return b.DB.Set(CoverageKey, coverageBz)
 }
