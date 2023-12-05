@@ -57,36 +57,39 @@ func (m *Coverage) validate(all bool) error {
 
 	var errors []error
 
-	if all {
-		switch v := interface{}(m.GetTick()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, CoverageValidationError{
-					field:  "Tick",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, CoverageValidationError{
-					field:  "Tick",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTick()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return CoverageValidationError{
-				field:  "Tick",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	for idx, item := range m.GetTicks() {
+		_, _ = idx, item
 
-	// no validation rules for Size
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CoverageValidationError{
+						field:  fmt.Sprintf("Ticks[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CoverageValidationError{
+						field:  fmt.Sprintf("Ticks[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CoverageValidationError{
+					field:  fmt.Sprintf("Ticks[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
 
 	if len(errors) > 0 {
 		return CoverageMultiError(errors)
@@ -187,64 +190,6 @@ func (m *Tick) validate(all bool) error {
 	var errors []error
 
 	// no validation rules for Value
-
-	if all {
-		switch v := interface{}(m.GetPreviousInitialized()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, TickValidationError{
-					field:  "PreviousInitialized",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, TickValidationError{
-					field:  "PreviousInitialized",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetPreviousInitialized()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return TickValidationError{
-				field:  "PreviousInitialized",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetNextInitialized()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, TickValidationError{
-					field:  "NextInitialized",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, TickValidationError{
-					field:  "NextInitialized",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetNextInitialized()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return TickValidationError{
-				field:  "NextInitialized",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
 
 	// no validation rules for MinOf
 
