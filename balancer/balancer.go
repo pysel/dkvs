@@ -39,7 +39,10 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 		coverage: GetCoverage(),
 	}
 
-	b.setupCoverage(goalReplicaRanges)
+	err = b.setupCoverage(goalReplicaRanges)
+	if err != nil {
+		panic(err)
+	}
 
 	return b
 }

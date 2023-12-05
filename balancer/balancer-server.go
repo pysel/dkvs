@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 
+	"log"
+
 	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -30,6 +32,12 @@ func startListeningOnPort(s *grpc.Server, port int64) net.Addr {
 		panic(err)
 	}
 
-	go s.Serve(lis)
+	go func() {
+		err := s.Serve(lis)
+		if err != nil {
+			log.Fatalf("Balancer server exited with error: %v", err)
+		}
+	}()
+
 	return lis.Addr()
 }

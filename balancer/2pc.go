@@ -35,7 +35,10 @@ func (b *Balancer) AtomicMessage(ctx context.Context, range_ *partition.Range, m
 			return ErrDecisionNotSavedToDisk{Reason: err, Decision: []byte("commit")}
 		}
 
-		b.commit(ctx, clients)
+		err = b.commit(ctx, clients)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = b.DB.Delete(PrepareCommitDecisionKey)

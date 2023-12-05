@@ -56,7 +56,12 @@ func RunPartitionServer(port int64, dbPath string) net.Addr {
 
 	grpcServer := grpc.NewServer()
 	pbpartition.RegisterPartitionServiceServer(grpcServer, &partition.ListenServer{Partition: p})
-	go grpcServer.Serve(lis)
+	go func() {
+		err := grpcServer.Serve(lis)
+		if err != nil {
+			log.Fatalf("Partition server exited with error: %v", err)
+		}
+	}()
 
 	return lis.Addr()
 }

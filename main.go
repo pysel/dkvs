@@ -34,6 +34,9 @@ func main() {
 
 		dbPath := args[3]
 
-		partition.RunPartitionServer(int64(port), dbPath)
+		err = partition.RunPartitionServer(int64(port), dbPath)
+		if err != nil {
+			panic(err)
+		}
 	}
 }

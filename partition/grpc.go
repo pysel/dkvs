@@ -19,7 +19,7 @@ type ListenServer struct {
 }
 
 // RunPartitionServer starts a partition server on the given port.
-func RunPartitionServer(port int64, dbPath string) {
+func RunPartitionServer(port int64, dbPath string) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		panic(err)
@@ -31,7 +31,7 @@ func RunPartitionServer(port int64, dbPath string) {
 	reflection.Register(grpcServer)
 	pbpartition.RegisterPartitionServiceServer(grpcServer, &ListenServer{Partition: partition})
 	fmt.Println("Starting server on port", port)
-	grpcServer.Serve(lis)
+	return grpcServer.Serve(lis)
 }
 
 // Set sets a value for a key.

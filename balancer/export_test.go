@@ -45,7 +45,7 @@ func NewBalancerTest(t *testing.T, goalReplicaRanges int) *Balancer {
 		coverage: &coverage{},
 	}
 
-	b.setupCoverage(goalReplicaRanges)
+	require.NoError(t, b.setupCoverage(goalReplicaRanges))
 
 	return b
 }
