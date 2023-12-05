@@ -48,7 +48,7 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 	client := partition.NewPartitionClient(addr)
 
-	partitionRange, lowerTick, upperTick := b.coverage.getNextPartitionRange()
+	partitionRange, lowerTick, _ := b.coverage.getNextPartitionRange()
 	_, err := client.SetHashrange(ctx, &prototypes.SetHashrangeRequest{Min: partitionRange.Min.Bytes(), Max: partitionRange.Max.Bytes()})
 	if err != nil {
 		return err
@@ -57,7 +57,7 @@ func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 	b.clients[partitionRange] = append(b.clients[partitionRange], client)
 
 	// on sucess, inrease min and max values of ticks
-	b.coverage.bumpTicks(lowerTick, upperTick)
+	b.coverage.bumpTicks(lowerTick)
 
 	return nil
 }
