@@ -85,4 +85,8 @@ func TestGetNextPartitionRange(t *testing.T) {
 	// If all ranges are covered, newer partitions should start coverting the domain from the beginning
 	nextPartitionRange, _, _ = b2.GetNextPartitionRange()
 	require.Equal(t, nextPartitionRange, partition.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()))
+
+	// Assert that GetNextPartitionRange is non-mutative
+	nextPartitionRange, _, _ = b2.GetNextPartitionRange()
+	require.Equal(t, nextPartitionRange, partition.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()))
 }
