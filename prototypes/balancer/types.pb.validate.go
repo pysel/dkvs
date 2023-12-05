@@ -191,9 +191,7 @@ func (m *Tick) validate(all bool) error {
 
 	// no validation rules for Value
 
-	// no validation rules for MinOf
-
-	// no validation rules for MaxOf
+	// no validation rules for Covers
 
 	if len(errors) > 0 {
 		return TickMultiError(errors)

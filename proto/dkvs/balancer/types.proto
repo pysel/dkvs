@@ -10,6 +10,5 @@ message Coverage {
 
 message Tick {
     bytes value = 1;
-    int64 min_of = 4;
-    int64 max_of = 5;
+    int64 covers = 2;
 }

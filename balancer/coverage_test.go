@@ -29,17 +29,17 @@ func TestGetTickByValue(t *testing.T) {
 		"Get tick at the beginning": {
 			value:    zeroInt,
 			coverage: defaultCoverage_,
-			expected: defaultCoverage_.Tick,
+			expected: defaultCoverage_.ticks[0],
 		},
 		"Get tick at the end": {
 			value:    fullInt,
 			coverage: defaultCoverage_,
-			expected: defaultCoverage_.Tick.NextInitialized.NextInitialized.NextInitialized.NextInitialized,
+			expected: defaultCoverage_.ticks[len(defaultCoverage_.ticks)-1],
 		},
-		"Get tick in the middle": {
+		"Get second tick": {
 			value:    quarterInt,
 			coverage: defaultCoverage_,
-			expected: defaultCoverage_.Tick.NextInitialized,
+			expected: defaultCoverage_.ticks[1],
 		},
 		"Get tick that doesn't exist": {
 			value:    new(big.Int).SetInt64(-1),
@@ -67,55 +67,22 @@ func TestAddTick(t *testing.T) {
 	tests := map[string]struct {
 		toAdd             *pbbalancer.Tick
 		coverage          *coverage
-		isMin             bool
-		isMax             bool
 		expectedTick      *pbbalancer.Tick
 		expectedTickValue *big.Int
 	}{
 		"Add tick at the beginning": {
-			toAdd:    newTick(new(big.Int).SetInt64(1)),
-			coverage: &coverage{nil, 0},
-			isMin:    true,
-			isMax:    false,
+			toAdd:    newTick(new(big.Int).SetInt64(1), 1),
+			coverage: &coverage{nil},
 			expectedTick: &pbbalancer.Tick{
-				MinOf: 1,
-				MaxOf: 0,
-				Value: new(big.Int).SetInt64(1).Bytes(),
+				Covers: 1,
+				Value:  new(big.Int).SetInt64(1).Bytes(),
 			},
 			expectedTickValue: new(big.Int).SetInt64(1),
 		},
-		"Add tick that already exists": {
-			toAdd:    newTick(zeroInt),
-			coverage: defaultCoverage_,
-			isMin:    true,
-			isMax:    false,
-			expectedTick: &pbbalancer.Tick{
-				MinOf: 2,
-				MaxOf: 0,
-				Value: zeroInt.Bytes(),
-			},
-			expectedTickValue: zeroInt,
-		},
-		"Add tick at the end and already exists": {
-			toAdd:    newTick(fullInt),
-			coverage: defaultCoverage_,
-			isMin:    false,
-			isMax:    true,
-			expectedTick: &pbbalancer.Tick{
-				MinOf: 0,
-				MaxOf: 2,
-				Value: fullInt.Bytes(),
-			},
-			expectedTickValue: fullInt,
-		},
 		"Add tick at the end": {
-			toAdd:    newTick(new(big.Int).Mul(fullInt, big.NewInt(2))),
+			toAdd:    newTick(new(big.Int).Mul(fullInt, big.NewInt(2)), 0),
 			coverage: defaultCoverage_,
-			isMin:    false,
-			isMax:    true,
 			expectedTick: &pbbalancer.Tick{
-				MinOf: 0,
-				MaxOf: 1,
 				Value: new(big.Int).Mul(fullInt, big.NewInt(2)).Bytes(),
 			},
 			expectedTickValue: new(big.Int).Mul(fullInt, big.NewInt(2)),
@@ -125,7 +92,7 @@ func TestAddTick(t *testing.T) {
 	for name, test := range tests {
 		test := test
 		t.Run(name, func(t *testing.T) {
-			test.coverage.addTick(test.toAdd, test.isMin, test.isMax)
+			test.coverage.addTick(test.toAdd)
 			tickDeepEqual(t, test.coverage.getTickByValue(test.expectedTickValue), test.expectedTick)
 		})
 	}
@@ -142,28 +109,28 @@ func TestAddTick(t *testing.T) {
 //
 // 0-----1/4-----1/2     3/4-----1
 func defaulCoverage(t *testing.T) *coverage {
-	coverage := &coverage{nil, 0}
+	coverage := &coverage{nil}
 
 	// zeroNull corresponds to tick at 0
-	zeroNull := newTick(zeroInt)
+	zeroNull := newTick(zeroInt, 1)
 
 	// tickQuarter corresponds to tick at 1/4 of the domain
-	tickQuarter := newTick(quarterInt)
+	tickQuarter := newTick(quarterInt, 1)
 
 	// tickHalf corresponds to tick at 1/2 of the domain
-	tickHalf := newTick(halfInt)
+	tickHalf := newTick(halfInt, 0)
 
 	// tickThreeQuarters corresponds to tick at 3/4 of the domain
-	tickThreeQuarters := newTick(threeQuartersInt)
+	tickThreeQuarters := newTick(threeQuartersInt, 1)
 
 	// tickFull corresponds to tick at the end of the domain
-	tickFull := newTick(fullInt)
+	tickFull := newTick(fullInt, 0)
 
-	coverage.addTick(zeroNull, true, false)
-	coverage.addTick(tickQuarter, true, true)
-	coverage.addTick(tickHalf, false, true)
-	coverage.addTick(tickThreeQuarters, true, false)
-	coverage.addTick(tickFull, false, true)
+	coverage.addTick(zeroNull)
+	coverage.addTick(tickQuarter)
+	coverage.addTick(tickHalf)
+	coverage.addTick(tickThreeQuarters)
+	coverage.addTick(tickFull)
 
 	assertDefaultcoverage(t, coverage)
 
@@ -171,63 +138,41 @@ func defaulCoverage(t *testing.T) *coverage {
 }
 
 func assertDefaultcoverage(t *testing.T, c *coverage) {
-	require.Equal(t, 5, c.size)
+	require.Equal(t, 5, len(c.ticks))
 	one64 := int64(1)
 	zero64 := int64(0)
 
-	firstTick := c.Tick
-	require.Nil(t, firstTick.PreviousInitialized)
+	firstTick := c.ticks[0]
 	require.Equal(t, zeroInt.Bytes(), firstTick.Value)
-	require.Equal(t, one64, firstTick.MinOf)
-	require.Equal(t, zero64, firstTick.MaxOf)
+	require.Equal(t, one64, firstTick.Covers)
 
-	secondTick := firstTick.NextInitialized
-	require.Equal(t, firstTick, secondTick.PreviousInitialized)
-	require.Equal(t, firstTick.NextInitialized, secondTick)
+	secondTick := c.ticks[1]
 	require.Equal(t, quarterInt.Bytes(), secondTick.Value)
-	require.Equal(t, one64, secondTick.MinOf)
-	require.Equal(t, one64, secondTick.MaxOf)
+	require.Equal(t, one64, secondTick.Covers)
 
-	thirdTick := secondTick.NextInitialized
-	require.Equal(t, secondTick, thirdTick.PreviousInitialized)
-	require.Equal(t, secondTick.NextInitialized, thirdTick)
+	thirdTick := c.ticks[2]
 	require.Equal(t, halfInt.Bytes(), thirdTick.Value)
-	require.Equal(t, zero64, thirdTick.MinOf)
-	require.Equal(t, one64, thirdTick.MaxOf)
+	require.Equal(t, zero64, thirdTick.Covers)
 
-	fourthTick := thirdTick.NextInitialized
-	require.Equal(t, thirdTick, fourthTick.PreviousInitialized)
-	require.Equal(t, thirdTick.NextInitialized, fourthTick)
+	fourthTick := c.ticks[3]
 	require.Equal(t, threeQuartersInt.Bytes(), fourthTick.Value)
-	require.Equal(t, one64, fourthTick.MinOf)
-	require.Equal(t, zero64, fourthTick.MaxOf)
+	require.Equal(t, one64, fourthTick.Covers)
 
-	fifthTick := fourthTick.NextInitialized
-	require.Equal(t, fourthTick, fifthTick.PreviousInitialized)
-	require.Nil(t, fifthTick.NextInitialized)
+	fifthTick := c.ticks[4]
 	require.Equal(t, fullInt.Bytes(), fifthTick.Value)
-	require.Equal(t, zero64, fifthTick.MinOf)
-	require.Equal(t, one64, fifthTick.MaxOf)
+	require.Equal(t, zero64, fifthTick.Covers)
 }
 
 func tickDeepEqual(t *testing.T, expected, actual *pbbalancer.Tick) {
 	require.Equal(t, bytes.Compare(expected.Value, actual.Value), 0)
-	require.Equal(t, expected.MinOf, actual.MinOf)
-	require.Equal(t, expected.MaxOf, actual.MaxOf)
+	require.Equal(t, expected.Covers, actual.Covers)
 }
 
 func (c *coverage) getTickByValue(value *big.Int) *pbbalancer.Tick {
-	curTick := c.Tick
-	vbytes := value.Bytes()
-	if bytes.Equal(curTick.Value, vbytes) {
-		return curTick
-	}
-
-	for curTick != nil && bytes.Compare(curTick.Value, vbytes) != 1 {
-		if bytes.Equal(curTick.Value, vbytes) {
-			return curTick
+	for _, tick := range c.ticks {
+		if bytes.Equal(tick.Value, value.Bytes()) {
+			return tick
 		}
-		curTick = curTick.NextInitialized
 	}
 
 	return nil

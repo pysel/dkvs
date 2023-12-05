@@ -116,8 +116,8 @@ func (b *Balancer) Get(ctx context.Context, key string) (*prototypes.GetResponse
 // setupCoverage creates necessary ticks for coverage based on goalReplicaRanges
 func (b *Balancer) setupCoverage(goalReplicaRanges int) error {
 	if goalReplicaRanges == 0 {
-		b.coverage.addTick(newTick(big.NewInt(0)), false, false)
-		b.coverage.addTick(newTick(partition.MaxInt), false, false)
+		b.coverage.addTick(newTick(big.NewInt(0), 0))
+		b.coverage.addTick(newTick(partition.MaxInt, 0))
 		return nil
 	}
 
@@ -125,7 +125,7 @@ func (b *Balancer) setupCoverage(goalReplicaRanges int) error {
 	for i := 0; i <= goalReplicaRanges; i++ {
 		numerator := new(big.Int).Mul(big.NewInt(int64(i)), partition.MaxInt)
 		value := new(big.Int).Div(numerator, big.NewInt(int64(goalReplicaRanges)))
-		b.coverage.addTick(newTick(value), false, false)
+		b.coverage.addTick(newTick(value, 0))
 	}
 
 	coverageBz, err := proto.Marshal(b.coverage.ToProto())

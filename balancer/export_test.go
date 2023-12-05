@@ -21,8 +21,8 @@ func (b *Balancer) GetTickByValue(value *big.Int) *pbbalancer.Tick {
 	return b.coverage.getTickByValue(value)
 }
 
-func (b *Balancer) GetTicksAmount() int {
-	return b.coverage.size
+func (b *Balancer) GetCoverageSize() int {
+	return len(b.coverage.ticks)
 }
 
 func (b *Balancer) GetNextPartitionRange() (*partition.Range, *pbbalancer.Tick, *pbbalancer.Tick) {

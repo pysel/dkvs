@@ -40,7 +40,7 @@ func TestBalancerInit(t *testing.T) {
 	goalReplicaRanges := 3
 
 	b := balancer.NewBalancerTest(t, goalReplicaRanges)
-	require.Equal(t, b.GetTicksAmount(), goalReplicaRanges+1)
+	require.Equal(t, b.GetCoverageSize(), goalReplicaRanges+1)
 
 	expectedFirstTickValue := big.NewInt(0)
 	require.NotNil(t, b.GetTickByValue(expectedFirstTickValue))
@@ -70,14 +70,14 @@ func TestGetNextPartitionRange(t *testing.T) {
 	b2 := balancer.NewBalancerTest(t, 2)
 	nextPartitionRange, _, _ := b2.GetNextPartitionRange()
 	// defaultHashrange is full sha256 domain, in case of 2 nodes, first node's domain should be half
-	require.Equal(t, nextPartitionRange, partition.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()))
+	require.Equal(t, partition.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()), nextPartitionRange)
 
 	// Register first Partition
 	b2.RegisterPartition(ctx, addr1.String())
 
 	nextPartitionRange, _, _ = b2.GetNextPartitionRange()
 	// defaultHashrange is full sha256 domain, in case of 2 nodes, second node's domain should be the second half
-	require.Equal(t, nextPartitionRange, partition.NewRange(testutil.HalfShaDomain.Bytes(), testutil.FullHashrange.Max.Bytes()))
+	require.Equal(t, partition.NewRange(testutil.HalfShaDomain.Bytes(), testutil.FullHashrange.Max.Bytes()), nextPartitionRange)
 
 	// Register second Partition
 	b2.RegisterPartition(ctx, addr2.String())
