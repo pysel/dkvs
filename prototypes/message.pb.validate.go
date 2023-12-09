@@ -57,10 +57,10 @@ func (m *SetRequest) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetKey()) < 1 {
+	if len(m.GetKey()) < 1 {
 		err := SetRequestValidationError{
 			field:  "Key",
-			reason: "value length must be at least 1 runes",
+			reason: "value length must be at least 1 bytes",
 		}
 		if !all {
 			return err
@@ -279,10 +279,10 @@ func (m *GetRequest) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetKey()) < 1 {
+	if len(m.GetKey()) < 1 {
 		err := GetRequestValidationError{
 			field:  "Key",
-			reason: "value length must be at least 1 runes",
+			reason: "value length must be at least 1 bytes",
 		}
 		if !all {
 			return err
@@ -519,10 +519,10 @@ func (m *DeleteRequest) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetKey()) < 1 {
+	if len(m.GetKey()) < 1 {
 		err := DeleteRequestValidationError{
 			field:  "Key",
-			reason: "value length must be at least 1 runes",
+			reason: "value length must be at least 1 bytes",
 		}
 		if !all {
 			return err

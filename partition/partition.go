@@ -2,6 +2,7 @@ package partition
 
 import (
 	db "github.com/pysel/dkvs/leveldb"
+	"github.com/pysel/dkvs/prototypes"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -13,7 +14,7 @@ type Partition struct {
 	// isLocked indicates whether the partition is locked.
 	isLocked bool
 	// set of messages that could not have been processed yet for some reason.
-	backlog []proto.Message
+	backlog *Backlog
 
 	// message that this partition is currently locked in in two-phase commit prepare step.
 	lockedMessage proto.Message
@@ -74,4 +75,25 @@ func (p *Partition) Close() error {
 
 func (p *Partition) SetHashrange(hashrange *Range) {
 	p.hashrange = hashrange
+}
+
+func (p *Partition) ProcessBacklog() {
+	p.isLocked = true
+	defer func() {
+		p.isLocked = false
+	}()
+
+	for {
+		message := p.backlog.Pop()
+		if message == nil {
+			return
+		}
+
+		switch m := message.(type) {
+		case *prototypes.SetRequest:
+			p.Set(m.Key, m.Value)
+		case *prototypes.DeleteRequest:
+			p.Delete(m.Key)
+		}
+	}
 }

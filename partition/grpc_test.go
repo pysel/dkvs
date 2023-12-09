@@ -27,8 +27,8 @@ func TestGRPCServer(t *testing.T) {
 
 	defer closer()
 	defer require.NoError(t, os.RemoveAll(testutil.TestDBPath))
-	domainKey := "Partition key" // a hash of this text lays in [from; to]
-	nonDomainKey := "Not partition key."
+	domainKey := []byte("Partition key") // a hash of this text lays in [from; to]
+	nonDomainKey := []byte("Not partition key.")
 
 	// Assert that value was stored correctly
 	_, err = client.Set(ctx, &prototypes.SetRequest{

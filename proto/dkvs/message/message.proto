@@ -8,16 +8,16 @@ option go_package = "github.com/pysel/dkvs/prototypes";
 
 // StoreMessage is a message that is sent to a node that should store a key
 message SetRequest {
-    string key = 1 [(validate.rules).string.min_len = 1];
+    bytes key = 1 [(validate.rules).bytes.min_len = 1];
     bytes value = 2 [(validate.rules).bytes.min_len = 1];
 
     // a lamport timestamp of this message
-    uint64 lamport = 3 ;
+    uint64 lamport = 3;
 }
 message SetResponse {}
 
 message GetRequest {
-    string key = 1 [(validate.rules).string.min_len = 1];
+    bytes key = 1 [(validate.rules).bytes.min_len = 1];
 
     // a lamport timestamp of this message
     uint64 lamport = 2;
@@ -27,7 +27,7 @@ message GetResponse {
 }
 
 message DeleteRequest {
-    string key = 1 [(validate.rules).string.min_len = 1];
+    bytes key = 1 [(validate.rules).bytes.min_len = 1];
 }
 message DeleteResponse {}
 

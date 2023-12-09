@@ -36,7 +36,7 @@ func TestTwoPhaseCommit(t *testing.T) {
 	err = b.RegisterPartition(ctx, partitionAddr2.String())
 	require.NoError(t, err)
 
-	domainKey := "Partition key"
+	domainKey := []byte("Partition key")
 	shaKey := types.ShaKey(domainKey)
 	range_, err := b.GetRangeFromDigest(shaKey[:])
 	require.NoError(t, err)

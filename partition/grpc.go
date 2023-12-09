@@ -41,7 +41,7 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (*p
 	}
 
 	if ls.isLocked {
-		ls.backlog = append(ls.backlog, req)
+		ls.backlog.Add(req)
 		return &prototypes.SetResponse{}, nil
 	}
 
@@ -93,7 +93,7 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 	}
 
 	if ls.isLocked {
-		ls.backlog = append(ls.backlog, req)
+		ls.backlog.Add(req)
 		return &prototypes.DeleteResponse{}, nil
 	}
 

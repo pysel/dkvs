@@ -24,6 +24,7 @@ func (ls *ListenServer) PrepareCommit(ctx context.Context, req *pbpartition.Prep
 func (ls *ListenServer) AbortCommit(ctx context.Context, req *pbpartition.AbortCommitRequest) (*pbpartition.AbortCommitResponse, error) {
 	ls.isLocked = false
 	ls.lockedMessage = nil
+	ls.Partition.ProcessBacklog()
 	return &pbpartition.AbortCommitResponse{}, nil
 }
 
@@ -47,5 +48,6 @@ func (ls *ListenServer) Commit(ctx context.Context, req *pbpartition.CommitReque
 	}
 
 	ls.lockedMessage = nil
+	ls.Partition.ProcessBacklog()
 	return &pbpartition.CommitResponse{}, nil
 }

@@ -77,8 +77,8 @@ func TestNewRange(t *testing.T) {
 }
 
 func TestContains(t *testing.T) {
-	domainKey := types.ShaKey("Partition key")
-	nonDomainKey := types.ShaKey("Not partition key.")
+	domainKey := types.ShaKey([]byte("Partition key"))
+	nonDomainKey := types.ShaKey([]byte("Not partition key."))
 
 	tests := []struct {
 		name     string

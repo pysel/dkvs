@@ -78,7 +78,7 @@ func (b *Balancer) GetPartitionsByKey(key []byte) []pbpartition.PartitionService
 }
 
 // Get returns the most up to date value between responsible replicas for a given key.
-func (b *Balancer) Get(ctx context.Context, key string) (*prototypes.GetResponse, error) {
+func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse, error) {
 	shaKey := types.ShaKey(key)
 	range_, err := b.getRangeFromDigest(shaKey[:])
 	if err != nil {
