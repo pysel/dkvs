@@ -6,7 +6,6 @@ import (
 
 	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/testutil"
-	"github.com/pysel/dkvs/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -77,9 +76,6 @@ func TestNewRange(t *testing.T) {
 }
 
 func TestContains(t *testing.T) {
-	domainKey := types.ShaKey([]byte("Partition key"))
-	nonDomainKey := types.ShaKey([]byte("Not partition key."))
-
 	tests := []struct {
 		name     string
 		r        *partition.Range
@@ -89,13 +85,13 @@ func TestContains(t *testing.T) {
 		{
 			name:     "key is in range",
 			r:        testutil.DefaultHashrange,
-			hash:     domainKey[:],
+			hash:     testutil.DomainKey[:],
 			expected: true,
 		},
 		{
 			name:     "key is not in range",
 			r:        testutil.DefaultHashrange,
-			hash:     nonDomainKey[:],
+			hash:     testutil.NonDomainKey[:],
 			expected: false,
 		},
 		{

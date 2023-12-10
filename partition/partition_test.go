@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/pysel/dkvs/partition"
+	"github.com/pysel/dkvs/testutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,14 +21,11 @@ func TestDatabaseMethods(t *testing.T) {
 	defer p.Close()
 	defer require.NoError(t, os.RemoveAll("test"))
 
-	partitionKey := []byte("Partition key")
-	notPartitionKey := []byte("Not partition key.")
-
-	err := p.Set(partitionKey[:], []byte("Value"))
+	err := p.Set(testutil.DomainKey[:], []byte("Value"))
 	require.Error(t, err, "should return error if key is not 32 bytes long - not a valid SHA-2 digest")
 
-	hashedPartitionKey := sha256.Sum256(partitionKey)
-	hashedNotPartitionKey := sha256.Sum256(notPartitionKey)
+	hashedPartitionKey := sha256.Sum256(testutil.DomainKey)
+	hashedNotPartitionKey := sha256.Sum256(testutil.NonDomainKey)
 
 	err = p.Set(hashedPartitionKey[:], []byte("Value"))
 	require.NoError(t, err) // partition's key, should store correctly

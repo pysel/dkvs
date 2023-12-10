@@ -36,15 +36,14 @@ func TestTwoPhaseCommit(t *testing.T) {
 	err = b.RegisterPartition(ctx, partitionAddr2.String())
 	require.NoError(t, err)
 
-	domainKey := []byte("Partition key")
-	shaKey := types.ShaKey(domainKey)
+	shaKey := types.ShaKey(testutil.DomainKey)
 	range_, err := b.GetRangeFromDigest(shaKey[:])
 	require.NoError(t, err)
 
 	msgSet := &pbpartition.PrepareCommitRequest{
 		Message: &pbpartition.PrepareCommitRequest_Set{
 			Set: &prototypes.SetRequest{
-				Key:     domainKey,
+				Key:     testutil.DomainKey,
 				Value:   []byte("value"),
 				Lamport: 0,
 			},
@@ -55,7 +54,7 @@ func TestTwoPhaseCommit(t *testing.T) {
 	require.NoError(t, err)
 
 	// Assert that value was stored correctly
-	getResp, err := b.Get(ctx, domainKey)
+	getResp, err := b.Get(ctx, testutil.DomainKey)
 	require.NoError(t, err)
 
 	expected := partition.ToStoredValue(0, []byte("value"))
@@ -64,7 +63,7 @@ func TestTwoPhaseCommit(t *testing.T) {
 	msgDelete := &pbpartition.PrepareCommitRequest{
 		Message: &pbpartition.PrepareCommitRequest_Delete{
 			Delete: &prototypes.DeleteRequest{
-				Key: domainKey,
+				Key: testutil.DomainKey,
 			},
 		},
 	}
@@ -73,7 +72,7 @@ func TestTwoPhaseCommit(t *testing.T) {
 	require.NoError(t, err)
 
 	// Assert that value was deleted correctly
-	getResp, err = b.Get(ctx, domainKey)
+	getResp, err = b.Get(ctx, testutil.DomainKey)
 	require.NoError(t, err)
 
 	require.Nil(t, getResp.StoredValue)

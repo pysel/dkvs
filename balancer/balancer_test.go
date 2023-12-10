@@ -24,13 +24,10 @@ func TestRegisterGetPartition(t *testing.T) {
 	err := b2.RegisterPartition(ctx, addr.String())
 	require.NoError(t, err)
 
-	domainKey := "Partition key"
-	nonDomainKey := "Not partition key."
-
-	keyPartitions := b2.GetPartitionsByKey([]byte(domainKey))
+	keyPartitions := b2.GetPartitionsByKey(testutil.DomainKey)
 	require.Equal(t, 1, len(keyPartitions))
 
-	keyPartitions = b2.GetPartitionsByKey([]byte(nonDomainKey))
+	keyPartitions = b2.GetPartitionsByKey(testutil.NonDomainKey)
 	require.Equal(t, 0, len(keyPartitions))
 }
 
