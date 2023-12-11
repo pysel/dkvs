@@ -530,6 +530,8 @@ func (m *DeleteRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	// no validation rules for Lamport
+
 	if len(errors) > 0 {
 		return DeleteRequestMultiError(errors)
 	}
