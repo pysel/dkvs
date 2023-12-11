@@ -45,15 +45,13 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (*p
 		return &prototypes.SetResponse{}, nil
 	}
 
-	shaKey := types.ShaKey(req.Key)
-
-	storedValue := ToStoredValue(req.Lamport, req.Value)
-	marshalled, err := proto.Marshal(storedValue)
+	value, err := reqToBytes(req)
 	if err != nil {
 		return nil, err
 	}
 
-	err = ls.Partition.Set(shaKey[:], marshalled)
+	shaKey := types.ShaKey(req.Key)
+	err = ls.Partition.Set(shaKey[:], value)
 	if err != nil {
 		return nil, err
 	}

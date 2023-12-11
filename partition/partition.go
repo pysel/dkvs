@@ -20,6 +20,8 @@ type Partition struct {
 	isLocked bool
 	// set of messages that could not have been processed yet for some reason.
 	backlog *Backlog
+	// timestamp of the last message that was processed.
+	timestamp uint64
 
 	// message that this partition is currently locked in in two-phase commit prepare step.
 	lockedMessage proto.Message
@@ -80,6 +82,16 @@ func (p *Partition) Close() error {
 
 func (p *Partition) SetHashrange(hashrange *Range) {
 	p.hashrange = hashrange
+}
+
+func (p *Partition) validateTS(ts uint64) error {
+	if ts < p.timestamp {
+		return ErrTimestampLessThanCurrent
+	} else if ts > p.timestamp+1 { // timestamp is not the next one
+		return ErrTimestampNotNext
+	}
+
+	return nil
 }
 
 // ProcessBacklog processes messages in backlog.
