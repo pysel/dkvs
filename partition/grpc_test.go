@@ -2,21 +2,22 @@ package partition_test
 
 import (
 	"context"
+	"errors"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/prototypes"
 	"github.com/pysel/dkvs/testutil"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestGRPCServer(t *testing.T) {
 	ctx := context.Background()
 	client, closer := testutil.SinglePartitionClient(ctx)
-	if closer == nil {
-		t.Fatal("Closer should not be nil")
-	}
+	require.NotNil(t, closer)
 
 	_, err := client.SetHashrange(ctx, &prototypes.SetHashrangeRequest{
 		Min: testutil.DefaultHashrange.Min.Bytes(),
@@ -28,59 +29,118 @@ func TestGRPCServer(t *testing.T) {
 	defer closer()
 	defer require.NoError(t, os.RemoveAll(testutil.TestDBPath))
 
-	// Assert that value was stored correctly
-	_, err = client.Set(ctx, &prototypes.SetRequest{
-		Key:     testutil.DomainKey,
-		Value:   []byte("value"),
-		Lamport: 1,
-	})
-	require.NoError(t, err, "SetMessage should not return error")
+	tests := map[string]struct {
+		request proto.Message
+		key     []byte
 
-	// Assert that value was stored correctly
-	getResp, err := client.Get(ctx, &prototypes.GetRequest{Key: testutil.DomainKey})
-	require.NoError(t, err, "GetMessage should not return error")
+		expectedResponse string // we cannot directly compare proto.Message instances, hence, we compare string versions
+		expectedError    error
+	}{
+		"Valid Set Request": {
+			request:          &prototypes.SetRequest{},
+			key:              testutil.DomainKey,
+			expectedResponse: (&prototypes.SetResponse{}).String(),
+			expectedError:    nil,
+		},
+		"Valid Delete Request": {
+			request:          &prototypes.DeleteRequest{},
+			key:              testutil.DomainKey,
+			expectedResponse: (&prototypes.DeleteResponse{}).String(),
+			expectedError:    nil,
+		},
+		"Invalid Set Request: nil key": {
+			request:          &prototypes.SetRequest{},
+			key:              nil,
+			expectedResponse: "",
+			expectedError:    errors.New("value length must be at least 1 bytes"),
+		},
+		"Invalid Set Request: key out of hashrange": {
+			request:          &prototypes.SetRequest{},
+			key:              testutil.NonDomainKey,
+			expectedResponse: "",
+			expectedError:    partition.ErrNotThisPartitionKey,
+		},
+		"Invalid Delete Request: nil key": {
+			request:          &prototypes.DeleteRequest{},
+			key:              nil,
+			expectedResponse: "",
+			expectedError:    errors.New("value length must be at least 1 bytes"),
+		},
+	}
 
-	expected := partition.ToStoredValue(1, []byte("value"))
-	require.Equal(t,
-		expected,
-		getResp.StoredValue,
-		"GetMessage should return correct value",
-	)
+	// value and lamport are new for every test to avoid conflicting assertions between tests
+	lamport := 1
+	for _, test := range tests {
+		test := test
+		value := append([]byte("value"), byte(lamport))
 
-	// Assert that value was not stored if key is nil
-	setResp, err := client.Set(ctx, &prototypes.SetRequest{})
-	require.Error(t, err, "SetMessage should return error if key is nil")
-	require.Nil(t, setResp, "SetMessage should return nil response if key is nil")
+		// send request logic: assert no errors and correct responses
+		switch test.request.(type) {
+		case *prototypes.SetRequest:
+			req := test.request.(*prototypes.SetRequest)
+			req.Lamport = uint64(lamport)
+			req.Value = value
+			req.Key = test.key
 
-	// Assert that get operation won't succeed if key is nil
-	getResp, err = client.Get(ctx, &prototypes.GetRequest{})
-	require.Error(t, err, "GetMessage should return error if key is nil")
-	require.Nil(t, getResp, "GetMessage should return nil response if key is nil")
+			resp, err := client.Set(ctx, req)
+			if test.expectedError != nil {
+				require.Error(t, err)
+				require.ErrorContains(t, err, test.expectedError.Error())
+				require.Nil(t, resp)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, test.expectedResponse, resp.String())
+			}
 
-	// Assert that value was not stored if key is not in partition's hashrange
-	setResp, err = client.Set(ctx, &prototypes.SetRequest{Key: testutil.NonDomainKey, Value: []byte("value")})
-	require.ErrorContains(t, err, partition.ErrNotThisPartitionKey.Error(), "SetMessage should return error if key is not domain key")
-	require.Nil(t, setResp, "SetMessage should return nil response if key is not domain key")
+		case *prototypes.DeleteRequest:
+			// prior to deleting, there should be a value stored
+			setReq := &prototypes.SetRequest{
+				Key:     test.key,
+				Value:   value,
+				Lamport: uint64(lamport),
+			}
+			client.Set(ctx, setReq)
+			lamport++
 
-	// Assert that get operation won't succeed if key is not in partition's hashrange
-	getResp, err = client.Get(ctx, &prototypes.GetRequest{Key: testutil.NonDomainKey})
-	require.ErrorContains(t, err, partition.ErrNotThisPartitionKey.Error(), "GetMessage should return error if key is not domain key")
-	require.Nil(t, getResp, "GetMessage should return nil response if key is not domain key")
+			req := test.request.(*prototypes.DeleteRequest)
+			req.Key = test.key
+			req.Lamport = uint64(lamport)
 
-	// Assert that value was deleted correctly
-	_, err = client.Delete(ctx, &prototypes.DeleteRequest{Key: testutil.DomainKey})
-	require.NoError(t, err, "DeleteMessage should not return error")
+			resp, err := client.Delete(ctx, req)
+			if test.expectedError != nil {
+				require.Error(t, err)
+				require.ErrorContains(t, err, test.expectedError.Error())
+				require.Nil(t, resp)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, test.expectedResponse, resp.String())
+			}
+		}
 
-	// Assert that value was not deleted if key is nil
-	_, err = client.Delete(ctx, &prototypes.DeleteRequest{})
-	require.Error(t, err, "DeleteMessage should return error if key is nil")
+		// assert stored value logic
+		getResp, err := client.Get(ctx, &prototypes.GetRequest{Key: test.key, Lamport: uint64(lamport)})
+		if test.expectedError == nil {
+			require.NoError(t, err, "GetMessage should not return error")
 
-	// Assert that value was not deleted if key is not in partition's hashrange
-	_, err = client.Delete(ctx, &prototypes.DeleteRequest{Key: testutil.NonDomainKey})
-	require.ErrorContains(t, err, partition.ErrNotThisPartitionKey.Error(), "DeleteMessage should return error if key is not domain key")
+			// if test.SetRequest, the value should be stored correctly (assuming that expectedError is not nil when key is out of hashrange)
+			// if test.DeleteRequest, the value should be nil
+			switch test.request.(type) {
+			case *prototypes.SetRequest:
+				require.Equal(t,
+					partition.ToStoredValue(uint64(lamport), value),
+					getResp.StoredValue,
+					"GetMessage should return correct value",
+				)
+			case *prototypes.DeleteRequest:
+				require.Nil(t, getResp.StoredValue)
+			}
+		} else {
+			require.Error(t, err, "GetMessage should return error")
+			require.Nil(t, getResp)
+		}
 
-	// Assert that deleted value was removed from partition's state
-	getResp, err = client.Get(ctx, &prototypes.GetRequest{Key: testutil.DomainKey})
-	require.NoError(t, err)
-	require.Nil(t, getResp.StoredValue)
+		lamport += 2 // 1 increase for request, 1 increase for get
+
+		time.Sleep(100 * time.Millisecond) // needed to make sure messages arrive in the order of tests
+	}
 }

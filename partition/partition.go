@@ -48,7 +48,6 @@ func NewPartition(dbPath string) *Partition {
 // Keys should be sent of 32 length bytes, since SHA-2 produces 256-bit hashes, and be of big endian format.
 
 func (p *Partition) Get(key []byte) ([]byte, error) {
-	defer p.IncrTs()
 	defer p.rwmutex.RUnlock()
 	p.rwmutex.RLock()
 
@@ -60,7 +59,6 @@ func (p *Partition) Get(key []byte) ([]byte, error) {
 }
 
 func (p *Partition) Set(key, value []byte) error {
-	defer p.IncrTs()
 	defer p.rwmutex.Unlock()
 	p.rwmutex.Lock()
 
@@ -72,7 +70,6 @@ func (p *Partition) Set(key, value []byte) error {
 }
 
 func (p *Partition) Delete(key []byte) error {
-	defer p.IncrTs()
 	defer p.rwmutex.Unlock()
 	p.rwmutex.Lock()
 
@@ -107,20 +104,39 @@ func (p *Partition) IncrTs() {
 }
 
 // ProcessBacklog processes messages in backlog.
-func (p *Partition) ProcessBacklog() {
+func (p *Partition) ProcessBacklog(err error) error {
+	if err != nil {
+		fmt.Println(err)
+		return nil // TODO: should return error?
+	}
+
+	var latestTimestamp uint64
 	for {
 		message := p.backlog.Pop(types.BID, p.timestamp)
 		if message == nil {
-			return
+			break
 		}
 
+		var err error
 		switch m := message.(type) {
 		case *prototypes.SetRequest:
-			p.Set(m.Key, m.Value)
+			latestTimestamp = m.Lamport
+			err = p.Set(m.Key, m.Value)
 		case *prototypes.DeleteRequest:
-			p.Delete(m.Key)
+			latestTimestamp = m.Lamport
+			err = p.Delete(m.Key)
 		default:
 			fmt.Println("Unknown message type") // TODO: think of something better here.
 		}
+
+		if err != nil {
+			return err
+		}
 	}
+
+	if latestTimestamp != 0 { // aka: if some message was processed
+		p.timestamp = latestTimestamp
+	}
+
+	return nil
 }

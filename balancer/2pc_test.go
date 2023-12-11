@@ -45,7 +45,7 @@ func TestTwoPhaseCommit(t *testing.T) {
 			Set: &prototypes.SetRequest{
 				Key:     testutil.DomainKey,
 				Value:   []byte("value"),
-				Lamport: 0,
+				Lamport: 1,
 			},
 		},
 	}
@@ -57,13 +57,14 @@ func TestTwoPhaseCommit(t *testing.T) {
 	getResp, err := b.Get(ctx, testutil.DomainKey)
 	require.NoError(t, err)
 
-	expected := partition.ToStoredValue(0, []byte("value"))
+	expected := partition.ToStoredValue(1, []byte("value"))
 	require.Equal(t, expected, getResp.StoredValue)
 
 	msgDelete := &pbpartition.PrepareCommitRequest{
 		Message: &pbpartition.PrepareCommitRequest_Delete{
 			Delete: &prototypes.DeleteRequest{
-				Key: testutil.DomainKey,
+				Key:     testutil.DomainKey,
+				Lamport: 2,
 			},
 		},
 	}
