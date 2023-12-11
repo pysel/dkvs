@@ -9,6 +9,7 @@ import (
 	"github.com/pysel/dkvs/types"
 )
 
+// RegisterPartition registers a partition in the balancer.
 func (bs *BalancerServer) RegisterPartition(ctx context.Context, req *pbbalancer.RegisterPartitionRequest) (*pbbalancer.RegisterPartitionResponse, error) {
 	err := bs.Balancer.RegisterPartition(ctx, req.Address)
 	if err != nil {

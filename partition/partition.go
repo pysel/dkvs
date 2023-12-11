@@ -1,6 +1,8 @@
 package partition
 
 import (
+	"fmt"
+
 	db "github.com/pysel/dkvs/leveldb"
 	"github.com/pysel/dkvs/prototypes"
 	"google.golang.org/protobuf/proto"
@@ -8,7 +10,10 @@ import (
 
 // Partition is a node that is responsible for some range of keys.
 type Partition struct {
+	// hashrange is a range of keys that this partition is responsible for.
 	hashrange *Range
+
+	// Database instance
 	db.DB
 
 	// isLocked indicates whether the partition is locked.
@@ -77,6 +82,7 @@ func (p *Partition) SetHashrange(hashrange *Range) {
 	p.hashrange = hashrange
 }
 
+// ProcessBacklog processes messages in backlog.
 func (p *Partition) ProcessBacklog() {
 	p.isLocked = true
 	defer func() {
@@ -94,6 +100,8 @@ func (p *Partition) ProcessBacklog() {
 			p.Set(m.Key, m.Value)
 		case *prototypes.DeleteRequest:
 			p.Delete(m.Key)
+		default:
+			fmt.Println("Unknown message type") // TODO: think of something better here.
 		}
 	}
 }
