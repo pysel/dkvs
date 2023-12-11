@@ -36,13 +36,30 @@ func RunPartitionServer(port int64, dbPath string) error {
 
 // Set sets a value for a key.
 func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (*prototypes.SetResponse, error) {
+	defer ls.Partition.ProcessBacklog()
+
+	// note: if request is not valid, the timestamp will not be incremented
+	// TODO: investigate if it is a valid behaviour.
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
 
-	if ls.isLocked {
-		ls.backlog.Add(req)
-		return &prototypes.SetResponse{}, nil
+	// check that the request is coming from a balancer
+	if err := validateID(ctx.Value("id").(string)); err != nil {
+		return nil, err
+	}
+
+	// process logical timestamp
+	switch ls.validateTS(req.Lamport) {
+	case ErrTimestampLessThanCurrent: // wrong: stale request
+		return nil, ErrTimestampLessThanCurrent
+	case ErrTimestampNotNext: // replica is not ready to process this request
+		if ctx.Value("id").(string) != types.BID {
+			return nil, ErrNotBalancerID
+		}
+
+		ls.backlog.Add(ctx.Value("id").(string), req.Lamport, req)
+		return nil, ErrTimestampNotNext // let balancer know that this replica is not ready for the request
 	}
 
 	value, err := reqToBytes(req)
@@ -61,6 +78,8 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (*p
 
 // Get gets a value for a key.
 func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (*prototypes.GetResponse, error) {
+	defer ls.Partition.ProcessBacklog()
+
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
@@ -86,13 +105,10 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (*p
 
 // Delete deletes a value for a key.
 func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteRequest) (*prototypes.DeleteResponse, error) {
+	defer ls.Partition.ProcessBacklog()
+
 	if err := req.Validate(); err != nil {
 		return nil, err
-	}
-
-	if ls.isLocked {
-		ls.backlog.Add(req)
-		return &prototypes.DeleteResponse{}, nil
 	}
 
 	shaKey := types.ShaKey(req.Key)
@@ -113,4 +129,11 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 
 	ls.hashrange = NewRange(req.Min, req.Max)
 	return &prototypes.SetHashrangeResponse{}, nil
+}
+
+func validateID(id string) error {
+	if id != types.BID {
+		return ErrNotBalancerID
+	}
+	return nil
 }

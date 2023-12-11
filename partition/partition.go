@@ -2,9 +2,11 @@ package partition
 
 import (
 	"fmt"
+	"sync"
 
 	db "github.com/pysel/dkvs/leveldb"
 	"github.com/pysel/dkvs/prototypes"
+	"github.com/pysel/dkvs/types"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -16,14 +18,15 @@ type Partition struct {
 	// Database instance
 	db.DB
 
-	// isLocked indicates whether the partition is locked.
-	isLocked bool
+	// read-write mutex
+	rwmutex sync.RWMutex
+
 	// set of messages that could not have been processed yet for some reason.
-	backlog *Backlog
+	backlog *types.Backlog
 	// timestamp of the last message that was processed.
 	timestamp uint64
 
-	// message that this partition is currently locked in in two-phase commit prepare step.
+	// message that this partition is currently locked in two-phase commit prepare step.
 	lockedMessage proto.Message
 }
 
@@ -37,6 +40,7 @@ func NewPartition(dbPath string) *Partition {
 	return &Partition{
 		hashrange: nil, // balancer should set this
 		DB:        db,
+		backlog:   types.NewBacklog(),
 	}
 }
 
@@ -44,6 +48,10 @@ func NewPartition(dbPath string) *Partition {
 // Keys should be sent of 32 length bytes, since SHA-2 produces 256-bit hashes, and be of big endian format.
 
 func (p *Partition) Get(key []byte) ([]byte, error) {
+	defer p.IncrTs()
+	defer p.rwmutex.RUnlock()
+	p.rwmutex.RLock()
+
 	if err := p.checkKeyRange(key); err != nil {
 		return nil, ErrNotThisPartitionKey
 	}
@@ -52,6 +60,10 @@ func (p *Partition) Get(key []byte) ([]byte, error) {
 }
 
 func (p *Partition) Set(key, value []byte) error {
+	defer p.IncrTs()
+	defer p.rwmutex.Unlock()
+	p.rwmutex.Lock()
+
 	if err := p.checkKeyRange(key); err != nil {
 		return ErrNotThisPartitionKey
 	}
@@ -60,20 +72,15 @@ func (p *Partition) Set(key, value []byte) error {
 }
 
 func (p *Partition) Delete(key []byte) error {
+	defer p.IncrTs()
+	defer p.rwmutex.Unlock()
+	p.rwmutex.Lock()
+
 	if err := p.checkKeyRange(key); err != nil {
 		return ErrNotThisPartitionKey
 	}
 
 	return p.DB.Delete(key)
-}
-
-func (p *Partition) Has(key []byte) (bool, error) {
-	if err := p.checkKeyRange(key); err != nil {
-		// still error to be able to distinguish between not found and out of range
-		return false, ErrNotThisPartitionKey
-	}
-
-	return p.DB.Has(key), nil
 }
 
 func (p *Partition) Close() error {
@@ -84,6 +91,7 @@ func (p *Partition) SetHashrange(hashrange *Range) {
 	p.hashrange = hashrange
 }
 
+// validate TS checks the timestamp of received message against local timestamp
 func (p *Partition) validateTS(ts uint64) error {
 	if ts < p.timestamp {
 		return ErrTimestampLessThanCurrent
@@ -94,15 +102,14 @@ func (p *Partition) validateTS(ts uint64) error {
 	return nil
 }
 
+func (p *Partition) IncrTs() {
+	p.timestamp++
+}
+
 // ProcessBacklog processes messages in backlog.
 func (p *Partition) ProcessBacklog() {
-	p.isLocked = true
-	defer func() {
-		p.isLocked = false
-	}()
-
 	for {
-		message := p.backlog.Pop()
+		message := p.backlog.Pop(types.BID, p.timestamp)
 		if message == nil {
 			return
 		}

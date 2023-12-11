@@ -1,6 +1,7 @@
 package partition_test
 
 import (
+	"crypto/sha256"
 	"math/big"
 	"testing"
 
@@ -76,6 +77,9 @@ func TestNewRange(t *testing.T) {
 }
 
 func TestContains(t *testing.T) {
+	nonDomainHash := sha256.Sum256(testutil.NonDomainKey)
+	domainHash := sha256.Sum256(testutil.DomainKey)
+
 	tests := []struct {
 		name     string
 		r        *partition.Range
@@ -85,13 +89,13 @@ func TestContains(t *testing.T) {
 		{
 			name:     "key is in range",
 			r:        testutil.DefaultHashrange,
-			hash:     testutil.DomainKey[:],
+			hash:     domainHash[:],
 			expected: true,
 		},
 		{
 			name:     "key is not in range",
 			r:        testutil.DefaultHashrange,
-			hash:     testutil.NonDomainKey[:],
+			hash:     nonDomainHash[:],
 			expected: false,
 		},
 		{

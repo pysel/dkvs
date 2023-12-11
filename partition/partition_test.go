@@ -41,14 +41,6 @@ func TestDatabaseMethods(t *testing.T) {
 	require.Error(t, err) // not partition's key, should return error
 	require.Nil(t, value)
 
-	has, err := p.Has(hashedPartitionKey[:])
-	require.NoError(t, err)
-	require.True(t, has) // partition's key, should return true
-
-	has, err = p.Has(hashedNotPartitionKey[:])
-	require.Error(t, err)
-	require.False(t, has) // not partition's key, should return false
-
 	err = p.Delete(hashedNotPartitionKey[:])
 	require.Error(t, err) // not partition's key, should return error
 

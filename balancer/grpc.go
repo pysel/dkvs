@@ -26,6 +26,7 @@ func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
+	ctx = context.WithValue(ctx, "id", types.BID)
 
 	response, err := bs.Balancer.Get(ctx, req.Key)
 	if err != nil {

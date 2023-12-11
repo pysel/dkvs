@@ -9,4 +9,5 @@ var (
 	ErrNoLockedMessage          = errors.New("no locked message")
 	ErrTimestampLessThanCurrent = errors.New("timestamp is less than current timestamp")
 	ErrTimestampNotNext         = errors.New("timestamp is not the next one")
+	ErrNotBalancerID            = errors.New("not a balancer id")
 )

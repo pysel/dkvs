@@ -16,13 +16,10 @@ func (ls *ListenServer) PrepareCommit(ctx context.Context, req *pbpartition.Prep
 		return nil, ErrUnsupported2PCMsg
 	}
 
-	// lock a db until locked message is committed or aborted
-	ls.isLocked = true
 	return &pbpartition.PrepareCommitResponse{Ok: true}, nil
 }
 
 func (ls *ListenServer) AbortCommit(ctx context.Context, req *pbpartition.AbortCommitRequest) (*pbpartition.AbortCommitResponse, error) {
-	ls.isLocked = false
 	ls.lockedMessage = nil
 	ls.Partition.ProcessBacklog()
 	return &pbpartition.AbortCommitResponse{}, nil
@@ -34,7 +31,6 @@ func (ls *ListenServer) Commit(ctx context.Context, req *pbpartition.CommitReque
 	}
 
 	var err error
-	ls.isLocked = false // unlock db to allow sets and deletes
 	if deleteMsg, ok := ls.lockedMessage.(*prototypes.DeleteRequest); ok {
 		_, err = ls.Delete(ctx, deleteMsg)
 	} else if setMsg, ok := ls.lockedMessage.(*prototypes.SetRequest); ok {
