@@ -48,9 +48,9 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (re
 	switch ls.validateTS(req.Lamport) {
 	case ErrTimestampLessThanCurrent: // wrong: stale request
 		return nil, ErrTimestampLessThanCurrent
-	case ErrTimestampNotNext: // replica is not ready to process this request
+	case ErrTimestampNotNext{CurrentTimestamp: ls.timestamp}: // replica is not ready to process this request
 		ls.backlog.Add(types.BID, req.Lamport, req)
-		return nil, ErrTimestampNotNext // let balancer know that this replica is not ready for the request
+		return nil, ErrTimestampNotNext{CurrentTimestamp: ls.timestamp} // let balancer know that this replica is not ready for the request
 	}
 
 	value, err := reqToBytes(req)
@@ -107,9 +107,9 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 	switch ls.validateTS(req.Lamport) {
 	case ErrTimestampLessThanCurrent: // stale/already processed request
 		return nil, ErrTimestampLessThanCurrent
-	case ErrTimestampNotNext: // replica is not ready to process this request
+	case ErrTimestampNotNext{}: // replica is not ready to process this request
 		ls.backlog.Add(types.BID, req.Lamport, req)
-		return nil, ErrTimestampNotNext // let balancer know that this replica is not ready for the request
+		return nil, ErrTimestampNotNext{CurrentTimestamp: ls.timestamp} // let balancer know that this replica is not ready for the request
 	}
 
 	shaKey := types.ShaKey(req.Key)

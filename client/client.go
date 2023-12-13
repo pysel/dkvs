@@ -5,10 +5,12 @@ import (
 
 	"github.com/pysel/dkvs/prototypes"
 	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
+	"github.com/pysel/dkvs/types"
 )
 
 // Client is an object that is responsible for interacting with DKVS.
 type Client struct {
+	// go context
 	context context.Context
 
 	// logical timestamp
@@ -16,6 +18,9 @@ type Client struct {
 
 	// a client to balancer server
 	balacerClient pbbalancer.BalancerServiceClient
+
+	// a list of messages that might have not yet processed by dkvs.
+	nonConfirmedList types.Backlog
 }
 
 func NewClient(balancerAddr string) *Client {
@@ -81,3 +86,7 @@ func (c *Client) Delete(key []byte) error {
 
 	return nil
 }
+
+// func (c *Client) processGrpcError(err error) {
+
+// }

@@ -1,6 +1,9 @@
 package partition
 
-import "errors"
+import (
+	"errors"
+	"strconv"
+)
 
 var (
 	ErrNotThisPartitionKey      = errors.New("a key provided is not in this partition's range")
@@ -8,6 +11,14 @@ var (
 	ErrUnsupported2PCMsg        = errors.New("unsupported 2PC message")
 	ErrNoLockedMessage          = errors.New("no locked message")
 	ErrTimestampLessThanCurrent = errors.New("timestamp is less than current timestamp")
-	ErrTimestampNotNext         = errors.New("timestamp is not the next one")
-	// ErrNotBalancerID            = errors.New("not a balancer id")
 )
+
+type (
+	ErrTimestampNotNext struct {
+		CurrentTimestamp uint64
+	}
+)
+
+func (e ErrTimestampNotNext) Error() string {
+	return "timestamp is not the next one, current timestamp: " + strconv.Itoa(int(e.CurrentTimestamp))
+}
