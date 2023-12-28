@@ -3,6 +3,7 @@ package balancer
 import "errors"
 
 var (
+	// General Balancer errors
 	ErrPartitionOverflow        = errors.New("enough partitions are already registered")
 	ErrCoverageNotProperlySetUp = errors.New("coverage is not properly set up")
 	ErrDigestNotCovered         = errors.New("digest is not covered by any range")
