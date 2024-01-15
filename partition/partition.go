@@ -91,7 +91,7 @@ func (p *Partition) SetHashrange(hashrange *Range) {
 // validate TS checks the timestamp of received message against local timestamp
 func (p *Partition) validateTS(ts uint64) error {
 	if ts < p.timestamp {
-		return ErrTimestampLessThanCurrent
+		return ErrTimestampIsStale
 	} else if ts > p.timestamp+1 { // timestamp is not the next one
 		return ErrTimestampNotNext{}
 	}

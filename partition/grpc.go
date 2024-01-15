@@ -46,8 +46,8 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (re
 
 	// process logical timestamp
 	switch ls.validateTS(req.Lamport) {
-	case ErrTimestampLessThanCurrent: // wrong: stale request
-		return nil, ErrTimestampLessThanCurrent
+	case ErrTimestampIsStale: // wrong: stale request
+		return nil, ErrTimestampIsStale
 	case ErrTimestampNotNext{CurrentTimestamp: ls.timestamp}: // replica is not ready to process this request
 		ls.backlog.Add(types.BID, req.Lamport, req)
 		return nil, ErrTimestampNotNext{CurrentTimestamp: ls.timestamp} // let balancer know that this replica is not ready for the request
@@ -61,7 +61,7 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (re
 	shaKey := types.ShaKey(req.Key)
 	err = ls.Partition.Set(shaKey[:], value)
 	if err != nil {
-		return nil, err
+		return nil, ErrInternal{Reason: err}
 	}
 
 	return &prototypes.SetResponse{}, nil
@@ -79,7 +79,7 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (re
 
 	value, err := ls.Partition.Get(shaKey[:])
 	if err != nil {
-		return nil, err
+		return nil, ErrInternal{Reason: err}
 	}
 	if value == nil {
 		return &prototypes.GetResponse{StoredValue: nil}, nil
@@ -105,8 +105,8 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 
 	// process logical timestamp
 	switch ls.validateTS(req.Lamport) {
-	case ErrTimestampLessThanCurrent: // stale/already processed request
-		return nil, ErrTimestampLessThanCurrent
+	case ErrTimestampIsStale: // stale/already processed request
+		return nil, ErrTimestampIsStale
 	case ErrTimestampNotNext{}: // replica is not ready to process this request
 		ls.backlog.Add(types.BID, req.Lamport, req)
 		return nil, ErrTimestampNotNext{CurrentTimestamp: ls.timestamp} // let balancer know that this replica is not ready for the request
@@ -116,7 +116,7 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 
 	err = ls.Partition.Delete(shaKey[:])
 	if err != nil {
-		return nil, err
+		return nil, ErrInternal{Reason: err}
 	}
 
 	return &prototypes.DeleteResponse{}, nil
