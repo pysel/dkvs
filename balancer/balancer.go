@@ -154,3 +154,12 @@ func (b *Balancer) saveCoverage() error {
 
 	return b.DB.Set(CoverageKey, coverageBz)
 }
+
+// func (b *Balancer) processGrpcError(err error) {
+// 	switch err.(type) {
+// 	case partition.ErrTimestampNotNext:
+// 		err := err.(partition.ErrTimestampNotNext)
+// 		lastProcessedTimestamp := err.CurrentTimestamp // the latest timestamp a partition has processed
+
+// 	}
+// }

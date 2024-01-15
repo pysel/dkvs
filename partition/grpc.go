@@ -36,7 +36,7 @@ func RunPartitionServer(port int64, dbPath string) error {
 
 // Set sets a value for a key.
 func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (resp *prototypes.SetResponse, err error) {
-	defer ls.postCRUD(err)
+	defer ls.postCRUD(err, "set")
 
 	// note: if request is not valid, the timestamp will not be incremented
 	// TODO: investigate if it is a valid behaviour.
@@ -45,12 +45,12 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (re
 	}
 
 	// process logical timestamp
-	switch ls.validateTS(req.Lamport) {
-	case ErrTimestampIsStale: // wrong: stale request
-		return nil, ErrTimestampIsStale
-	case ErrTimestampNotNext{CurrentTimestamp: ls.timestamp}: // replica is not ready to process this request
+	switch err := ls.validateTS(req.Lamport); err.(type) {
+	case ErrTimestampIsStale: // stale/already processed request
+		return nil, err
+	case ErrTimestampNotNext: // replica is not ready to process this request
 		ls.backlog.Add(types.BID, req.Lamport, req)
-		return nil, ErrTimestampNotNext{CurrentTimestamp: ls.timestamp} // let balancer know that this replica is not ready for the request
+		return nil, err // let balancer know that this replica is not ready for the request
 	}
 
 	value, err := reqToBytes(req)
@@ -64,12 +64,15 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (re
 		return nil, ErrInternal{Reason: err}
 	}
 
+	// Log event
+	ls.eventHandler.Handle(SetEvent{key: string(req.Key), data: string(req.Value)})
+
 	return &prototypes.SetResponse{}, nil
 }
 
 // Get gets a value for a key.
 func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (resp *prototypes.GetResponse, err error) {
-	defer ls.postCRUD(err)
+	defer ls.postCRUD(err, "get")
 
 	if err := req.Validate(); err != nil {
 		return nil, err
@@ -91,12 +94,15 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (re
 		return nil, err
 	}
 
+	// Log event
+	ls.eventHandler.Handle(GetEvent{key: string(req.Key), returned: string(storedValue.Value)})
+
 	return &prototypes.GetResponse{StoredValue: &storedValue}, nil
 }
 
 // Delete deletes a value for a key.
 func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteRequest) (resp *prototypes.DeleteResponse, err error) {
-	defer ls.postCRUD(err)
+	defer ls.postCRUD(err, "delete")
 
 	if err := req.Validate(); err != nil {
 		ls.IncrTs()
@@ -104,12 +110,12 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 	}
 
 	// process logical timestamp
-	switch ls.validateTS(req.Lamport) {
+	switch err := ls.validateTS(req.Lamport); err.(type) {
 	case ErrTimestampIsStale: // stale/already processed request
-		return nil, ErrTimestampIsStale
-	case ErrTimestampNotNext{}: // replica is not ready to process this request
+		return nil, err
+	case ErrTimestampNotNext: // replica is not ready to process this request
 		ls.backlog.Add(types.BID, req.Lamport, req)
-		return nil, ErrTimestampNotNext{CurrentTimestamp: ls.timestamp} // let balancer know that this replica is not ready for the request
+		return nil, err // let balancer know that this replica is not ready for the request
 	}
 
 	shaKey := types.ShaKey(req.Key)
@@ -118,6 +124,9 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 	if err != nil {
 		return nil, ErrInternal{Reason: err}
 	}
+
+	// Log event
+	ls.eventHandler.Handle(DeleteEvent{key: string(req.Key)})
 
 	return &prototypes.DeleteResponse{}, nil
 }
@@ -133,7 +142,22 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 }
 
 // postCRUD runs functionality that should be run after every CRUD operation.
-func (p *Partition) postCRUD(err error) {
+func (p *Partition) postCRUD(err error, _type string) {
 	p.ProcessBacklog(err)
 	p.IncrTs()
+
+	// log error as warning if it is either ErrTimestampIsStale or ErrTimestampNotNext
+	// log error as error otherwise
+	if err != nil {
+		switch typedErr := err.(type) {
+		case ErrTimestampIsStale:
+			p.eventHandler.Handle(typedErr.ToEvent())
+
+		case ErrTimestampNotNext:
+			p.eventHandler.Handle(typedErr.ToEvent())
+
+		default:
+			p.eventHandler.Handle(ErrorEvent{err: typedErr})
+		}
+	}
 }

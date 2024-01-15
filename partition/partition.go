@@ -6,6 +6,7 @@ import (
 
 	db "github.com/pysel/dkvs/leveldb"
 	"github.com/pysel/dkvs/prototypes"
+	"github.com/pysel/dkvs/shared"
 	"github.com/pysel/dkvs/types"
 	"google.golang.org/protobuf/proto"
 )
@@ -23,11 +24,15 @@ type Partition struct {
 
 	// set of messages that could not have been processed yet for some reason.
 	backlog *types.Backlog
+
 	// timestamp of the last message that was processed.
 	timestamp uint64
 
 	// message that this partition is currently locked in two-phase commit prepare step.
 	lockedMessage proto.Message
+
+	// event handler
+	eventHandler *shared.EventHandler
 }
 
 // NewPartition creates a new partition instance.
@@ -37,10 +42,13 @@ func NewPartition(dbPath string) *Partition {
 		panic(err)
 	}
 
+	eventHandler := shared.NewEventHandler()
+
 	return &Partition{
-		hashrange: nil, // balancer should set this
-		DB:        db,
-		backlog:   types.NewBacklog(),
+		eventHandler: eventHandler,
+		hashrange:    nil, // balancer should set this
+		DB:           db,
+		backlog:      types.NewBacklog(),
 	}
 }
 
@@ -91,9 +99,9 @@ func (p *Partition) SetHashrange(hashrange *Range) {
 // validate TS checks the timestamp of received message against local timestamp
 func (p *Partition) validateTS(ts uint64) error {
 	if ts < p.timestamp {
-		return ErrTimestampIsStale
+		return ErrTimestampIsStale{CurrentTimestamp: p.timestamp, StaleTimestamp: ts}
 	} else if ts > p.timestamp+1 { // timestamp is not the next one
-		return ErrTimestampNotNext{}
+		return ErrTimestampNotNext{CurrentTimestamp: p.timestamp, ReceivedTimestamp: ts}
 	}
 
 	return nil
