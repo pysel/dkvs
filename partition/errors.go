@@ -2,7 +2,7 @@ package partition
 
 import (
 	"errors"
-	"strconv"
+	"fmt"
 
 	"github.com/pysel/dkvs/shared"
 )
@@ -33,7 +33,7 @@ type (
 )
 
 func (e ErrTimestampNotNext) Error() string {
-	return "timestamp is not the next one, current timestamp: " + strconv.Itoa(int(e.CurrentTimestamp))
+	return fmt.Sprintf("timestamp is not the next one, current timestamp: %d", e.CurrentTimestamp)
 }
 
 func (e ErrTimestampNotNext) ToEvent() shared.Event {
@@ -44,7 +44,7 @@ func (e ErrTimestampNotNext) ToEvent() shared.Event {
 }
 
 func (e ErrInternal) Error() string {
-	return "internal error: " + e.Reason.Error()
+	return fmt.Sprintf("internal error: %s", e.Reason.Error())
 }
 
 func (e ErrInternal) Unwrap() error {
@@ -52,7 +52,7 @@ func (e ErrInternal) Unwrap() error {
 }
 
 func (e ErrTimestampIsStale) Error() string {
-	return "timestamp is stale, current timestamp: " + strconv.Itoa(int(e.CurrentTimestamp)) + ", received timestamp: " + strconv.Itoa(int(e.StaleTimestamp))
+	return fmt.Sprintf("timestamp is stale, current timestamp: %d, received timestamp: %d", e.CurrentTimestamp, e.StaleTimestamp)
 }
 
 func (e ErrTimestampIsStale) ToEvent() shared.Event {
