@@ -46,7 +46,7 @@ func init() {
 	}
 }
 
-func RunPartitionServer(port int64, dbPath string) net.Addr {
+func RunPartitionServer(port uint64, dbPath string) net.Addr {
 	lis, err := net.Listen("tcp", net.JoinHostPort("localhost", strconv.Itoa(int(port))))
 	if err != nil {
 		panic(err)

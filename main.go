@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/pysel/dkvs/partition"
+	"github.com/pysel/dkvs/shared"
 	"github.com/pysel/dkvs/types"
 )
 
@@ -34,9 +35,12 @@ func main() {
 
 		dbPath := args[3]
 
-		err = partition.RunPartitionServer(int64(port), dbPath)
-		if err != nil {
-			panic(err)
-		}
+		p := partition.NewPartition(dbPath)
+		server := partition.RegisterPartitionServer(p, shared.NewEventHandler())
+
+		wg, addr := shared.StartListeningOnPort(server, uint64(port))
+		fmt.Println("Address: ", addr)
+
+		wg.Wait() // wait while server is still running
 	}
 }

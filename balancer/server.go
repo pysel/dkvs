@@ -26,7 +26,7 @@ func RegisterBalancerServer(b *Balancer) *grpc.Server {
 }
 
 // startListeningOnPort starts a grpc server listening on the given port.
-func startListeningOnPort(s *grpc.Server, port int64) net.Addr {
+func startListeningOnPort(s *grpc.Server, port uint64) net.Addr {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		panic(err)

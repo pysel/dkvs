@@ -6,7 +6,6 @@ import (
 
 	db "github.com/pysel/dkvs/leveldb"
 	"github.com/pysel/dkvs/prototypes"
-	"github.com/pysel/dkvs/shared"
 	"github.com/pysel/dkvs/types"
 	"google.golang.org/protobuf/proto"
 )
@@ -30,9 +29,6 @@ type Partition struct {
 
 	// message that this partition is currently locked in two-phase commit prepare step.
 	lockedMessage proto.Message
-
-	// event handler
-	eventHandler *shared.EventHandler
 }
 
 // NewPartition creates a new partition instance.
@@ -42,14 +38,11 @@ func NewPartition(dbPath string) *Partition {
 		panic(err)
 	}
 
-	eventHandler := shared.NewEventHandler()
-
 	return &Partition{
-		eventHandler: eventHandler,
-		hashrange:    nil, // balancer should set this
-		DB:           db,
-		timestamp:    0,
-		backlog:      types.NewBacklog(),
+		hashrange: nil, // balancer should set this
+		DB:        db,
+		timestamp: 0,
+		backlog:   types.NewBacklog(),
 	}
 }
 

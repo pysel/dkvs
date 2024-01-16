@@ -4,36 +4,11 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"net"
 
 	"github.com/pysel/dkvs/prototypes"
-	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 	"github.com/pysel/dkvs/types"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/proto"
 )
-
-type ListenServer struct {
-	pbpartition.UnimplementedPartitionServiceServer
-	*Partition
-}
-
-// RunPartitionServer starts a partition server on the given port.
-func RunPartitionServer(port int64, dbPath string) error {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-	if err != nil {
-		panic(err)
-	}
-
-	partition := NewPartition(dbPath)
-
-	grpcServer := grpc.NewServer()
-	reflection.Register(grpcServer)
-	pbpartition.RegisterPartitionServiceServer(grpcServer, &ListenServer{Partition: partition})
-	fmt.Println("Starting server on port", port)
-	return grpcServer.Serve(lis)
-}
 
 // Set sets a value for a key.
 func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (resp *prototypes.SetResponse, err error) {
@@ -164,7 +139,7 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 }
 
 // postCRUD runs functionality that should be run after every CRUD operation.
-func (p *Partition) postCRUD(err error, req string) {
+func (p *ListenServer) postCRUD(err error, req string) {
 	p.ProcessBacklog(err)
 
 	// log error as warning if it is either ErrTimestampIsStale or ErrTimestampNotNext

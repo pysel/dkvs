@@ -38,6 +38,10 @@ type (
 		currentTimestamp  uint64
 		receivedTimestamp uint64
 	}
+
+	ServerStartEvent struct {
+		port uint64
+	}
 )
 
 func (e SetEvent) Severity() string {
@@ -94,4 +98,12 @@ func (e SetHashrangeEvent) Severity() string {
 
 func (e SetHashrangeEvent) Message() string {
 	return fmt.Sprintf("Set hashrange: \033[32m%d\033[0m -> \033[32m%d\033[0m", e.min, e.max)
+}
+
+func (e ServerStartEvent) Severity() string {
+	return "info"
+}
+
+func (e ServerStartEvent) Message() string {
+	return fmt.Sprintf("Server started on port: \033[32m%d\033[0m", e.port)
 }
