@@ -2,6 +2,7 @@ package partition
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
 	"net"
 
@@ -36,16 +37,16 @@ func RunPartitionServer(port int64, dbPath string) error {
 
 // Set sets a value for a key.
 func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (resp *prototypes.SetResponse, err error) {
-	defer ls.postCRUD(err, "set")
+	defer func() { ls.postCRUD(err, "get") }()
 
 	// note: if request is not valid, the timestamp will not be incremented
 	// TODO: investigate if it is a valid behaviour.
-	if err := req.Validate(); err != nil {
+	if err = req.Validate(); err != nil {
 		return nil, err
 	}
 
 	// process logical timestamp
-	switch err := ls.validateTS(req.Lamport); err.(type) {
+	switch err = ls.validateTS(req.Lamport); err.(type) {
 	case ErrTimestampIsStale: // stale/already processed request
 		return nil, err
 	case ErrTimestampNotNext: // replica is not ready to process this request
@@ -53,7 +54,8 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (re
 		return nil, err // let balancer know that this replica is not ready for the request
 	}
 
-	value, err := reqToBytes(req)
+	var value []byte
+	value, err = reqToBytes(req)
 	if err != nil {
 		return nil, err
 	}
@@ -72,10 +74,19 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (re
 
 // Get gets a value for a key.
 func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (resp *prototypes.GetResponse, err error) {
-	defer ls.postCRUD(err, "get")
+	defer func() { ls.postCRUD(err, "get") }()
 
-	if err := req.Validate(); err != nil {
+	if err = req.Validate(); err != nil {
 		return nil, err
+	}
+
+	// process logical timestamp
+	switch err = ls.validateTS(req.Lamport); err.(type) {
+	case ErrTimestampIsStale: // stale/already processed request
+		return nil, err
+	case ErrTimestampNotNext: // replica is not ready to process this request
+		ls.backlog.Add(types.BID, req.Lamport, req)
+		return nil, err // let balancer know that this replica is not ready for the request
 	}
 
 	shaKey := types.ShaKey(req.Key)
@@ -102,15 +113,15 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (re
 
 // Delete deletes a value for a key.
 func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteRequest) (resp *prototypes.DeleteResponse, err error) {
-	defer ls.postCRUD(err, "delete")
+	defer func() { ls.postCRUD(err, "get") }()
 
-	if err := req.Validate(); err != nil {
+	if err = req.Validate(); err != nil {
 		ls.IncrTs()
 		return nil, err
 	}
 
 	// process logical timestamp
-	switch err := ls.validateTS(req.Lamport); err.(type) {
+	switch err = ls.validateTS(req.Lamport); err.(type) {
 	case ErrTimestampIsStale: // stale/already processed request
 		return nil, err
 	case ErrTimestampNotNext: // replica is not ready to process this request
@@ -132,9 +143,20 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 }
 
 // SetHashrange sets the hashrange for this partition.
-func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHashrangeRequest) (*prototypes.SetHashrangeResponse, error) {
+func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHashrangeRequest) (res *prototypes.SetHashrangeResponse, err error) {
+	defer func() {
+		if err != nil {
+			ls.eventHandler.Handle(ErrorEvent{err: err})
+		} else {
+			min := binary.LittleEndian.Uint64(req.Min)
+			max := binary.LittleEndian.Uint64(req.Max)
+			ls.eventHandler.Handle(SetHashrangeEvent{min: min, max: max})
+		}
+	}()
+
 	if req == nil {
-		return nil, types.ErrNilRequest
+		err = types.ErrNilRequest
+		return
 	}
 
 	ls.hashrange = NewRange(req.Min, req.Max)
@@ -144,8 +166,6 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 // postCRUD runs functionality that should be run after every CRUD operation.
 func (p *Partition) postCRUD(err error, _type string) {
 	p.ProcessBacklog(err)
-	p.IncrTs()
-
 	// log error as warning if it is either ErrTimestampIsStale or ErrTimestampNotNext
 	// log error as error otherwise
 	if err != nil {
@@ -159,5 +179,7 @@ func (p *Partition) postCRUD(err error, _type string) {
 		default:
 			p.eventHandler.Handle(ErrorEvent{err: typedErr})
 		}
+	} else {
+		p.IncrTs()
 	}
 }

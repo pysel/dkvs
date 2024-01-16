@@ -6,7 +6,7 @@ import "dkvs/message/store.proto";
 
 option go_package = "github.com/pysel/dkvs/prototypes";
 
-// StoreMessage is a message that is sent to a node that should store a key
+// SetRequest is a message that is sent to a node that should store a key
 message SetRequest {
     bytes key = 1 [(validate.rules).bytes.min_len = 1];
     bytes value = 2 [(validate.rules).bytes.min_len = 1];

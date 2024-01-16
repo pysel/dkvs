@@ -2,6 +2,10 @@ package shared
 
 import (
 	"log/slog"
+	"os"
+	"time"
+
+	"github.com/lmittmann/tint"
 )
 
 // EventHandler is a struct that handles events by logging them.
@@ -15,8 +19,21 @@ type Event interface {
 }
 
 func NewEventHandler() *EventHandler {
+	writer := os.Stdout
+
+	// create a new logger
+	logger := slog.New(tint.NewHandler(writer, nil))
+
+	// set global logger with custom options
+	slog.SetDefault(slog.New(
+		tint.NewHandler(writer, &tint.Options{
+			Level:      slog.LevelDebug,
+			TimeFormat: time.Kitchen,
+		}),
+	))
+
 	return &EventHandler{
-		logger: slog.Default(),
+		logger: logger,
 	}
 }
 

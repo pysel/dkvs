@@ -1,9 +1,12 @@
 module github.com/pysel/dkvs
 
-go 1.20
+go 1.21
+
+toolchain go1.21.0
 
 require (
 	github.com/envoyproxy/protoc-gen-validate v1.0.2
+	github.com/lmittmann/tint v1.0.3
 	github.com/stretchr/testify v1.8.4
 	github.com/syndtr/goleveldb v1.0.0
 	google.golang.org/grpc v1.59.0

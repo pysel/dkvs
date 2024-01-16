@@ -3,6 +3,11 @@ package partition
 import "fmt"
 
 type (
+	SetHashrangeEvent struct {
+		min uint64
+		max uint64
+	}
+
 	SetEvent struct {
 		key  string
 		data string
@@ -38,7 +43,7 @@ func (e SetEvent) Severity() string {
 }
 
 func (e SetEvent) Message() string {
-	return fmt.Sprintf("Stored a message: %s -> %s", e.key, e.data)
+	return fmt.Sprintf("Stored a message: \033[32m%s\033[0m -> \033[32m%s\033[0m", e.key, e.data)
 }
 
 func (e GetEvent) Severity() string {
@@ -46,7 +51,7 @@ func (e GetEvent) Severity() string {
 }
 
 func (e GetEvent) Message() string {
-	return fmt.Sprintf("Retrieved a message: %s -> %s", e.key, e.returned)
+	return fmt.Sprintf("Retrieved a message: \033[32m%s\033[0m -> \033[32m%s\033[0m", e.key, e.returned)
 }
 
 func (e DeleteEvent) Severity() string {
@@ -54,7 +59,7 @@ func (e DeleteEvent) Severity() string {
 }
 
 func (e DeleteEvent) Message() string {
-	return fmt.Sprintf("Deleted a message: %s", e.key)
+	return fmt.Sprintf("Deleted a message: \033[32m%s\033[0m", e.key)
 }
 
 func (e ErrorEvent) Severity() string {
@@ -62,7 +67,7 @@ func (e ErrorEvent) Severity() string {
 }
 
 func (e ErrorEvent) Message() string {
-	return fmt.Sprintf("Error during %s operation: %s", e._type, e.err.Error())
+	return fmt.Sprintf("Error during %s operation: \033[31m%s\033[0m", e._type, e.err.Error())
 }
 
 func (e StaleRequestEvent) Severity() string {
@@ -70,7 +75,7 @@ func (e StaleRequestEvent) Severity() string {
 }
 
 func (e StaleRequestEvent) Message() string {
-	return fmt.Sprintf("Received stale request. Current timestamp: %d, received timestamp: %d", e.currentTimestamp, e.receivedTimestamp)
+	return fmt.Sprintf("\033[33mStale Request\033[0m. Current timestamp: \033[32m%d\033[0m, received timestamp: \033[32m%d\033[0m", e.currentTimestamp, e.receivedTimestamp)
 }
 
 func (e NotNextRequestEvent) Severity() string {
@@ -78,5 +83,13 @@ func (e NotNextRequestEvent) Severity() string {
 }
 
 func (e NotNextRequestEvent) Message() string {
-	return fmt.Sprintf("Received request with timestamp that is not the next one. Current timestamp: %d, received timestamp: %d", e.currentTimestamp, e.receivedTimestamp)
+	return fmt.Sprintf("\033[33mFuture Request\033[0m. Current timestamp: \033[32m%d\033[0m, received timestamp: \033[32m%d\033[0m", e.currentTimestamp, e.receivedTimestamp)
+}
+
+func (e SetHashrangeEvent) Severity() string {
+	return "info"
+}
+
+func (e SetHashrangeEvent) Message() string {
+	return fmt.Sprintf("Set hashrange: \033[32m%d\033[0m -> \033[32m%d\033[0m", e.min, e.max)
 }
