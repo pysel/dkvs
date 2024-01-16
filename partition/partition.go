@@ -48,6 +48,7 @@ func NewPartition(dbPath string) *Partition {
 		eventHandler: eventHandler,
 		hashrange:    nil, // balancer should set this
 		DB:           db,
+		timestamp:    0,
 		backlog:      types.NewBacklog(),
 	}
 }
@@ -98,7 +99,7 @@ func (p *Partition) SetHashrange(hashrange *Range) {
 
 // validate TS checks the timestamp of received message against local timestamp
 func (p *Partition) validateTS(ts uint64) error {
-	if ts < p.timestamp {
+	if ts <= p.timestamp {
 		return ErrTimestampIsStale{CurrentTimestamp: p.timestamp, StaleTimestamp: ts}
 	} else if ts > p.timestamp+1 { // timestamp is not the next one
 		return ErrTimestampNotNext{CurrentTimestamp: p.timestamp, ReceivedTimestamp: ts}

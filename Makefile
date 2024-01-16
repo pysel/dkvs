@@ -2,6 +2,7 @@ protogen:
 	@./scripts/protogen.sh
 
 launch:
+	@make clear
 	@go run main.go partition 8000 test
 
 shr:
@@ -12,6 +13,9 @@ set:
 
 get:
 	@echo '{"key": "a2V5", "lamport": ${L}}' | grpcurl -d @ -v -plaintext localhost:8000 dkvs.partition.PartitionService/Get
+
+clear:
+	@rm -rf test
 
 unit:
 	@go test -v ./...
