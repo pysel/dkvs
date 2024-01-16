@@ -23,16 +23,18 @@ type (
 	}
 
 	ErrorEvent struct {
-		_type string
-		err   error
+		req string
+		err error
 	}
 
 	StaleRequestEvent struct {
+		req               string
 		currentTimestamp  uint64
 		receivedTimestamp uint64
 	}
 
 	NotNextRequestEvent struct {
+		req               string
 		currentTimestamp  uint64
 		receivedTimestamp uint64
 	}
@@ -67,7 +69,7 @@ func (e ErrorEvent) Severity() string {
 }
 
 func (e ErrorEvent) Message() string {
-	return fmt.Sprintf("Error during %s operation: \033[31m%s\033[0m", e._type, e.err.Error())
+	return fmt.Sprintf("Error for \033[90m{%s}\033[0m request: \033[31m%s\033[0m", e.req, e.err.Error())
 }
 
 func (e StaleRequestEvent) Severity() string {
@@ -75,7 +77,7 @@ func (e StaleRequestEvent) Severity() string {
 }
 
 func (e StaleRequestEvent) Message() string {
-	return fmt.Sprintf("\033[33mStale Request\033[0m. Current timestamp: \033[32m%d\033[0m, received timestamp: \033[32m%d\033[0m", e.currentTimestamp, e.receivedTimestamp)
+	return fmt.Sprintf("\033[33mStale Request\033[0m. Request: \033[90m{%s}\033[0m. Current timestamp: \033[32m%d\033[0m, received timestamp: \033[32m%d\033[0m", e.req, e.currentTimestamp, e.receivedTimestamp)
 }
 
 func (e NotNextRequestEvent) Severity() string {
@@ -83,7 +85,7 @@ func (e NotNextRequestEvent) Severity() string {
 }
 
 func (e NotNextRequestEvent) Message() string {
-	return fmt.Sprintf("\033[33mFuture Request\033[0m. Current timestamp: \033[32m%d\033[0m, received timestamp: \033[32m%d\033[0m", e.currentTimestamp, e.receivedTimestamp)
+	return fmt.Sprintf("\033[33mFuture Request\033[0m. Request: \033[90m{%s}\033[0m. Current timestamp: \033[32m%d\033[0m, received timestamp: \033[32m%d\033[0m", e.req, e.currentTimestamp, e.receivedTimestamp)
 }
 
 func (e SetHashrangeEvent) Severity() string {

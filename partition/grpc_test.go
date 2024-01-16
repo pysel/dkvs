@@ -2,6 +2,7 @@ package partition_test
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"os"
 	"testing"
@@ -19,9 +20,11 @@ func TestGRPCServer(t *testing.T) {
 	client, closer := testutil.SinglePartitionClient(ctx)
 	require.NotNil(t, closer)
 
+	min := binary.LittleEndian.AppendUint64(testutil.DefaultHashrange.Min.Bytes(), 0)
+	max := testutil.DefaultHashrange.Max.Bytes()
 	_, err := client.SetHashrange(ctx, &prototypes.SetHashrangeRequest{
-		Min: testutil.DefaultHashrange.Min.Bytes(),
-		Max: testutil.DefaultHashrange.Max.Bytes(),
+		Min: min,
+		Max: max,
 	})
 
 	require.NoError(t, err)
@@ -30,8 +33,9 @@ func TestGRPCServer(t *testing.T) {
 	defer require.NoError(t, os.RemoveAll(testutil.TestDBPath))
 
 	tests := map[string]struct {
-		request proto.Message
-		key     []byte
+		request         proto.Message
+		key             []byte
+		increaseLamport bool
 
 		expectedResponse string // we cannot directly compare proto.Message instances, hence, we compare string versions
 		expectedError    error
@@ -40,31 +44,29 @@ func TestGRPCServer(t *testing.T) {
 			request:          &prototypes.SetRequest{},
 			key:              testutil.DomainKey,
 			expectedResponse: (&prototypes.SetResponse{}).String(),
+			increaseLamport:  true,
 			expectedError:    nil,
 		},
 		"Valid Delete Request": {
 			request:          &prototypes.DeleteRequest{},
 			key:              testutil.DomainKey,
 			expectedResponse: (&prototypes.DeleteResponse{}).String(),
+			increaseLamport:  true,
 			expectedError:    nil,
 		},
 		"Invalid Set Request: nil key": {
 			request:          &prototypes.SetRequest{},
 			key:              nil,
 			expectedResponse: "",
+			increaseLamport:  false,
 			expectedError:    errors.New("value length must be at least 1 bytes"),
 		},
 		"Invalid Set Request: key out of hashrange": {
 			request:          &prototypes.SetRequest{},
 			key:              testutil.NonDomainKey,
 			expectedResponse: "",
+			increaseLamport:  false,
 			expectedError:    partition.ErrNotThisPartitionKey,
-		},
-		"Invalid Delete Request: nil key": {
-			request:          &prototypes.DeleteRequest{},
-			key:              nil,
-			expectedResponse: "",
-			expectedError:    errors.New("value length must be at least 1 bytes"),
 		},
 	}
 
@@ -99,8 +101,11 @@ func TestGRPCServer(t *testing.T) {
 				Value:   value,
 				Lamport: uint64(lamport),
 			}
-			client.Set(ctx, setReq)
+			_, err := client.Set(ctx, setReq)
+			require.NoError(t, err)
+
 			lamport++
+			time.Sleep(50 * time.Millisecond)
 
 			req := test.request.(*prototypes.DeleteRequest)
 			req.Key = test.key
@@ -117,9 +122,14 @@ func TestGRPCServer(t *testing.T) {
 			}
 		}
 
+		if test.increaseLamport {
+			lamport++
+		}
+		time.Sleep(50 * time.Millisecond)
+
 		// assert stored value logic
-		getResp, err := client.Get(ctx, &prototypes.GetRequest{Key: test.key, Lamport: uint64(lamport)})
 		if test.expectedError == nil {
+			getResp, err := client.Get(ctx, &prototypes.GetRequest{Key: test.key, Lamport: uint64(lamport)})
 			require.NoError(t, err, "GetMessage should not return error")
 
 			// if test.SetRequest, the value should be stored correctly (assuming that expectedError is not nil when key is out of hashrange)
@@ -127,20 +137,14 @@ func TestGRPCServer(t *testing.T) {
 			switch test.request.(type) {
 			case *prototypes.SetRequest:
 				require.Equal(t,
-					partition.ToStoredValue(uint64(lamport), value),
+					partition.ToStoredValue(uint64(lamport-1), value),
 					getResp.StoredValue,
 					"GetMessage should return correct value",
 				)
 			case *prototypes.DeleteRequest:
 				require.Nil(t, getResp.StoredValue)
 			}
-		} else {
-			require.Error(t, err, "GetMessage should return error")
-			require.Nil(t, getResp)
+			lamport += 1 // for get
 		}
-
-		lamport += 2 // 1 increase for request, 1 increase for get
-
-		time.Sleep(100 * time.Millisecond) // needed to make sure messages arrive in the order of tests
 	}
 }

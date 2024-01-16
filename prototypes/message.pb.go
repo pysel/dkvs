@@ -21,7 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// StoreMessage is a message that is sent to a node that should store a key
+// SetRequest is a message that is sent to a node that should store a key
 type SetRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

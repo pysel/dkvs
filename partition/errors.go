@@ -36,8 +36,9 @@ func (e ErrTimestampNotNext) Error() string {
 	return fmt.Sprintf("timestamp is not the next one, current timestamp: %d", e.CurrentTimestamp)
 }
 
-func (e ErrTimestampNotNext) ToEvent() shared.Event {
+func (e ErrTimestampNotNext) ToEvent(req string) shared.Event {
 	return NotNextRequestEvent{
+		req:               req,
 		currentTimestamp:  e.CurrentTimestamp,
 		receivedTimestamp: e.ReceivedTimestamp,
 	}
@@ -55,8 +56,9 @@ func (e ErrTimestampIsStale) Error() string {
 	return fmt.Sprintf("timestamp is stale, current timestamp: %d, received timestamp: %d", e.CurrentTimestamp, e.StaleTimestamp)
 }
 
-func (e ErrTimestampIsStale) ToEvent() shared.Event {
+func (e ErrTimestampIsStale) ToEvent(req string) shared.Event {
 	return StaleRequestEvent{
+		req:               req,
 		currentTimestamp:  e.CurrentTimestamp,
 		receivedTimestamp: e.StaleTimestamp,
 	}

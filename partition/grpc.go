@@ -37,7 +37,7 @@ func RunPartitionServer(port int64, dbPath string) error {
 
 // Set sets a value for a key.
 func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (resp *prototypes.SetResponse, err error) {
-	defer func() { ls.postCRUD(err, "get") }()
+	defer func() { ls.postCRUD(err, "set", req.String()) }()
 
 	// note: if request is not valid, the timestamp will not be incremented
 	// TODO: investigate if it is a valid behaviour.
@@ -74,7 +74,7 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (re
 
 // Get gets a value for a key.
 func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (resp *prototypes.GetResponse, err error) {
-	defer func() { ls.postCRUD(err, "get") }()
+	defer func() { ls.postCRUD(err, "get", req.String()) }()
 
 	if err = req.Validate(); err != nil {
 		return nil, err
@@ -113,10 +113,9 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (re
 
 // Delete deletes a value for a key.
 func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteRequest) (resp *prototypes.DeleteResponse, err error) {
-	defer func() { ls.postCRUD(err, "get") }()
+	defer func() { ls.postCRUD(err, "delete", req.String()) }()
 
 	if err = req.Validate(); err != nil {
-		ls.IncrTs()
 		return nil, err
 	}
 
@@ -164,20 +163,21 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 }
 
 // postCRUD runs functionality that should be run after every CRUD operation.
-func (p *Partition) postCRUD(err error, _type string) {
+func (p *Partition) postCRUD(err error, _type string, req string) {
 	p.ProcessBacklog(err)
+
 	// log error as warning if it is either ErrTimestampIsStale or ErrTimestampNotNext
 	// log error as error otherwise
 	if err != nil {
 		switch typedErr := err.(type) {
 		case ErrTimestampIsStale:
-			p.eventHandler.Handle(typedErr.ToEvent())
+			p.eventHandler.Handle(typedErr.ToEvent(req))
 
 		case ErrTimestampNotNext:
-			p.eventHandler.Handle(typedErr.ToEvent())
+			p.eventHandler.Handle(typedErr.ToEvent(req))
 
 		default:
-			p.eventHandler.Handle(ErrorEvent{err: typedErr})
+			p.eventHandler.Handle(ErrorEvent{req: req, err: typedErr})
 		}
 	} else {
 		p.IncrTs()
