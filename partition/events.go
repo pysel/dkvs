@@ -1,11 +1,14 @@
 package partition
 
-import "fmt"
+import (
+	"fmt"
+	"math/big"
+)
 
 type (
 	SetHashrangeEvent struct {
-		min uint64
-		max uint64
+		min *big.Int
+		max *big.Int
 	}
 
 	SetEvent struct {
@@ -97,7 +100,7 @@ func (e SetHashrangeEvent) Severity() string {
 }
 
 func (e SetHashrangeEvent) Message() string {
-	return fmt.Sprintf("Set hashrange: \033[32m%d\033[0m -> \033[32m%d\033[0m", e.min, e.max)
+	return fmt.Sprintf("Set hashrange: \033[32m%s\033[0m -> \033[32m%s\033[0m", e.min.String(), e.max.String())
 }
 
 func (e ServerStartEvent) Severity() string {

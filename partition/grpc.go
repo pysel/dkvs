@@ -2,8 +2,8 @@ package partition
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
+	"math/big"
 
 	"github.com/pysel/dkvs/prototypes"
 	"github.com/pysel/dkvs/types"
@@ -43,7 +43,7 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (re
 	}
 
 	// Log event
-	ls.eventHandler.Handle(SetEvent{key: string(req.Key), data: string(req.Value)})
+	ls.EventHandler.Handle(SetEvent{key: string(req.Key), data: string(req.Value)})
 
 	return &prototypes.SetResponse{}, nil
 }
@@ -82,7 +82,7 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (re
 	}
 
 	// Log event
-	ls.eventHandler.Handle(GetEvent{key: string(req.Key), returned: string(storedValue.Value)})
+	ls.EventHandler.Handle(GetEvent{key: string(req.Key), returned: string(storedValue.Value)})
 
 	return &prototypes.GetResponse{StoredValue: &storedValue}, nil
 }
@@ -112,7 +112,7 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 	}
 
 	// Log event
-	ls.eventHandler.Handle(DeleteEvent{key: string(req.Key)})
+	ls.EventHandler.Handle(DeleteEvent{key: string(req.Key)})
 
 	return &prototypes.DeleteResponse{}, nil
 }
@@ -121,11 +121,11 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHashrangeRequest) (res *prototypes.SetHashrangeResponse, err error) {
 	defer func() {
 		if err != nil {
-			ls.eventHandler.Handle(ErrorEvent{err: err})
+			ls.EventHandler.Handle(ErrorEvent{err: err})
 		} else {
-			min := binary.LittleEndian.Uint64(req.Min)
-			max := binary.LittleEndian.Uint64(req.Max)
-			ls.eventHandler.Handle(SetHashrangeEvent{min: min, max: max})
+			min := new(big.Int).SetBytes(req.Min)
+			max := new(big.Int).SetBytes(req.Max)
+			ls.EventHandler.Handle(SetHashrangeEvent{min: min, max: max})
 		}
 	}()
 
@@ -147,13 +147,13 @@ func (p *ListenServer) postCRUD(err error, req string) {
 	if err != nil {
 		switch typedErr := err.(type) {
 		case ErrTimestampIsStale:
-			p.eventHandler.Handle(typedErr.ToEvent(req))
+			p.EventHandler.Handle(typedErr.ToEvent(req))
 
 		case ErrTimestampNotNext:
-			p.eventHandler.Handle(typedErr.ToEvent(req))
+			p.EventHandler.Handle(typedErr.ToEvent(req))
 
 		default:
-			p.eventHandler.Handle(ErrorEvent{req: req, err: typedErr})
+			p.EventHandler.Handle(ErrorEvent{req: req, err: typedErr})
 		}
 	} else {
 		p.IncrTs()

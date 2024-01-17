@@ -33,6 +33,7 @@ type Partition struct {
 
 // NewPartition creates a new partition instance.
 func NewPartition(dbPath string) *Partition {
+	fmt.Println(dbPath)
 	db, err := db.NewLevelDB(dbPath)
 	if err != nil {
 		panic(err)

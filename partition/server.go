@@ -11,7 +11,7 @@ type ListenServer struct {
 	pbpartition.UnimplementedPartitionServiceServer
 
 	// event handler
-	eventHandler *shared.EventHandler
+	EventHandler *shared.EventHandler
 
 	*Partition
 }
@@ -19,7 +19,7 @@ type ListenServer struct {
 func RegisterPartitionServer(partition *Partition, eventHandler *shared.EventHandler) *grpc.Server {
 	s := grpc.NewServer()
 	reflection.Register(s)
-	pbpartition.RegisterPartitionServiceServer(s, &ListenServer{Partition: partition, eventHandler: eventHandler})
+	pbpartition.RegisterPartitionServiceServer(s, &ListenServer{Partition: partition, EventHandler: eventHandler})
 
 	return s
 }
