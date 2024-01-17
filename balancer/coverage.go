@@ -67,7 +67,7 @@ func (c *coverage) addTick(t *pbbalancer.Tick) {
 }
 
 // getNextPartitionRange is used when assigning a range to a newly registered partition
-func (c *coverage) getNextPartitionRange() (*partition.Range, *pbbalancer.Tick, *pbbalancer.Tick) {
+func (c *coverage) getNextPartitionRange() (partition.RangeKey, *pbbalancer.Tick, *pbbalancer.Tick) {
 	// initially assume that first interval is minimal
 	minCovered := c.ticks[0].Covers
 	minLowerTick := c.ticks[0]
@@ -84,7 +84,7 @@ func (c *coverage) getNextPartitionRange() (*partition.Range, *pbbalancer.Tick, 
 	}
 
 	// minLowerTick and minUpperTick are returned to be increased by 1 if a partition is successfully registered
-	return minRange, minLowerTick, minUpperTick
+	return partition.RangeKey(minRange.AsString()), minLowerTick, minUpperTick
 }
 
 func (c *coverage) bumpTicks(lowerTick *pbbalancer.Tick) {

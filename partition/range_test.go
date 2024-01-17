@@ -125,3 +125,56 @@ func TestContains(t *testing.T) {
 		})
 	}
 }
+
+func TestAsString(t *testing.T) {
+	tests := []struct {
+		name     string
+		r        *partition.Range
+		expected partition.RangeKey
+	}{
+		{
+			name:     "range is default",
+			r:        testutil.DefaultHashrange,
+			expected: partition.RangeKey("0" + "; " + testutil.HalfShaDomain.String()),
+		},
+		{
+			name:     "range is full",
+			r:        testutil.FullHashrange,
+			expected: partition.RangeKey("0" + "; " + partition.MaxInt.String()),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := test.r.AsString()
+			require.Equal(t, test.expected, got)
+		})
+	}
+}
+
+func TestToRange(t *testing.T) {
+	tests := []struct {
+		name     string
+		r        partition.RangeKey
+		expected *partition.Range
+	}{
+		{
+			name:     "range is default",
+			r:        partition.RangeKey("0" + "; " + testutil.HalfShaDomain.String()),
+			expected: testutil.DefaultHashrange,
+		},
+		{
+			name:     "range is full",
+			r:        partition.RangeKey("0" + "; " + partition.MaxInt.String()),
+			expected: testutil.FullHashrange,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := test.r.ToRange()
+			require.NoError(t, err)
+			require.Equal(t, test.expected, got)
+		})
+	}
+}

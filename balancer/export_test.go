@@ -7,7 +7,6 @@ import (
 	db "github.com/pysel/dkvs/leveldb"
 	"github.com/pysel/dkvs/partition"
 	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
-	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,12 +24,16 @@ func (b *Balancer) GetCoverageSize() int {
 	return len(b.coverage.ticks)
 }
 
-func (b *Balancer) GetNextPartitionRange() (*partition.Range, *pbbalancer.Tick, *pbbalancer.Tick) {
+func (b *Balancer) GetNextPartitionRange() (partition.RangeKey, *pbbalancer.Tick, *pbbalancer.Tick) {
 	return b.coverage.getNextPartitionRange()
 }
 
 func (b *Balancer) GetRangeFromDigest(digest []byte) (*partition.Range, error) {
 	return b.getRangeFromDigest(digest)
+}
+
+func (b *Balancer) GetRangeToPartitions() map[partition.RangeKey][]*PartitionView {
+	return b.rangeToPartitions
 }
 
 // NewBalancerTest returns a new balancer instance with an independent coverage every time.
@@ -40,9 +43,9 @@ func NewBalancerTest(t *testing.T, goalReplicaRanges int) *Balancer {
 	require.NoError(t, err)
 
 	b := &Balancer{
-		DB:       db,
-		clients:  make(map[*partition.Range][]pbpartition.PartitionServiceClient),
-		coverage: &coverage{},
+		DB:                db,
+		rangeToPartitions: make(map[partition.RangeKey][]*PartitionView),
+		coverage:          &coverage{},
 	}
 
 	require.NoError(t, b.setupCoverage(goalReplicaRanges))

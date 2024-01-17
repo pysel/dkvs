@@ -15,7 +15,6 @@ import (
 )
 
 var (
-	TestDBPath2    = "test2"
 	TestDBBalancer = "balancer"
 )
 
@@ -28,7 +27,7 @@ func TestTwoPhaseCommit(t *testing.T) {
 
 	partitionAddr1, partitionAddr2 := addrs[0], addrs[1]
 
-	b := balancer.NewBalancerTest(t, 2)
+	b := balancer.NewBalancerTest(t, 1)
 	err := b.RegisterPartition(ctx, partitionAddr1.String())
 	require.NoError(t, err)
 
@@ -63,7 +62,7 @@ func TestTwoPhaseCommit(t *testing.T) {
 		Message: &pbpartition.PrepareCommitRequest_Delete{
 			Delete: &prototypes.DeleteRequest{
 				Key:     testutil.DomainKey,
-				Lamport: 2,
+				Lamport: 3,
 			},
 		},
 	}

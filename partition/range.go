@@ -2,6 +2,7 @@ package partition
 
 import (
 	"math/big"
+	"strings"
 )
 
 // A range of keys this partition is responsible for. Total range is [0; 2^256].
@@ -57,4 +58,25 @@ func NewRange(minb, maxb []byte) *Range {
 func (r *Range) Contains(hash []byte) bool {
 	hashInt := new(big.Int).SetBytes(hash[:])
 	return r.Min.Cmp(hashInt) <= 0 && r.Max.Cmp(hashInt) >= 0
+}
+
+type RangeKey string
+
+func (r RangeKey) ToRange() (*Range, error) {
+	splitted := strings.Split(string(r), "; ")
+	min, ok := new(big.Int).SetString(splitted[0], 10)
+	if !ok {
+		return nil, ErrFailedToSetString
+
+	}
+
+	max, err := new(big.Int).SetString(splitted[1], 10)
+	if !err {
+		return nil, ErrFailedToSetString
+	}
+	return NewRange(min.Bytes(), max.Bytes()), nil
+}
+
+func (r *Range) AsString() RangeKey {
+	return RangeKey(r.Min.String() + "; " + r.Max.String())
 }

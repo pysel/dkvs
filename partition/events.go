@@ -53,6 +53,10 @@ type (
 	}
 
 	TwoPCAbortEvent struct{}
+
+	TwoPCCommitEvent struct {
+		msg string
+	}
 )
 
 func (e SetEvent) Severity() string {
@@ -119,6 +123,8 @@ func (e ServerStartEvent) Message() string {
 	return fmt.Sprintf("Server started on port: \033[32m%d\033[0m", e.port)
 }
 
+// ----------------- 2PC Events -----------------
+
 func (e TwoPCPrepareCommitEvent) Severity() string {
 	return "info"
 }
@@ -128,9 +134,17 @@ func (e TwoPCPrepareCommitEvent) Message() string {
 }
 
 func (e TwoPCAbortEvent) Severity() string {
-	return "info"
+	return "warning"
 }
 
 func (e TwoPCAbortEvent) Message() string {
-	return shared.RedWrap("2PC was aborted")
+	return shared.YellowWrap("2PC was aborted")
+}
+
+func (e TwoPCCommitEvent) Severity() string {
+	return "info"
+}
+
+func (e TwoPCCommitEvent) Message() string {
+	return fmt.Sprintf("2PC commit of locked message: %s", shared.GreenWrap(e.msg))
 }

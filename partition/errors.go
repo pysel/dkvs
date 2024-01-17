@@ -12,6 +12,7 @@ var (
 	ErrInvalidKeySize      = errors.New("key size should be 32 bytes")
 	ErrUnsupported2PCMsg   = errors.New("unsupported 2PC message")
 	ErrNoLockedMessage     = errors.New("no locked message")
+	ErrFailedToSetString   = errors.New("failed to set string")
 )
 
 type (

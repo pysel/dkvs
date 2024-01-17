@@ -8,7 +8,6 @@ import (
 	db "github.com/pysel/dkvs/leveldb"
 	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/prototypes"
-	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 	"github.com/pysel/dkvs/types"
 	"google.golang.org/protobuf/proto"
 )
@@ -20,7 +19,7 @@ type Balancer struct {
 
 	// A mapping from ranges to partitions.
 	// Multiple partitions can be mapped to the same range.
-	clients map[*partition.Range][]pbpartition.PartitionServiceClient
+	rangeToPartitions map[partition.RangeKey][]*PartitionView
 
 	// coverage is used for tracking the tracked ranges
 	coverage *coverage
@@ -34,9 +33,9 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 	}
 
 	b := &Balancer{
-		DB:       db,
-		clients:  make(map[*partition.Range][]pbpartition.PartitionServiceClient),
-		coverage: GetCoverage(),
+		DB:                db,
+		rangeToPartitions: make(map[partition.RangeKey][]*PartitionView),
+		coverage:          GetCoverage(),
 	}
 
 	err = b.setupCoverage(goalReplicaRanges)
@@ -51,13 +50,17 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 	client := partition.NewPartitionClient(addr)
 
-	partitionRange, lowerTick, _ := b.coverage.getNextPartitionRange()
+	partitionRangeKey, lowerTick, _ := b.coverage.getNextPartitionRange()
+	partitionRange, _ := partitionRangeKey.ToRange() // TODO: err
+
 	_, err := client.SetHashrange(ctx, &prototypes.SetHashrangeRequest{Min: partitionRange.Min.Bytes(), Max: partitionRange.Max.Bytes()})
 	if err != nil {
 		return err
 	}
 
-	b.clients[partitionRange] = append(b.clients[partitionRange], client)
+	view := NewPartitionView(&client)
+
+	b.rangeToPartitions[partitionRangeKey] = append(b.rangeToPartitions[partitionRangeKey], view)
 
 	// on sucess, inrease min and max values of ticks
 	b.coverage.bumpTicks(lowerTick)
@@ -66,11 +69,12 @@ func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 }
 
 // GetPartitionsByKey returns a list of partitions that contain the given key.
-func (b *Balancer) GetPartitionsByKey(key []byte) []pbpartition.PartitionServiceClient {
+func (b *Balancer) GetPartitionsByKey(key []byte) []*PartitionView {
 	shaKey := sha256.Sum256(key)
-	for range_, clients := range b.clients {
+	for rangeKey, partitions := range b.rangeToPartitions {
+		range_, _ := rangeKey.ToRange() // Todo: err
 		if range_.Contains(shaKey[:]) {
-			return clients
+			return partitions
 		}
 	}
 
@@ -85,15 +89,17 @@ func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse
 		return nil, err
 	}
 
-	responsibleClients := b.clients[range_]
-	if len(responsibleClients) == 0 {
+	responsiblePartitions := b.rangeToPartitions[range_.AsString()]
+	if len(responsiblePartitions) == 0 {
 		return nil, ErrRangeNotYetCovered
 	}
 
 	var response *prototypes.GetResponse
 	maxLamport := uint64(0)
-	for _, client := range responsibleClients {
-		resp, err := client.Get(ctx, &prototypes.GetRequest{Key: key})
+	for _, partition := range responsiblePartitions {
+		partition.lamport++ // increase lamport timestamp so that we account for get request we are sending here
+
+		resp, err := (*partition.client).Get(ctx, &prototypes.GetRequest{Key: key, Lamport: partition.lamport})
 		if err != nil {
 			continue
 		} else if resp.StoredValue == nil {
@@ -136,7 +142,8 @@ func (b *Balancer) setupCoverage(goalReplicaRanges int) error {
 
 // getRangeFromDigest returns a range to which the given digest belongs
 func (b *Balancer) getRangeFromDigest(digest []byte) (*partition.Range, error) {
-	for range_ := range b.clients {
+	for rangeKey := range b.rangeToPartitions {
+		range_, _ := rangeKey.ToRange() // TODO: err
 		if range_.Contains(digest) {
 			return range_, nil
 		}
