@@ -3,6 +3,8 @@ package partition
 import (
 	"fmt"
 	"math/big"
+
+	"github.com/pysel/dkvs/shared"
 )
 
 type (
@@ -45,6 +47,12 @@ type (
 	ServerStartEvent struct {
 		port uint64
 	}
+
+	TwoPCPrepareCommitEvent struct {
+		msg string
+	}
+
+	TwoPCAbortEvent struct{}
 )
 
 func (e SetEvent) Severity() string {
@@ -52,7 +60,7 @@ func (e SetEvent) Severity() string {
 }
 
 func (e SetEvent) Message() string {
-	return fmt.Sprintf("Stored a message: \033[32m%s\033[0m -> \033[32m%s\033[0m", e.key, e.data)
+	return fmt.Sprintf("Stored a message: %s -> %s", shared.GreenWrap(e.key), shared.GreenWrap(e.data))
 }
 
 func (e GetEvent) Severity() string {
@@ -60,7 +68,7 @@ func (e GetEvent) Severity() string {
 }
 
 func (e GetEvent) Message() string {
-	return fmt.Sprintf("Retrieved a message: \033[32m%s\033[0m -> \033[32m%s\033[0m", e.key, e.returned)
+	return fmt.Sprintf("Retrieved a message: %s -> %s", shared.GreenWrap(e.key), shared.GreenWrap(e.returned))
 }
 
 func (e DeleteEvent) Severity() string {
@@ -68,7 +76,7 @@ func (e DeleteEvent) Severity() string {
 }
 
 func (e DeleteEvent) Message() string {
-	return fmt.Sprintf("Deleted a message: \033[32m%s\033[0m", e.key)
+	return fmt.Sprintf("Deleted a message: %s", shared.GreenWrap(e.key))
 }
 
 func (e ErrorEvent) Severity() string {
@@ -76,7 +84,7 @@ func (e ErrorEvent) Severity() string {
 }
 
 func (e ErrorEvent) Message() string {
-	return fmt.Sprintf("Error for \033[90m{%s}\033[0m request: \033[31m%s\033[0m", e.req, e.err.Error())
+	return fmt.Sprintf("Error for {%s} request: %s", shared.GreyWrap(e.req), shared.RedWrap(e.err.Error()))
 }
 
 func (e StaleRequestEvent) Severity() string {
@@ -84,7 +92,7 @@ func (e StaleRequestEvent) Severity() string {
 }
 
 func (e StaleRequestEvent) Message() string {
-	return fmt.Sprintf("\033[33mStale Request\033[0m. Request: \033[90m{%s}\033[0m. Current timestamp: \033[32m%d\033[0m, received timestamp: \033[32m%d\033[0m", e.req, e.currentTimestamp, e.receivedTimestamp)
+	return fmt.Sprintf("\033[33mStale Request\033[0m. Request: {%s}. Current timestamp: \033[32m%d\033[0m, received timestamp: \033[32m%d\033[0m", shared.GreyWrap(e.req), e.currentTimestamp, e.receivedTimestamp)
 }
 
 func (e NotNextRequestEvent) Severity() string {
@@ -92,7 +100,7 @@ func (e NotNextRequestEvent) Severity() string {
 }
 
 func (e NotNextRequestEvent) Message() string {
-	return fmt.Sprintf("\033[33mFuture Request\033[0m. Request: \033[90m{%s}\033[0m. Current timestamp: \033[32m%d\033[0m, received timestamp: \033[32m%d\033[0m", e.req, e.currentTimestamp, e.receivedTimestamp)
+	return fmt.Sprintf("\033[33mFuture Request\033[0m. Request: {%s}. Current timestamp: \033[32m%d\033[0m, received timestamp: \033[32m%d\033[0m", shared.GreyWrap(e.req), e.currentTimestamp, e.receivedTimestamp)
 }
 
 func (e SetHashrangeEvent) Severity() string {
@@ -100,7 +108,7 @@ func (e SetHashrangeEvent) Severity() string {
 }
 
 func (e SetHashrangeEvent) Message() string {
-	return fmt.Sprintf("Set hashrange: \033[32m%s\033[0m -> \033[32m%s\033[0m", e.min.String(), e.max.String())
+	return fmt.Sprintf("Set hashrange: %s -> %s", shared.GreenWrap(e.min.String()), shared.GreenWrap(e.max.String()))
 }
 
 func (e ServerStartEvent) Severity() string {
@@ -109,4 +117,20 @@ func (e ServerStartEvent) Severity() string {
 
 func (e ServerStartEvent) Message() string {
 	return fmt.Sprintf("Server started on port: \033[32m%d\033[0m", e.port)
+}
+
+func (e TwoPCPrepareCommitEvent) Severity() string {
+	return "info"
+}
+
+func (e TwoPCPrepareCommitEvent) Message() string {
+	return fmt.Sprintf("2PC prepare commit locked message: %s", shared.GreenWrap(e.msg))
+}
+
+func (e TwoPCAbortEvent) Severity() string {
+	return "info"
+}
+
+func (e TwoPCAbortEvent) Message() string {
+	return shared.RedWrap("2PC was aborted")
 }

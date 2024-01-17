@@ -25,12 +25,13 @@ func (ls *ListenServer) AbortCommit(ctx context.Context, req *pbpartition.AbortC
 	return &pbpartition.AbortCommitResponse{}, nil
 }
 
-func (ls *ListenServer) Commit(ctx context.Context, req *pbpartition.CommitRequest) (*pbpartition.CommitResponse, error) {
+func (ls *ListenServer) Commit(ctx context.Context, req *pbpartition.CommitRequest) (res *pbpartition.CommitResponse, err error) {
+	defer func() { ls.postCRUD(err, req.String()) }()
+
 	if ls.lockedMessage == nil {
 		return nil, ErrNoLockedMessage
 	}
 
-	var err error
 	if deleteMsg, ok := ls.lockedMessage.(*prototypes.DeleteRequest); ok {
 		_, err = ls.Delete(ctx, deleteMsg)
 	} else if setMsg, ok := ls.lockedMessage.(*prototypes.SetRequest); ok {

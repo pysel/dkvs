@@ -2,10 +2,10 @@ package partition
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 
 	"github.com/pysel/dkvs/prototypes"
+	"github.com/pysel/dkvs/shared"
 	"github.com/pysel/dkvs/types"
 	"google.golang.org/protobuf/proto"
 )
@@ -21,7 +21,6 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (re
 	}
 
 	// process logical timestamp
-	fmt.Println("Current timestamp: ", ls.timestamp, "Received timestamp: ", req.Lamport)
 	switch err = ls.validateTS(req.Lamport); err.(type) {
 	case ErrTimestampIsStale: // stale/already processed request
 		return nil, err
@@ -142,19 +141,14 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 func (p *ListenServer) postCRUD(err error, req string) {
 	p.ProcessBacklog(err)
 
-	// log error as warning if it is either ErrTimestampIsStale or ErrTimestampNotNext
+	// if error is a warning, log it as warning
 	// log error as error otherwise
 	if err != nil {
-		switch typedErr := err.(type) {
-		case ErrTimestampIsStale:
-			p.EventHandler.Handle(typedErr.ToEvent(req))
-
-		case ErrTimestampNotNext:
-			p.EventHandler.Handle(typedErr.ToEvent(req))
-
-		default:
-			p.EventHandler.Handle(ErrorEvent{req: req, err: typedErr})
+		if eventError, ok := err.(shared.IsWarningEventError); ok {
+			p.EventHandler.Handle(eventError.WarningErrorToEvent(req))
+			return
 		}
+		p.EventHandler.Handle(ErrorEvent{err: err})
 	} else {
 		p.IncrTs()
 	}

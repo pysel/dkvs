@@ -18,6 +18,10 @@ type Event interface {
 	Message() string
 }
 
+type IsWarningEventError interface {
+	WarningErrorToEvent(req string) Event
+}
+
 func NewEventHandler() *EventHandler {
 	writer := os.Stdout
 

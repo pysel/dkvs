@@ -13,12 +13,13 @@ import (
 )
 
 func TestRegisterGetPartition(t *testing.T) {
-	defer os.RemoveAll(testutil.TestDBPath)
 	defer os.RemoveAll(TestDBBalancer + t.Name())
+	addrs, paths := testutil.StartXPartitionServers(1)
+	defer testutil.RemovePaths(paths)
 
 	ctx := context.Background()
 
-	addr := testutil.RunPartitionServer(0, testutil.TestDBPath)
+	addr := addrs[0]
 	b2 := balancer.NewBalancerTest(t, 2)
 
 	err := b2.RegisterPartition(ctx, addr.String())
@@ -54,12 +55,11 @@ func TestBalancerInit(t *testing.T) {
 }
 
 func TestGetNextPartitionRange(t *testing.T) {
-	defer os.RemoveAll(testutil.TestDBPath)
-	defer os.RemoveAll(TestDBPath2)
 	defer os.RemoveAll(TestDBBalancer + t.Name())
+	addrs, paths := testutil.StartXPartitionServers(2)
+	defer testutil.RemovePaths(paths)
 
-	addr1 := testutil.RunPartitionServer(0, testutil.TestDBPath)
-	addr2 := testutil.RunPartitionServer(0, TestDBPath2)
+	addr1, addr2 := addrs[0], addrs[1]
 
 	ctx := context.Background()
 

@@ -33,7 +33,6 @@ type Partition struct {
 
 // NewPartition creates a new partition instance.
 func NewPartition(dbPath string) *Partition {
-	fmt.Println(dbPath)
 	db, err := db.NewLevelDB(dbPath)
 	if err != nil {
 		panic(err)
@@ -109,7 +108,6 @@ func (p *Partition) IncrTs() {
 // ProcessBacklog processes messages in backlog.
 func (p *Partition) ProcessBacklog(err error) error {
 	if err != nil {
-		fmt.Println(err)
 		return nil // TODO: should return error?
 	}
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/pysel/dkvs/partition"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
+	"github.com/pysel/dkvs/shared"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
@@ -46,33 +47,14 @@ func init() {
 	}
 }
 
-func RunPartitionServer(port uint64, dbPath string) net.Addr {
-	lis, err := net.Listen("tcp", net.JoinHostPort("localhost", strconv.Itoa(int(port))))
-	if err != nil {
-		panic(err)
-	}
-
-	p := partition.NewPartition(dbPath)
-
-	grpcServer := grpc.NewServer()
-	pbpartition.RegisterPartitionServiceServer(grpcServer, &partition.ListenServer{Partition: p})
-	go func() {
-		err := grpcServer.Serve(lis)
-		if err != nil {
-			log.Fatalf("Partition server exited with error: %v", err)
-		}
-	}()
-
-	return lis.Addr()
-}
-
 // BufferedPartitionServer creates a listener and a server for the partition service.
 func BufferedPartitionServer(dbPath string) (*bufconn.Listener, *grpc.Server) {
 	lis := bufconn.Listen(bufSize)
 	s := grpc.NewServer()
 	p := partition.NewPartition(dbPath)
+	eventHandler := shared.NewEventHandler()
 
-	pbpartition.RegisterPartitionServiceServer(s, &partition.ListenServer{Partition: p})
+	pbpartition.RegisterPartitionServiceServer(s, &partition.ListenServer{Partition: p, EventHandler: eventHandler})
 
 	return lis, s
 }
@@ -86,9 +68,9 @@ func RunBufferedPartitionServer(lis *bufconn.Listener, s *grpc.Server) {
 	}()
 }
 
-// partitionClient set ups a partition server and partition client. Returns client and closer function.
+// StartPartitionClientToBufferedServer sets up a partition server and partition client. Returns client and closer function.
 // Client is used to test the rpc calls.
-func SinglePartitionClient(ctx context.Context) (pbpartition.PartitionServiceClient, func()) {
+func StartPartitionClientToBufferedServer(ctx context.Context) (pbpartition.PartitionServiceClient, func()) {
 	lis, s := BufferedPartitionServer(TestDBPath)
 	RunBufferedPartitionServer(lis, s)
 
@@ -107,4 +89,19 @@ func SinglePartitionClient(ctx context.Context) (pbpartition.PartitionServiceCli
 		s.Stop()
 	}
 	return pbpartition.NewPartitionServiceClient(conn), closer
+}
+
+func StartXPartitionServers(x int) ([]net.Addr, []string) {
+	addrs := make([]net.Addr, x)
+	dbPaths := make([]string, x)
+	for i := 0; i < x; i++ {
+		path := TestDBPath + strconv.Itoa(i) + "test"
+		p := partition.NewPartition(path)
+		s := partition.RegisterPartitionServer(p, shared.NewEventHandler())
+		_, addr := shared.StartListeningOnPort(s, 0)
+		addrs[i] = addr
+		dbPaths[i] = path
+	}
+
+	return addrs, dbPaths
 }
