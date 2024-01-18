@@ -16,6 +16,8 @@ func (bs *BalancerServer) RegisterPartition(ctx context.Context, req *pbbalancer
 		return nil, err
 	}
 
+	bs.eventHandler.Emit(&RegisterPartitionEvent{Address: req.Address})
+
 	// partition successfully registered
 	return &pbbalancer.RegisterPartitionResponse{}, nil
 }
@@ -32,6 +34,7 @@ func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (
 		return nil, err
 	}
 
+	bs.eventHandler.Emit(&GetEvent{msg: req.String()})
 	return response, nil
 }
 

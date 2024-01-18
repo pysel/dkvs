@@ -1,0 +1,46 @@
+package balancer
+
+import (
+	"fmt"
+
+	"github.com/pysel/dkvs/shared"
+)
+
+type (
+	// RegisterPartition registers a partition in the balancer.
+	RegisterPartitionEvent struct {
+		Address string
+	}
+
+	GetEvent struct {
+		msg string
+	}
+
+	PartitionOfflineEvent struct {
+		Address string
+	}
+)
+
+func (e *RegisterPartitionEvent) Severity() string {
+	return "info"
+}
+
+func (e *RegisterPartitionEvent) Message() string {
+	return fmt.Sprintf("Registered partition on address %s", shared.GreenWrap(e.Address))
+}
+
+func (e *PartitionOfflineEvent) Severity() string {
+	return "warning"
+}
+
+func (e *PartitionOfflineEvent) Message() string {
+	return fmt.Sprintf("No connection to partition %s", shared.YellowWrap(e.Address))
+}
+
+func (e *GetEvent) Severity() string {
+	return "info"
+}
+
+func (e *GetEvent) Message() string {
+	return fmt.Sprintf("Relayed GET request: %s", shared.GreyWrap(e.msg))
+}

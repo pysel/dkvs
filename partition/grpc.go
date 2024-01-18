@@ -42,7 +42,7 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (re
 	}
 
 	// Log event
-	ls.EventHandler.Handle(SetEvent{key: string(req.Key), data: string(req.Value)})
+	ls.EventHandler.Emit(SetEvent{key: string(req.Key), data: string(req.Value)})
 
 	return &prototypes.SetResponse{}, nil
 }
@@ -81,7 +81,7 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (re
 	}
 
 	// Log event
-	ls.EventHandler.Handle(GetEvent{key: string(req.Key), returned: string(storedValue.Value)})
+	ls.EventHandler.Emit(GetEvent{key: string(req.Key), returned: string(storedValue.Value)})
 
 	return &prototypes.GetResponse{StoredValue: &storedValue}, nil
 }
@@ -111,7 +111,7 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 	}
 
 	// Log event
-	ls.EventHandler.Handle(DeleteEvent{key: string(req.Key)})
+	ls.EventHandler.Emit(DeleteEvent{key: string(req.Key)})
 
 	return &prototypes.DeleteResponse{}, nil
 }
@@ -120,11 +120,11 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHashrangeRequest) (res *prototypes.SetHashrangeResponse, err error) {
 	defer func() {
 		if err != nil {
-			ls.EventHandler.Handle(ErrorEvent{err: err})
+			ls.EventHandler.Emit(ErrorEvent{err: err})
 		} else {
 			min := new(big.Int).SetBytes(req.Min)
 			max := new(big.Int).SetBytes(req.Max)
-			ls.EventHandler.Handle(SetHashrangeEvent{min: min, max: max})
+			ls.EventHandler.Emit(SetHashrangeEvent{min: min, max: max})
 		}
 	}()
 
@@ -145,10 +145,10 @@ func (p *ListenServer) postCRUD(err error, req string) {
 	// log error as error otherwise
 	if err != nil {
 		if eventError, ok := err.(shared.IsWarningEventError); ok {
-			p.EventHandler.Handle(eventError.WarningErrorToEvent(req))
+			p.EventHandler.Emit(eventError.WarningErrorToEvent(req))
 			return
 		}
-		p.EventHandler.Handle(ErrorEvent{err: err})
+		p.EventHandler.Emit(ErrorEvent{err: err})
 	} else {
 		p.IncrTs()
 	}

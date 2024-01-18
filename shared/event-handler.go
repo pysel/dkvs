@@ -41,7 +41,7 @@ func NewEventHandler() *EventHandler {
 	}
 }
 
-func (e *EventHandler) Handle(event Event) {
+func (e *EventHandler) Emit(event Event) {
 	switch event.Severity() {
 	case "info":
 		e.logger.Info(event.Message())

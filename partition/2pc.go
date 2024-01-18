@@ -16,7 +16,7 @@ func (ls *ListenServer) PrepareCommit(ctx context.Context, req *pbpartition.Prep
 		return nil, ErrUnsupported2PCMsg
 	}
 
-	ls.EventHandler.Handle(TwoPCPrepareCommitEvent{msg: req.String()})
+	ls.EventHandler.Emit(TwoPCPrepareCommitEvent{msg: req.String()})
 	return &pbpartition.PrepareCommitResponse{Ok: true}, nil
 }
 
@@ -24,7 +24,7 @@ func (ls *ListenServer) AbortCommit(ctx context.Context, req *pbpartition.AbortC
 	ls.lockedMessage = nil
 	ls.Partition.ProcessBacklog(nil)
 
-	ls.EventHandler.Handle(TwoPCAbortEvent{})
+	ls.EventHandler.Emit(TwoPCAbortEvent{})
 	return &pbpartition.AbortCommitResponse{}, nil
 }
 
@@ -51,6 +51,6 @@ func (ls *ListenServer) Commit(ctx context.Context, req *pbpartition.CommitReque
 	ls.lockedMessage = nil
 	ls.Partition.ProcessBacklog(nil) // TODO: consider removing processing of backlog after 2PC termination
 
-	ls.EventHandler.Handle(TwoPCCommitEvent{msg: msgString})
+	ls.EventHandler.Emit(TwoPCCommitEvent{msg: msgString})
 	return &pbpartition.CommitResponse{}, nil
 }

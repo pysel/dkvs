@@ -3,6 +3,7 @@ package balancer
 import (
 	"context"
 	"crypto/sha256"
+	"fmt"
 	"math/big"
 
 	db "github.com/pysel/dkvs/leveldb"
@@ -27,7 +28,7 @@ type Balancer struct {
 
 // NewBalancer returns a new balancer instance.
 func NewBalancer(goalReplicaRanges int) *Balancer {
-	db, err := db.NewLevelDB("balancer")
+	db, err := db.NewLevelDB("balancer-db")
 	if err != nil {
 		panic(err)
 	}
@@ -96,15 +97,21 @@ func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse
 
 	var response *prototypes.GetResponse
 	maxLamport := uint64(0)
+	// offline := make([]*PartitionView, len(responsiblePartitions))
 	for _, partition := range responsiblePartitions {
 		partition.lamport++ // increase lamport timestamp so that we account for get request we are sending here
 
 		resp, err := (*partition.client).Get(ctx, &prototypes.GetRequest{Key: key, Lamport: partition.lamport})
+		fmt.Println(resp, err)
 		if err != nil {
 			continue
 		} else if resp.StoredValue == nil {
 			response = resp
 			continue
+		}
+
+		if resp == nil {
+
 		}
 
 		// since returned value will be a tuple of lamport timestamp and value, check which returned value
@@ -160,6 +167,14 @@ func (b *Balancer) saveCoverage() error {
 	}
 
 	return b.DB.Set(CoverageKey, coverageBz)
+}
+
+func (b *Balancer) responseCheck(resp proto.Message) error {
+	if resp == nil {
+
+	}
+
+	return nil
 }
 
 // func (b *Balancer) processGrpcError(err error) {
