@@ -110,10 +110,6 @@ func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse
 			continue
 		}
 
-		if resp == nil {
-
-		}
-
 		// since returned value will be a tuple of lamport timestamp and value, check which returned value
 		// has the highest lamport timestamp
 		if resp.StoredValue.Lamport >= maxLamport {
@@ -167,14 +163,6 @@ func (b *Balancer) saveCoverage() error {
 	}
 
 	return b.DB.Set(CoverageKey, coverageBz)
-}
-
-func (b *Balancer) responseCheck(resp proto.Message) error {
-	if resp == nil {
-
-	}
-
-	return nil
 }
 
 // func (b *Balancer) processGrpcError(err error) {

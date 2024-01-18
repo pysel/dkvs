@@ -16,7 +16,15 @@ type (
 		msg string
 	}
 
-	PartitionOfflineEvent struct {
+	SetEvent struct {
+		msg string
+	}
+
+	DeleteEvent struct {
+		msg string
+	}
+
+	PartitionOfflineEvent struct { // TODO: use it
 		Address string
 	}
 )
@@ -43,4 +51,20 @@ func (e *GetEvent) Severity() string {
 
 func (e *GetEvent) Message() string {
 	return fmt.Sprintf("Relayed GET request: %s", shared.GreyWrap(e.msg))
+}
+
+func (e *SetEvent) Severity() string {
+	return "info"
+}
+
+func (e *SetEvent) Message() string {
+	return fmt.Sprintf("Relayed SET request: %s", shared.GreyWrap(e.msg))
+}
+
+func (e *DeleteEvent) Severity() string {
+	return "info"
+}
+
+func (e *DeleteEvent) Message() string {
+	return fmt.Sprintf("Relayed DELETE request: %s", shared.GreyWrap(e.msg))
 }

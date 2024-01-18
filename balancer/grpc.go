@@ -35,6 +35,7 @@ func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (
 	}
 
 	bs.eventHandler.Emit(&GetEvent{msg: req.String()})
+
 	return response, nil
 }
 
@@ -64,6 +65,8 @@ func (bs *BalancerServer) Set(ctx context.Context, req *prototypes.SetRequest) (
 		return nil, err
 	}
 
+	bs.eventHandler.Emit(&SetEvent{msg: req.String()})
+
 	return &prototypes.SetResponse{}, nil
 }
 
@@ -90,6 +93,8 @@ func (bs *BalancerServer) Delete(ctx context.Context, req *prototypes.DeleteRequ
 	if err != nil {
 		return nil, err
 	}
+
+	bs.eventHandler.Emit(&DeleteEvent{msg: req.String()})
 
 	return &prototypes.DeleteResponse{}, nil
 }
