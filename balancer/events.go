@@ -42,7 +42,7 @@ func (e *PartitionOfflineEvent) Severity() string {
 }
 
 func (e *PartitionOfflineEvent) Message() string {
-	return fmt.Sprintf("No connection to partition %s", shared.YellowWrap(e.Address))
+	return fmt.Sprintf("Lost connection to partition %s", shared.YellowWrap(e.Address))
 }
 
 func (e *GetEvent) Severity() string {
