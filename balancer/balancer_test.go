@@ -26,10 +26,10 @@ func TestRegisterGetPartition(t *testing.T) {
 	require.NoError(t, err)
 
 	keyPartitions := b2.GetPartitionsByKey(testutil.DomainKey)
-	require.Equal(t, 1, len(keyPartitions))
+	require.Equal(t, 1, len(keyPartitions.GetResponsibleClients()))
 
 	keyPartitions = b2.GetPartitionsByKey(testutil.NonDomainKey)
-	require.Equal(t, 0, len(keyPartitions))
+	require.Nil(t, keyPartitions)
 }
 
 func TestBalancerInit(t *testing.T) {

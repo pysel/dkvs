@@ -32,7 +32,7 @@ func (b *Balancer) GetRangeFromDigest(digest []byte) (*partition.Range, error) {
 	return b.getRangeFromDigest(digest)
 }
 
-func (b *Balancer) GetRangeToPartitions() map[partition.RangeKey][]*PartitionView {
+func (b *Balancer) GetRangeToPartitions() map[partition.RangeKey]*RangeView {
 	return b.rangeToPartitions
 }
 
@@ -44,11 +44,10 @@ func NewBalancerTest(t *testing.T, goalReplicaRanges int) *Balancer {
 
 	b := &Balancer{
 		DB:                db,
-		rangeToPartitions: make(map[partition.RangeKey][]*PartitionView),
+		rangeToPartitions: make(map[partition.RangeKey]*RangeView),
 		coverage:          &coverage{},
 	}
 
 	require.NoError(t, b.setupCoverage(goalReplicaRanges))
-
 	return b
 }

@@ -5,7 +5,7 @@ import (
 
 	"github.com/pysel/dkvs/prototypes"
 	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
-	pbpartition "github.com/pysel/dkvs/prototypes/partition"
+	"github.com/pysel/dkvs/shared"
 	"github.com/pysel/dkvs/types"
 )
 
@@ -50,15 +50,7 @@ func (bs *BalancerServer) Set(ctx context.Context, req *prototypes.SetRequest) (
 		return nil, err
 	}
 
-	msg := &pbpartition.PrepareCommitRequest{
-		Message: &pbpartition.PrepareCommitRequest_Set{
-			Set: &prototypes.SetRequest{
-				Key:     req.Key,
-				Value:   req.Value,
-				Lamport: req.Lamport,
-			},
-		},
-	}
+	msg := shared.NewPrepareCommitMessage_Set(req.Key, req.Value)
 
 	err = bs.AtomicMessage(ctx, range_, msg)
 	if err != nil {
@@ -81,13 +73,7 @@ func (bs *BalancerServer) Delete(ctx context.Context, req *prototypes.DeleteRequ
 		return nil, err
 	}
 
-	msg := &pbpartition.PrepareCommitRequest{
-		Message: &pbpartition.PrepareCommitRequest_Delete{
-			Delete: &prototypes.DeleteRequest{
-				Key: req.Key,
-			},
-		},
-	}
+	msg := shared.NewPrepareCommitMessage_Delete(req.Key)
 
 	err = bs.AtomicMessage(ctx, range_, msg)
 	if err != nil {

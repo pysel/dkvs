@@ -28,6 +28,7 @@ func TestTwoPhaseCommit(t *testing.T) {
 	partitionAddr1, partitionAddr2 := addrs[0], addrs[1]
 
 	b := balancer.NewBalancerTest(t, 1)
+
 	err := b.RegisterPartition(ctx, partitionAddr1.String())
 	require.NoError(t, err)
 
