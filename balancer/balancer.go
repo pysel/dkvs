@@ -101,7 +101,7 @@ func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse
 
 	var response *prototypes.GetResponse
 	maxLamport := uint64(0)
-	// offline := make([]*RangeView, len(responsiblePartitions))
+	// offline := make([]*RangeView, len(responsiblePartitions.clients))
 
 	responsiblePartitions.lamport++ // increase lamport timestamp so that we account for get request we are sending here
 	requestLamport := responsiblePartitions.lamport
@@ -178,12 +178,3 @@ func (b *Balancer) GetNextLamportForKey(key []byte) uint64 {
 
 	return b.rangeToPartitions[range_.AsString()].lamport + 1
 }
-
-// func (b *Balancer) processGrpcError(err error) {
-// 	switch err.(type) {
-// 	case partition.ErrTimestampNotNext:
-// 		err := err.(partition.ErrTimestampNotNext)
-// 		lastProcessedTimestamp := err.CurrentTimestamp // the latest timestamp a partition has processed
-
-// 	}
-// }
