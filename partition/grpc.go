@@ -120,10 +120,11 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHashrangeRequest) (res *prototypes.SetHashrangeResponse, err error) {
 	defer func() {
 		if err != nil {
-			ls.EventHandler.Emit(ErrorEvent{err: err})
+			ls.EventHandler.Emit(shared.ErrorEvent{Req: req.String(), Err: err})
 		} else {
 			min := new(big.Int).SetBytes(req.Min)
 			max := new(big.Int).SetBytes(req.Max)
+
 			ls.EventHandler.Emit(SetHashrangeEvent{min: min, max: max})
 		}
 	}()
@@ -148,7 +149,7 @@ func (p *ListenServer) postCRUD(err error, req string) {
 			p.EventHandler.Emit(eventError.WarningErrorToEvent(req))
 			return
 		}
-		p.EventHandler.Emit(ErrorEvent{err: err})
+		p.EventHandler.Emit(shared.ErrorEvent{Req: req, Err: err})
 	} else {
 		p.IncrTs()
 	}

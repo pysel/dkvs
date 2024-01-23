@@ -27,11 +27,6 @@ type (
 		key string
 	}
 
-	ErrorEvent struct {
-		req string
-		err error
-	}
-
 	StaleRequestEvent struct {
 		req               string
 		currentTimestamp  uint64
@@ -81,14 +76,6 @@ func (e DeleteEvent) Severity() string {
 
 func (e DeleteEvent) Message() string {
 	return fmt.Sprintf("Deleted a message: %s", shared.GreenWrap(e.key))
-}
-
-func (e ErrorEvent) Severity() string {
-	return "error"
-}
-
-func (e ErrorEvent) Message() string {
-	return fmt.Sprintf("Error for {%s} request: %s", shared.GreyWrap(e.req), shared.RedWrap(e.err.Error()))
 }
 
 func (e StaleRequestEvent) Severity() string {

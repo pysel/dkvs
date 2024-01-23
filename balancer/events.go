@@ -27,6 +27,10 @@ type (
 	PartitionOfflineEvent struct { // TODO: use it
 		Address string
 	}
+
+	TwoPhaseCommitFailedEvent struct {
+		Reason string
+	}
 )
 
 func (e *RegisterPartitionEvent) Severity() string {
@@ -67,4 +71,12 @@ func (e *DeleteEvent) Severity() string {
 
 func (e *DeleteEvent) Message() string {
 	return fmt.Sprintf("Relayed DELETE request: %s", shared.GreyWrap(e.msg))
+}
+
+func (e *TwoPhaseCommitFailedEvent) Severity() string {
+	return "error"
+}
+
+func (e *TwoPhaseCommitFailedEvent) Message() string {
+	return fmt.Sprintf("Two phase commit failed: %s", shared.RedWrap(e.Reason))
 }

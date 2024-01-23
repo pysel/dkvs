@@ -169,6 +169,16 @@ func (b *Balancer) saveCoverage() error {
 	return b.DB.Set(CoverageKey, coverageBz)
 }
 
+func (b *Balancer) GetNextLamportForKey(key []byte) uint64 {
+	shaKey := types.ShaKey(key)
+	range_, err := b.getRangeFromDigest(shaKey[:])
+	if err != nil {
+		return 0
+	}
+
+	return b.rangeToPartitions[range_.AsString()].lamport + 1
+}
+
 // func (b *Balancer) processGrpcError(err error) {
 // 	switch err.(type) {
 // 	case partition.ErrTimestampNotNext:

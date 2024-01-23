@@ -24,7 +24,9 @@ func (bs *BalancerServer) RegisterPartition(ctx context.Context, req *pbbalancer
 
 // ----- To be relayed requests -----
 
-func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (*prototypes.GetResponse, error) {
+func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (res *prototypes.GetResponse, err error) {
+	defer func() { bs.postCRUD(err, req.String()) }()
+
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
@@ -39,7 +41,9 @@ func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (
 	return response, nil
 }
 
-func (bs *BalancerServer) Set(ctx context.Context, req *prototypes.SetRequest) (*prototypes.SetResponse, error) {
+func (bs *BalancerServer) Set(ctx context.Context, req *prototypes.SetRequest) (res *prototypes.SetResponse, err error) {
+	defer func() { bs.postCRUD(err, req.String()) }()
+
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
@@ -50,7 +54,8 @@ func (bs *BalancerServer) Set(ctx context.Context, req *prototypes.SetRequest) (
 		return nil, err
 	}
 
-	msg := shared.NewPrepareCommitMessage_Set(req.Key, req.Value)
+	lamport := bs.Balancer.GetNextLamportForKey(req.Key)
+	msg := shared.NewPrepareCommitMessage_Set(req.Key, req.Value, lamport)
 
 	err = bs.AtomicMessage(ctx, range_, msg)
 	if err != nil {
@@ -62,7 +67,9 @@ func (bs *BalancerServer) Set(ctx context.Context, req *prototypes.SetRequest) (
 	return &prototypes.SetResponse{}, nil
 }
 
-func (bs *BalancerServer) Delete(ctx context.Context, req *prototypes.DeleteRequest) (*prototypes.DeleteResponse, error) {
+func (bs *BalancerServer) Delete(ctx context.Context, req *prototypes.DeleteRequest) (res *prototypes.DeleteResponse, err error) {
+	defer func() { bs.postCRUD(err, req.String()) }()
+
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
@@ -73,7 +80,8 @@ func (bs *BalancerServer) Delete(ctx context.Context, req *prototypes.DeleteRequ
 		return nil, err
 	}
 
-	msg := shared.NewPrepareCommitMessage_Delete(req.Key)
+	lamport := bs.Balancer.GetNextLamportForKey(req.Key)
+	msg := shared.NewPrepareCommitMessage_Delete(req.Key, lamport)
 
 	err = bs.AtomicMessage(ctx, range_, msg)
 	if err != nil {
@@ -83,4 +91,15 @@ func (bs *BalancerServer) Delete(ctx context.Context, req *prototypes.DeleteRequ
 	bs.eventHandler.Emit(&DeleteEvent{msg: req.String()})
 
 	return &prototypes.DeleteResponse{}, nil
+}
+
+func (ls *BalancerServer) postCRUD(err error, req string) {
+	if err != nil {
+		if eventError, ok := err.(shared.IsWarningEventError); ok {
+			ls.eventHandler.Emit(eventError.WarningErrorToEvent(req))
+			return
+		}
+
+		ls.eventHandler.Emit(&shared.ErrorEvent{Req: req, Err: err})
+	}
 }
