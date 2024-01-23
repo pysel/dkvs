@@ -20,7 +20,7 @@ type Balancer struct {
 
 	// A mapping from ranges to partitions.
 	// Multiple partitions can be mapped to the same range.
-	rangeToPartitions map[partition.RangeKey]*RangeView
+	rangeToViews map[partition.RangeKey]*RangeView
 
 	// coverage is used for tracking the tracked ranges
 	coverage *coverage
@@ -34,9 +34,9 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 	}
 
 	b := &Balancer{
-		DB:                db,
-		rangeToPartitions: make(map[partition.RangeKey]*RangeView),
-		coverage:          GetCoverage(),
+		DB:           db,
+		rangeToViews: make(map[partition.RangeKey]*RangeView),
+		coverage:     GetCoverage(),
 	}
 
 	err = b.setupCoverage(goalReplicaRanges)
@@ -59,13 +59,13 @@ func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 		return err
 	}
 
-	view := b.rangeToPartitions[nextPartitionRangeKey]
-	if view == nil { // means that the range is not yet covered
-		view = NewRangeView([]*pbpartition.PartitionServiceClient{})
-		b.rangeToPartitions[nextPartitionRangeKey] = view
+	rangeView := b.rangeToViews[nextPartitionRangeKey]
+	if rangeView == nil { // means that the range is not yet covered
+		rangeView = NewRangeView([]*pbpartition.PartitionServiceClient{})
+		b.rangeToViews[nextPartitionRangeKey] = rangeView
 	}
 
-	view.AddPartitionClient(&client)
+	rangeView.AddPartitionClient(&client)
 
 	// on sucess, inrease min and max values of ticks
 	b.coverage.bumpTicks(lowerTick)
@@ -76,10 +76,10 @@ func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 // GetPartitionsByKey returns a range view of partitions that contain the given key.
 func (b *Balancer) GetPartitionsByKey(key []byte) *RangeView {
 	shaKey := sha256.Sum256(key)
-	for rangeKey, partitions := range b.rangeToPartitions {
+	for rangeKey, rangeView := range b.rangeToViews {
 		range_, _ := rangeKey.ToRange() // Todo: err
 		if range_.Contains(shaKey[:]) {
-			return partitions
+			return rangeView
 		}
 	}
 
@@ -94,8 +94,8 @@ func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse
 		return nil, err
 	}
 
-	responsiblePartitions := b.rangeToPartitions[range_.AsString()]
-	if len(responsiblePartitions.clients) == 0 {
+	rangeView := b.rangeToViews[range_.AsString()]
+	if len(rangeView.clients) == 0 {
 		return nil, ErrRangeNotYetCovered
 	}
 
@@ -103,9 +103,9 @@ func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse
 	maxLamport := uint64(0)
 	// offline := make([]*RangeView, len(responsiblePartitions.clients))
 
-	responsiblePartitions.lamport++ // increase lamport timestamp so that we account for get request we are sending here
-	requestLamport := responsiblePartitions.lamport
-	for _, client := range responsiblePartitions.clients {
+	rangeView.lamport++ // increase lamport timestamp so that we account for get request we are sending here
+	requestLamport := rangeView.lamport
+	for _, client := range rangeView.clients {
 		resp, err := (*client).Get(ctx, &prototypes.GetRequest{Key: key, Lamport: requestLamport})
 		if err != nil {
 			continue
@@ -149,7 +149,7 @@ func (b *Balancer) setupCoverage(goalReplicaRanges int) error {
 
 // getRangeFromDigest returns a range to which the given digest belongs
 func (b *Balancer) getRangeFromDigest(digest []byte) (*partition.Range, error) {
-	for rangeKey := range b.rangeToPartitions {
+	for rangeKey := range b.rangeToViews {
 		range_, _ := rangeKey.ToRange() // TODO: err
 		if range_.Contains(digest) {
 			return range_, nil
@@ -169,6 +169,7 @@ func (b *Balancer) saveCoverage() error {
 	return b.DB.Set(CoverageKey, coverageBz)
 }
 
+// GetNextLamportForKey returns the next lamport timestamp for a given key based on the digest of the key.
 func (b *Balancer) GetNextLamportForKey(key []byte) uint64 {
 	shaKey := types.ShaKey(key)
 	range_, err := b.getRangeFromDigest(shaKey[:])
@@ -176,5 +177,5 @@ func (b *Balancer) GetNextLamportForKey(key []byte) uint64 {
 		return 0
 	}
 
-	return b.rangeToPartitions[range_.AsString()].lamport + 1
+	return b.rangeToViews[range_.AsString()].lamport + 1
 }

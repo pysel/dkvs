@@ -32,8 +32,8 @@ func (b *Balancer) GetRangeFromDigest(digest []byte) (*partition.Range, error) {
 	return b.getRangeFromDigest(digest)
 }
 
-func (b *Balancer) GetRangeToPartitions() map[partition.RangeKey]*RangeView {
-	return b.rangeToPartitions
+func (b *Balancer) GetrangeToViews() map[partition.RangeKey]*RangeView {
+	return b.rangeToViews
 }
 
 // NewBalancerTest returns a new balancer instance with an independent coverage every time.
@@ -43,9 +43,9 @@ func NewBalancerTest(t *testing.T, goalReplicaRanges int) *Balancer {
 	require.NoError(t, err)
 
 	b := &Balancer{
-		DB:                db,
-		rangeToPartitions: make(map[partition.RangeKey]*RangeView),
-		coverage:          &coverage{},
+		DB:           db,
+		rangeToViews: make(map[partition.RangeKey]*RangeView),
+		coverage:     &coverage{},
 	}
 
 	require.NoError(t, b.setupCoverage(goalReplicaRanges))
