@@ -32,8 +32,15 @@ func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (
 	}
 
 	response, err := bs.Balancer.Get(ctx, req.Key)
-	if err != nil {
+	if offlineErr, ok := err.(ErrPartitionsOffline); err != nil && !ok { // skip if no error or if error is not ErrPartitionsOffline
 		return nil, err
+	} else if ok {
+		// if error is ErrPartitionsOffline, emit an event for each offline partition
+		for i := 0; i < len(offlineErr.Addresses); i++ {
+			bs.eventHandler.Emit(&PartitionOfflineEvent{Address: offlineErr.Addresses[i], Err: offlineErr.Errors[i]})
+		}
+
+		// TODO: figure out what to do with offline partitions
 	}
 
 	bs.eventHandler.Emit(&GetEvent{msg: req.String()})

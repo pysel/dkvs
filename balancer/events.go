@@ -26,6 +26,7 @@ type (
 
 	PartitionOfflineEvent struct { // TODO: use it
 		Address string
+		Err     error
 	}
 
 	TwoPhaseCommitFailedEvent struct {

@@ -3,6 +3,7 @@ package balancer
 import (
 	"context"
 	"crypto/sha256"
+	"fmt"
 	"math/big"
 
 	db "github.com/pysel/dkvs/leveldb"
@@ -10,6 +11,8 @@ import (
 	"github.com/pysel/dkvs/prototypes"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 	"github.com/pysel/dkvs/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -18,7 +21,7 @@ type Balancer struct {
 	// Database instance
 	db.DB
 
-	// A mapping from ranges to partitions.
+	// A registry, which is a mapping from ranges to partitions.
 	// Multiple partitions can be mapped to the same range.
 	rangeToViews map[partition.RangeKey]*RangeView
 
@@ -60,12 +63,12 @@ func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 	}
 
 	rangeView := b.rangeToViews[nextPartitionRangeKey]
-	if rangeView == nil { // means that the range is not yet covered
-		rangeView = NewRangeView([]*pbpartition.PartitionServiceClient{})
+	if rangeView == nil { // means that the range is not yet covered, initialize a new range view
+		rangeView = NewRangeView([]*pbpartition.PartitionServiceClient{}, []string{})
 		b.rangeToViews[nextPartitionRangeKey] = rangeView
 	}
 
-	rangeView.AddPartitionClient(&client)
+	rangeView.AddPartitionData(&client, addr)
 
 	// on sucess, inrease min and max values of ticks
 	b.coverage.bumpTicks(lowerTick)
@@ -94,20 +97,31 @@ func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse
 		return nil, err
 	}
 
-	rangeView := b.rangeToViews[range_.AsString()]
+	rangeView := b.rangeToViews[range_.AsKey()]
 	if len(rangeView.clients) == 0 {
 		return nil, ErrRangeNotYetCovered
 	}
 
 	var response *prototypes.GetResponse
 	maxLamport := uint64(0)
-	// offline := make([]*RangeView, len(responsiblePartitions.clients))
+	offlineAddressesErr := ErrPartitionsOffline{Addresses: []string{}, Errors: []error{}}
 
 	rangeView.lamport++ // increase lamport timestamp so that we account for get request we are sending here
 	requestLamport := rangeView.lamport
-	for _, client := range rangeView.clients {
+	for i, client := range rangeView.clients {
 		resp, err := (*client).Get(ctx, &prototypes.GetRequest{Key: key, Lamport: requestLamport})
 		if err != nil {
+			// remove the partition if it is offline
+			if s, ok := status.FromError(err); ok {
+				fmt.Println(s, s.Code(), s.Code() == codes.Unavailable)
+				if s.Code() == codes.Unavailable {
+					offlineAddressesErr.Addresses = append(offlineAddressesErr.Addresses, rangeView.addresses[i])
+					offlineAddressesErr.Errors = append(offlineAddressesErr.Errors, err)
+
+					// TODO: consider tombstoning before removing
+					rangeView.removePartition(rangeView.addresses[i])
+				}
+			}
 			continue
 		} else if resp.StoredValue == nil {
 			response = resp
@@ -126,7 +140,7 @@ func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse
 		return nil, ErrAllReplicasFailed
 	}
 
-	return response, nil
+	return response, offlineAddressesErr.ErrOrNil()
 }
 
 // setupCoverage creates necessary ticks for coverage based on goalReplicaRanges
@@ -177,5 +191,5 @@ func (b *Balancer) GetNextLamportForKey(key []byte) uint64 {
 		return 0
 	}
 
-	return b.rangeToViews[range_.AsString()].lamport + 1
+	return b.rangeToViews[range_.AsKey()].lamport + 1
 }

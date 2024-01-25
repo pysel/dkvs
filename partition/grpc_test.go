@@ -17,7 +17,7 @@ import (
 
 func TestGRPCServer(t *testing.T) {
 	ctx := context.Background()
-	client, closer := testutil.StartPartitionClientToBufferedServer(ctx)
+	_, client, closer := testutil.StartPartitionClientToBufferedServer(ctx)
 	require.NotNil(t, closer)
 
 	min := binary.LittleEndian.AppendUint64(testutil.DefaultHashrange.Min.Bytes(), 0)

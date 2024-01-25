@@ -4,11 +4,12 @@ import "errors"
 
 var (
 	// General Balancer errors
-	ErrPartitionOverflow        = errors.New("enough partitions are already registered")
-	ErrCoverageNotProperlySetUp = errors.New("coverage is not properly set up")
-	ErrDigestNotCovered         = errors.New("digest is not covered by any range")
-	ErrRangeNotYetCovered       = errors.New("range is not yet covered by any partition")
-	ErrAllReplicasFailed        = errors.New("all replicas failed to process request")
+	ErrPartitionOverflow          = errors.New("enough partitions are already registered")
+	ErrCoverageNotProperlySetUp   = errors.New("coverage is not properly set up")
+	ErrDigestNotCovered           = errors.New("digest is not covered by any range")
+	ErrRangeNotYetCovered         = errors.New("range is not yet covered by any partition")
+	ErrAllReplicasFailed          = errors.New("all replicas failed to process request")
+	ErrPartitionAtAddressNotExist = errors.New("partition does not exist")
 
 	// 2PC
 	ErrPrepareCommitAborted = errors.New("prepare commit aborted")
@@ -40,4 +41,22 @@ func (e ErrDecisionWasNotCleared) Error() string {
 
 func (e ErrDecisionWasNotCleared) Unwrap() error {
 	return e.Reason
+}
+
+type ErrPartitionsOffline struct {
+	Addresses []string
+	Errors    []error
+}
+
+func (e ErrPartitionsOffline) Error() string {
+	return "partitions offline: " + e.Errors[0].Error()
+}
+
+// ErrOrNil returns nil if there were no partitions offline, self otherwise.
+func (e ErrPartitionsOffline) ErrOrNil() error {
+	if len(e.Errors) == 0 {
+		return nil
+	}
+
+	return e
 }

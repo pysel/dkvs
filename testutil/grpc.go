@@ -70,7 +70,7 @@ func RunBufferedPartitionServer(lis *bufconn.Listener, s *grpc.Server) {
 
 // StartPartitionClientToBufferedServer sets up a partition server and partition client. Returns client and closer function.
 // Client is used to test the rpc calls.
-func StartPartitionClientToBufferedServer(ctx context.Context) (pbpartition.PartitionServiceClient, func()) {
+func StartPartitionClientToBufferedServer(ctx context.Context) (net.Addr, pbpartition.PartitionServiceClient, func()) {
 	lis, s := BufferedPartitionServer(TestDBPath)
 	RunBufferedPartitionServer(lis, s)
 
@@ -88,7 +88,7 @@ func StartPartitionClientToBufferedServer(ctx context.Context) (pbpartition.Part
 		}
 		s.Stop()
 	}
-	return pbpartition.NewPartitionServiceClient(conn), closer
+	return lis.Addr(), pbpartition.NewPartitionServiceClient(conn), closer
 }
 
 func StartXPartitionServers(x int) ([]net.Addr, []string) {

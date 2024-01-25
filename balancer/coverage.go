@@ -84,7 +84,7 @@ func (c *coverage) getNextPartitionRange() (partition.RangeKey, *pbbalancer.Tick
 	}
 
 	// minLowerTick and minUpperTick are returned to be increased by 1 if a partition is successfully registered
-	return partition.RangeKey(minRange.AsString()), minLowerTick, minUpperTick
+	return partition.RangeKey(minRange.AsKey()), minLowerTick, minUpperTick
 }
 
 func (c *coverage) bumpTicks(lowerTick *pbbalancer.Tick) {

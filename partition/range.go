@@ -77,6 +77,6 @@ func (r RangeKey) ToRange() (*Range, error) {
 	return NewRange(min.Bytes(), max.Bytes()), nil
 }
 
-func (r *Range) AsString() RangeKey {
+func (r *Range) AsKey() RangeKey {
 	return RangeKey(r.Min.String() + "; " + r.Max.String())
 }

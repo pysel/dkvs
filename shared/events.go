@@ -14,5 +14,5 @@ func (e ErrorEvent) Severity() string {
 }
 
 func (e ErrorEvent) Message() string {
-	return fmt.Sprintf("Error for {%s} request: %s", GreyWrap(e.Req), RedWrap(e.Err.Error()))
+	return fmt.Sprintf("Error for request %s: %s", GreyWrap(e.Req), RedWrap(e.Err.Error()))
 }

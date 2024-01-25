@@ -27,8 +27,8 @@ func NewClient(balancerAddr string) *Client {
 	context := context.Background()
 
 	c := &Client{
-		timestamp: 0,
 		context:   context,
+		timestamp: 0,
 	}
 
 	c.setupBalancerClient(balancerAddr)

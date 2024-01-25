@@ -36,6 +36,14 @@ func (b *Balancer) GetrangeToViews() map[partition.RangeKey]*RangeView {
 	return b.rangeToViews
 }
 
+func (rv *RangeView) RemovePartition(addr string) error {
+	return rv.removePartition(addr)
+}
+
+func (rv *RangeView) GetAddresses() []string {
+	return rv.addresses
+}
+
 // NewBalancerTest returns a new balancer instance with an independent coverage every time.
 func NewBalancerTest(t *testing.T, goalReplicaRanges int) *Balancer {
 	balancerName = "balancer" + t.Name()

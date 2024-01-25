@@ -67,23 +67,23 @@ func TestGetNextPartitionRange(t *testing.T) {
 	b2 := balancer.NewBalancerTest(t, 2)
 	nextPartitionRange, _, _ := b2.GetNextPartitionRange()
 	// defaultHashrange is full sha256 domain, in case of 2 nodes, first node's domain should be half
-	require.Equal(t, partition.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsString(), nextPartitionRange)
+	require.Equal(t, partition.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsKey(), nextPartitionRange)
 
 	// Register first Partition
 	require.NoError(t, b2.RegisterPartition(ctx, addr1.String()))
 
 	nextPartitionRange, _, _ = b2.GetNextPartitionRange()
 	// defaultHashrange is full sha256 domain, in case of 2 nodes, second node's domain should be the second half
-	require.Equal(t, partition.NewRange(testutil.HalfShaDomain.Bytes(), testutil.FullHashrange.Max.Bytes()).AsString(), nextPartitionRange)
+	require.Equal(t, partition.NewRange(testutil.HalfShaDomain.Bytes(), testutil.FullHashrange.Max.Bytes()).AsKey(), nextPartitionRange)
 
 	// Register second Partition
 	require.NoError(t, b2.RegisterPartition(ctx, addr2.String()))
 
 	// If all ranges are covered, newer partitions should start coverting the domain from the beginning
 	nextPartitionRange, _, _ = b2.GetNextPartitionRange()
-	require.Equal(t, nextPartitionRange, partition.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsString())
+	require.Equal(t, nextPartitionRange, partition.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsKey())
 
 	// Assert that GetNextPartitionRange is non-mutative
 	nextPartitionRange, _, _ = b2.GetNextPartitionRange()
-	require.Equal(t, nextPartitionRange, partition.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsString())
+	require.Equal(t, nextPartitionRange, partition.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsKey())
 }
