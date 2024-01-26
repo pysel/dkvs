@@ -3,7 +3,6 @@ package balancer
 import (
 	"context"
 	"crypto/sha256"
-	"fmt"
 	"math/big"
 
 	db "github.com/pysel/dkvs/leveldb"
@@ -113,7 +112,6 @@ func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse
 		if err != nil {
 			// remove the partition if it is offline
 			if s, ok := status.FromError(err); ok {
-				fmt.Println(s, s.Code(), s.Code() == codes.Unavailable)
 				if s.Code() == codes.Unavailable {
 					offlineAddressesErr.Addresses = append(offlineAddressesErr.Addresses, rangeView.addresses[i])
 					offlineAddressesErr.Errors = append(offlineAddressesErr.Errors, err)
