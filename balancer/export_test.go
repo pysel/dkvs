@@ -12,9 +12,9 @@ import (
 
 var balancerName = "balancer"
 
-func init() {
-
-}
+type (
+	ClientIdToLamport clientIdToLamport
+)
 
 func (b *Balancer) GetTickByValue(value *big.Int) *pbbalancer.Tick {
 	return b.coverage.getTickByValue(value)
@@ -51,9 +51,10 @@ func NewBalancerTest(t *testing.T, goalReplicaRanges int) *Balancer {
 	require.NoError(t, err)
 
 	b := &Balancer{
-		DB:           db,
-		rangeToViews: make(map[partition.RangeKey]*RangeView),
-		coverage:     &coverage{},
+		DB:                db,
+		rangeToViews:      make(map[partition.RangeKey]*RangeView),
+		coverage:          &coverage{},
+		clientIdToLamport: make(clientIdToLamport),
 	}
 
 	require.NoError(t, b.setupCoverage(goalReplicaRanges))

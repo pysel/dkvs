@@ -18,3 +18,6 @@ func NewBalancerClient(addr string) pbbalancer.BalancerServiceClient {
 	client := pbbalancer.NewBalancerServiceClient(conn)
 	return client
 }
+
+// clientIdToLamport is used to map ids of clients to their processed logical timestamps.
+type clientIdToLamport map[uint64]uint64

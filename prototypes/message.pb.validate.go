@@ -81,6 +81,8 @@ func (m *SetRequest) validate(all bool) error {
 
 	// no validation rules for Lamport
 
+	// no validation rules for Id
+
 	if len(errors) > 0 {
 		return SetRequestMultiError(errors)
 	}
@@ -291,6 +293,8 @@ func (m *GetRequest) validate(all bool) error {
 	}
 
 	// no validation rules for Lamport
+
+	// no validation rules for Id
 
 	if len(errors) > 0 {
 		return GetRequestMultiError(errors)
@@ -531,6 +535,8 @@ func (m *DeleteRequest) validate(all bool) error {
 	}
 
 	// no validation rules for Lamport
+
+	// no validation rules for Id
 
 	if len(errors) > 0 {
 		return DeleteRequestMultiError(errors)

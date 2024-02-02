@@ -87,3 +87,21 @@ func TestGetNextPartitionRange(t *testing.T) {
 	nextPartitionRange, _, _ = b2.GetNextPartitionRange()
 	require.Equal(t, nextPartitionRange, partition.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsKey())
 }
+
+func TestClientIdToLamport(t *testing.T) {
+	defer os.RemoveAll(TestDBBalancer + t.Name())
+
+	b := balancer.NewBalancerTest(t, 2)
+
+	require.Equal(t, uint64(1), b.NextClientId()) // first call should return 1
+
+	id1 := 1
+	id2 := 2
+
+	b.SetLamportForId(uint64(id1), 5)
+	b.SetLamportForId(uint64(id2), 10)
+
+	actualId := b.NextClientId()
+
+	require.Equal(t, uint64(3), actualId)
+}

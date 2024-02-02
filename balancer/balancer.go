@@ -3,6 +3,7 @@ package balancer
 import (
 	"context"
 	"crypto/sha256"
+	"fmt"
 	"math/big"
 
 	db "github.com/pysel/dkvs/leveldb"
@@ -26,6 +27,9 @@ type Balancer struct {
 
 	// coverage is used for tracking the tracked ranges
 	coverage *coverage
+
+	// client id to lamport mapping
+	clientIdToLamport
 }
 
 // NewBalancer returns a new balancer instance.
@@ -36,9 +40,10 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 	}
 
 	b := &Balancer{
-		DB:           db,
-		rangeToViews: make(map[partition.RangeKey]*RangeView),
-		coverage:     GetCoverage(),
+		DB:                db,
+		rangeToViews:      make(map[partition.RangeKey]*RangeView),
+		coverage:          GetCoverage(),
+		clientIdToLamport: make(clientIdToLamport),
 	}
 
 	err = b.setupCoverage(goalReplicaRanges)
@@ -190,4 +195,41 @@ func (b *Balancer) GetNextLamportForKey(key []byte) uint64 {
 	}
 
 	return b.rangeToViews[range_.AsKey()].lamport + 1
+}
+
+// validateIdAgainstTimestamp checks if the given id has the next lamport timestamp.
+// if not, upstreams the appropriate error.
+func (b *Balancer) validateIdAgainstTimestamp(id, lamport uint64) error {
+	clientLamport := b.clientIdToLamport[id]
+	fmt.Println(clientLamport, lamport)
+
+	// clientLamport+1 is the lamport we expect (since clientLamport is the latest processed lamport)
+	if clientLamport+1 > lamport {
+		return partition.ErrTimestampIsStale{CurrentTimestamp: clientLamport, StaleTimestamp: lamport}
+	} else if clientLamport+1 < lamport {
+		return partition.ErrTimestampNotNext{CurrentTimestamp: clientLamport, ReceivedTimestamp: lamport}
+	}
+
+	return nil
+}
+
+// TODO: check use
+func (b *Balancer) NextClientId() uint64 {
+	nextId := uint64(len(b.clientIdToLamport) + 1)
+
+	b.SetLamportForId(nextId, 0)
+	return nextId
+}
+
+func (b *Balancer) GetLamportForId(id uint64) uint64 {
+	return b.clientIdToLamport[id]
+}
+
+// TODO: check use
+func (b *Balancer) SetLamportForId(id, lamport uint64) {
+	b.clientIdToLamport[id] = lamport
+}
+
+func (b *Balancer) IncrementLamportForId(id uint64) {
+	b.clientIdToLamport[id]++
 }

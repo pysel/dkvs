@@ -30,6 +30,7 @@ type BalancerServiceClient interface {
 	// RegisterPartition is called by a partition to register itself with the balancer
 	// The balancer will set partition's range and run a new client of this partition's server
 	RegisterPartition(ctx context.Context, in *RegisterPartitionRequest, opts ...grpc.CallOption) (*RegisterPartitionResponse, error)
+	GetId(ctx context.Context, in *GetIdRequest, opts ...grpc.CallOption) (*GetIdResponse, error)
 }
 
 type balancerServiceClient struct {
@@ -76,6 +77,15 @@ func (c *balancerServiceClient) RegisterPartition(ctx context.Context, in *Regis
 	return out, nil
 }
 
+func (c *balancerServiceClient) GetId(ctx context.Context, in *GetIdRequest, opts ...grpc.CallOption) (*GetIdResponse, error) {
+	out := new(GetIdResponse)
+	err := c.cc.Invoke(ctx, "/dkvs.balancer.BalancerService/GetId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BalancerServiceServer is the server API for BalancerService service.
 // All implementations should embed UnimplementedBalancerServiceServer
 // for forward compatibility
@@ -87,6 +97,7 @@ type BalancerServiceServer interface {
 	// RegisterPartition is called by a partition to register itself with the balancer
 	// The balancer will set partition's range and run a new client of this partition's server
 	RegisterPartition(context.Context, *RegisterPartitionRequest) (*RegisterPartitionResponse, error)
+	GetId(context.Context, *GetIdRequest) (*GetIdResponse, error)
 }
 
 // UnimplementedBalancerServiceServer should be embedded to have forward compatible implementations.
@@ -104,6 +115,9 @@ func (UnimplementedBalancerServiceServer) Delete(context.Context, *prototypes.De
 }
 func (UnimplementedBalancerServiceServer) RegisterPartition(context.Context, *RegisterPartitionRequest) (*RegisterPartitionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterPartition not implemented")
+}
+func (UnimplementedBalancerServiceServer) GetId(context.Context, *GetIdRequest) (*GetIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetId not implemented")
 }
 
 // UnsafeBalancerServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -189,6 +203,24 @@ func _BalancerService_RegisterPartition_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BalancerService_GetId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BalancerServiceServer).GetId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dkvs.balancer.BalancerService/GetId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BalancerServiceServer).GetId(ctx, req.(*GetIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BalancerService_ServiceDesc is the grpc.ServiceDesc for BalancerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -211,6 +243,10 @@ var BalancerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RegisterPartition",
 			Handler:    _BalancerService_RegisterPartition_Handler,
+		},
+		{
+			MethodName: "GetId",
+			Handler:    _BalancerService_GetId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

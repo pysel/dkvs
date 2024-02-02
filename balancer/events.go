@@ -32,6 +32,13 @@ type (
 	TwoPhaseCommitFailedEvent struct {
 		Reason string
 	}
+
+	RequestWithUnexpectedTimestampEvent struct {
+		Req      string
+		ClientId uint64
+		Expected uint64
+		Received uint64
+	}
 )
 
 func (e *RegisterPartitionEvent) Severity() string {
@@ -80,4 +87,12 @@ func (e *TwoPhaseCommitFailedEvent) Severity() string {
 
 func (e *TwoPhaseCommitFailedEvent) Message() string {
 	return fmt.Sprintf("Two phase commit failed: %s", shared.RedWrap(e.Reason))
+}
+
+func (e *RequestWithUnexpectedTimestampEvent) Severity() string {
+	return "warning"
+}
+
+func (e *RequestWithUnexpectedTimestampEvent) Message() string {
+	return fmt.Sprintf(shared.YellowWrap("Received request {%s} with unexpected timestamp: ")+"client id {%d}, expected {%d}, received {%d}", e.Req, e.ClientId, e.Expected, e.Received)
 }

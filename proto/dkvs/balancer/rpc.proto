@@ -16,6 +16,7 @@ service BalancerService {
     // RegisterPartition is called by a partition to register itself with the balancer
     // The balancer will set partition's range and run a new client of this partition's server
     rpc RegisterPartition(RegisterPartitionRequest) returns (RegisterPartitionResponse) {}
+    rpc GetId(GetIdRequest) returns (GetIdResponse) {}
 }
 
 message RegisterPartitionRequest {
@@ -23,4 +24,11 @@ message RegisterPartitionRequest {
 }
 
 message RegisterPartitionResponse {}
+
+message GetIdRequest {}
+
+message GetIdResponse {
+    uint64 id = 1;
+}
+
 

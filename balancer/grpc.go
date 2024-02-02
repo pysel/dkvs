@@ -22,12 +22,23 @@ func (bs *BalancerServer) RegisterPartition(ctx context.Context, req *pbbalancer
 	return &pbbalancer.RegisterPartitionResponse{}, nil
 }
 
+// GetId returns the next client id to be used by a client.
+func (bs *BalancerServer) GetId(ctx context.Context, req *pbbalancer.GetIdRequest) (*pbbalancer.GetIdResponse, error) {
+	return &pbbalancer.GetIdResponse{Id: bs.Balancer.NextClientId()}, nil
+}
+
 // ----- To be relayed requests -----
 
 func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (res *prototypes.GetResponse, err error) {
-	defer func() { bs.postCRUD(err, req.String()) }()
+	defer func() { bs.postCRUD(req.Id, err, req.String()) }()
 
-	if err := req.Validate(); err != nil {
+	// validate request structure
+	if err = req.Validate(); err != nil && req.Id != 0 {
+		return nil, err
+	}
+
+	// validate timestamp
+	if err = bs.validateTs(req.String(), req.Id, req.Lamport); err != nil {
 		return nil, err
 	}
 
@@ -49,9 +60,15 @@ func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (
 }
 
 func (bs *BalancerServer) Set(ctx context.Context, req *prototypes.SetRequest) (res *prototypes.SetResponse, err error) {
-	defer func() { bs.postCRUD(err, req.String()) }()
+	defer func() { bs.postCRUD(req.Id, err, req.String()) }()
 
-	if err := req.Validate(); err != nil {
+	// validate request structure
+	if err = req.Validate(); err != nil && req.Id != 0 {
+		return nil, err
+	}
+
+	// validate timestamp
+	if err = bs.validateTs(req.String(), req.Id, req.Lamport); err != nil {
 		return nil, err
 	}
 
@@ -75,9 +92,15 @@ func (bs *BalancerServer) Set(ctx context.Context, req *prototypes.SetRequest) (
 }
 
 func (bs *BalancerServer) Delete(ctx context.Context, req *prototypes.DeleteRequest) (res *prototypes.DeleteResponse, err error) {
-	defer func() { bs.postCRUD(err, req.String()) }()
+	defer func() { bs.postCRUD(req.Id, err, req.String()) }()
 
-	if err := req.Validate(); err != nil {
+	// validate request structure
+	if err = req.Validate(); err != nil && req.Id != 0 {
+		return nil, err
+	}
+
+	// validate timestamp
+	if err = bs.validateTs(req.String(), req.Id, req.Lamport); err != nil {
 		return nil, err
 	}
 
@@ -100,13 +123,24 @@ func (bs *BalancerServer) Delete(ctx context.Context, req *prototypes.DeleteRequ
 	return &prototypes.DeleteResponse{}, nil
 }
 
-func (ls *BalancerServer) postCRUD(err error, req string) {
+func (bs *BalancerServer) postCRUD(id uint64, err error, req string) {
 	if err != nil {
 		if eventError, ok := err.(shared.IsWarningEventError); ok {
-			ls.eventHandler.Emit(eventError.WarningErrorToEvent(req))
+			bs.eventHandler.Emit(eventError.WarningErrorToEvent(req))
 			return
 		}
 
-		ls.eventHandler.Emit(&shared.ErrorEvent{Req: req, Err: err})
+		bs.eventHandler.Emit(&shared.ErrorEvent{Req: req, Err: err})
 	}
+
+	bs.Balancer.IncrementLamportForId(id)
+}
+
+func (bs *BalancerServer) validateTs(req string, id uint64, ts uint64) error {
+	// validate timestamp
+	if err := bs.Balancer.validateIdAgainstTimestamp(id, ts); err != nil {
+		return ErrNotReadyForRequest{ClientId: id, CurrentClientTimestamp: bs.Balancer.GetLamportForId(id), ReceivedClientTimestamp: ts}
+	}
+
+	return nil
 }

@@ -13,7 +13,11 @@ message SetRequest {
 
     // a lamport timestamp of this message
     uint64 lamport = 3;
+
+    // used only between client <-> balancer communications
+    uint64 id = 4;
 }
+
 message SetResponse {}
 
 message GetRequest {
@@ -21,6 +25,9 @@ message GetRequest {
 
     // a lamport timestamp of this message
     uint64 lamport = 2;
+
+    // used only between client <-> balancer communications
+    uint64 id = 3;
 }
 message GetResponse {
     dkvs.message.StoredValue stored_value = 1;
@@ -31,6 +38,9 @@ message DeleteRequest {
 
     // a lamport timestamp of this message
     uint64 lamport = 2;
+
+    // used only between client <-> balancer communications
+    uint64 id = 3;
 }
 message DeleteResponse {}
 

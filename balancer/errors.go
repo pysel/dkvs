@@ -1,6 +1,11 @@
 package balancer
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+
+	"github.com/pysel/dkvs/shared"
+)
 
 var (
 	// General Balancer errors
@@ -59,4 +64,22 @@ func (e ErrPartitionsOffline) ErrOrNil() error {
 	}
 
 	return e
+}
+
+type ErrNotReadyForRequest struct {
+	ClientId                uint64
+	CurrentClientTimestamp  uint64
+	ReceivedClientTimestamp uint64
+}
+
+func (e ErrNotReadyForRequest) Error() string {
+	return fmt.Sprintf("client {%d}: received timestamp {%d} is not the next one, current timestamp: {%d}", e.ClientId, e.ReceivedClientTimestamp, e.CurrentClientTimestamp)
+}
+
+func (e ErrNotReadyForRequest) WarningErrorToEvent(req string) shared.Event {
+	return &RequestWithUnexpectedTimestampEvent{
+		ClientId: e.ClientId,
+		Expected: e.CurrentClientTimestamp + 1,
+		Received: e.ReceivedClientTimestamp,
+	}
 }
