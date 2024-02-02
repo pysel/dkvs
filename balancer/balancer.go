@@ -3,7 +3,6 @@ package balancer
 import (
 	"context"
 	"crypto/sha256"
-	"fmt"
 	"math/big"
 
 	db "github.com/pysel/dkvs/leveldb"
@@ -201,7 +200,6 @@ func (b *Balancer) GetNextLamportForKey(key []byte) uint64 {
 // if not, upstreams the appropriate error.
 func (b *Balancer) validateIdAgainstTimestamp(id, lamport uint64) error {
 	clientLamport := b.clientIdToLamport[id]
-	fmt.Println(clientLamport, lamport)
 
 	// clientLamport+1 is the lamport we expect (since clientLamport is the latest processed lamport)
 	if clientLamport+1 > lamport {
