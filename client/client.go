@@ -13,7 +13,7 @@ type Client struct {
 	// go context
 	context context.Context
 
-	// logical timestamp
+	// logical timestamp. Corresponds to the timestamp of the last PROCESSED message.
 	timestamp uint64
 	// client's id
 	id uint64
@@ -49,6 +49,8 @@ func NewClient(balancerAddr string) *Client {
 
 // Set sets a value for a key.
 func (c *Client) Set(key, value []byte) error {
+	c.timestamp++
+
 	req := &prototypes.SetRequest{
 		Key:     key,
 		Value:   value,
@@ -61,13 +63,13 @@ func (c *Client) Set(key, value []byte) error {
 		return err
 	}
 
-	c.timestamp++
-
 	return nil
 }
 
 // Get gets a value for a key.
 func (c *Client) Get(key []byte) ([]byte, error) {
+	c.timestamp++
+
 	req := &prototypes.GetRequest{
 		Key:     key,
 		Lamport: c.timestamp,
@@ -79,13 +81,13 @@ func (c *Client) Get(key []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	c.timestamp++
-
 	return resp.StoredValue.Value, nil
 }
 
 // Delete deletes a value for a key.
 func (c *Client) Delete(key []byte) error {
+	c.timestamp++
+
 	req := &prototypes.DeleteRequest{
 		Key:     key,
 		Lamport: c.timestamp,
@@ -96,8 +98,6 @@ func (c *Client) Delete(key []byte) error {
 	if err != nil {
 		return err
 	}
-
-	c.timestamp++
 
 	return nil
 }
