@@ -42,7 +42,7 @@ func NewPartition(dbPath string) *Partition {
 		hashrange: nil, // balancer should set this
 		DB:        db,
 		timestamp: 0,
-		// backlog:   types.NewBacklog(),
+		backlog:   types.NewBacklog(),
 	}
 }
 
