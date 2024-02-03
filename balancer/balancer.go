@@ -211,7 +211,7 @@ func (b *Balancer) validateIdAgainstTimestamp(id, lamport uint64) error {
 	return nil
 }
 
-// TODO: check use
+// NextClientId returns the next available client id to be used during requests to balancer.
 func (b *Balancer) NextClientId() uint64 {
 	nextId := uint64(len(b.clientIdToLamport) + 1)
 
@@ -223,7 +223,6 @@ func (b *Balancer) GetLamportForId(id uint64) uint64 {
 	return b.clientIdToLamport[id]
 }
 
-// TODO: check use
 func (b *Balancer) SetLamportForId(id, lamport uint64) {
 	b.clientIdToLamport[id] = lamport
 }
