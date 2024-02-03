@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 	"math/big"
 
-	db "github.com/pysel/dkvs/leveldb"
+	leveldb "github.com/pysel/dkvs/db/leveldb"
 	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/prototypes"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
@@ -18,7 +18,7 @@ import (
 // Balancer is a node that is responsible for registering partitions and relaying requests to appropriate ones.
 type Balancer struct {
 	// Database instance
-	db.DB
+	leveldb.DB
 
 	// A registry, which is a mapping from ranges to partitions.
 	// Multiple partitions can be mapped to the same range.
@@ -33,7 +33,7 @@ type Balancer struct {
 
 // NewBalancer returns a new balancer instance.
 func NewBalancer(goalReplicaRanges int) *Balancer {
-	db, err := db.NewLevelDB("balancer-db")
+	db, err := leveldb.NewLevelDB("balancer-db")
 	if err != nil {
 		panic(err)
 	}

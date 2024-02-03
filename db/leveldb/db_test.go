@@ -1,14 +1,15 @@
-package db
+package leveldb_test
 
 import (
 	"os"
 	"testing"
 
+	"github.com/pysel/dkvs/db/leveldb"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewLevelDB(t *testing.T) {
-	db, err := NewLevelDB("test")
+	db, err := leveldb.NewLevelDB("test")
 	require.NoError(t, err)
 
 	defer db.Close()

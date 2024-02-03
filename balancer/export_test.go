@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	db "github.com/pysel/dkvs/leveldb"
+	leveldb "github.com/pysel/dkvs/db/leveldb"
 	"github.com/pysel/dkvs/partition"
 	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
 	"github.com/stretchr/testify/require"
@@ -47,7 +47,8 @@ func (rv *RangeView) GetAddresses() []string {
 // NewBalancerTest returns a new balancer instance with an independent coverage every time.
 func NewBalancerTest(t *testing.T, goalReplicaRanges int) *Balancer {
 	balancerName = "balancer" + t.Name()
-	db, err := db.NewLevelDB(balancerName)
+	db, err := leveldb.NewLevelDB(balancerName)
+
 	require.NoError(t, err)
 
 	b := &Balancer{

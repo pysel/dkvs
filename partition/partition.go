@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	db "github.com/pysel/dkvs/leveldb"
+	leveldb "github.com/pysel/dkvs/db/leveldb"
 	"github.com/pysel/dkvs/prototypes"
 	"github.com/pysel/dkvs/types"
 	"google.golang.org/protobuf/proto"
@@ -16,7 +16,7 @@ type Partition struct {
 	hashrange *Range
 
 	// Database instance
-	db.DB
+	leveldb.DB
 
 	// read-write mutex
 	rwmutex sync.RWMutex
@@ -33,7 +33,7 @@ type Partition struct {
 
 // NewPartition creates a new partition instance.
 func NewPartition(dbPath string) *Partition {
-	db, err := db.NewLevelDB(dbPath)
+	db, err := leveldb.NewLevelDB(dbPath)
 	if err != nil {
 		panic(err)
 	}
