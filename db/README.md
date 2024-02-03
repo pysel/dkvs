@@ -20,3 +20,5 @@ type DB interface {
 ```
 
 in a new file in the `db` package. Then, you need to use this database in either the balancer or partition packages.
+
+For reference, view the `leveldb` package.
