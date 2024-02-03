@@ -42,7 +42,7 @@ func NewPartition(dbPath string) *Partition {
 		hashrange: nil, // balancer should set this
 		DB:        db,
 		timestamp: 0,
-		backlog:   types.NewBacklog(),
+		// backlog:   types.NewBacklog(),
 	}
 }
 
@@ -113,7 +113,7 @@ func (p *Partition) ProcessBacklog(err error) error {
 
 	var latestTimestamp uint64
 	for {
-		message := p.backlog.Pop(types.BID, p.timestamp)
+		message := p.backlog.Pop()
 		if message == nil {
 			break
 		}

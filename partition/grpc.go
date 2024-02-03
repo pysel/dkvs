@@ -21,12 +21,8 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (re
 	}
 
 	// process logical timestamp
-	switch err = ls.validateTS(req.Lamport); err.(type) {
-	case ErrTimestampIsStale: // stale/already processed request
+	if err = ls.validateTSGrpcLevel(req.Lamport, req); err != nil {
 		return nil, err
-	case ErrTimestampNotNext: // replica is not ready to process this request
-		ls.backlog.Add(types.BID, req.Lamport, req)
-		return nil, err // let balancer know that this replica is not ready for the request
 	}
 
 	var value []byte
@@ -56,12 +52,8 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (re
 	}
 
 	// process logical timestamp
-	switch err = ls.validateTS(req.Lamport); err.(type) {
-	case ErrTimestampIsStale: // stale/already processed request
+	if err = ls.validateTSGrpcLevel(req.Lamport, req); err != nil {
 		return nil, err
-	case ErrTimestampNotNext: // replica is not ready to process this request
-		ls.backlog.Add(types.BID, req.Lamport, req)
-		return nil, err // let balancer know that this replica is not ready for the request
 	}
 
 	shaKey := types.ShaKey(req.Key)
@@ -95,12 +87,8 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 	}
 
 	// process logical timestamp
-	switch err = ls.validateTS(req.Lamport); err.(type) {
-	case ErrTimestampIsStale: // stale/already processed request
+	if err = ls.validateTSGrpcLevel(req.Lamport, req); err != nil {
 		return nil, err
-	case ErrTimestampNotNext: // replica is not ready to process this request
-		ls.backlog.Add(types.BID, req.Lamport, req)
-		return nil, err // let balancer know that this replica is not ready for the request
 	}
 
 	shaKey := types.ShaKey(req.Key)
@@ -139,18 +127,30 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 }
 
 // postCRUD runs functionality that should be run after every CRUD operation.
-func (p *ListenServer) postCRUD(err error, req string) {
-	p.ProcessBacklog(err)
+func (ls *ListenServer) postCRUD(err error, req string) {
+	ls.ProcessBacklog(err)
 
 	// if error is a warning, log it as warning
 	// log error as error otherwise
 	if err != nil {
 		if eventError, ok := err.(shared.IsWarningEventError); ok {
-			p.EventHandler.Emit(eventError.WarningErrorToEvent(req))
+			ls.EventHandler.Emit(eventError.WarningErrorToEvent(req))
 			return
 		}
-		p.EventHandler.Emit(shared.ErrorEvent{Req: req, Err: err})
+		ls.EventHandler.Emit(shared.ErrorEvent{Req: req, Err: err})
 	} else {
-		p.IncrTs()
+		ls.IncrTs()
 	}
+}
+
+func (ls *ListenServer) validateTSGrpcLevel(ts uint64, message proto.Message) error {
+	switch err := ls.Partition.validateTS(ts); err.(type) {
+	case ErrTimestampIsStale: // stale/already processed request
+		return err
+	case ErrTimestampNotNext: // replica is not ready to process this request
+		ls.backlog.Add(ts, message)
+		return err // let balancer know that this replica is not ready for the request
+	}
+
+	return nil
 }
