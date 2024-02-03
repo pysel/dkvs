@@ -3,9 +3,9 @@ package client
 import (
 	"context"
 
+	"github.com/pysel/dkvs/balancer"
 	"github.com/pysel/dkvs/prototypes"
 	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
-	"github.com/pysel/dkvs/types"
 )
 
 // Client is an object that is responsible for interacting with DKVS.
@@ -15,23 +15,35 @@ type Client struct {
 
 	// logical timestamp
 	timestamp uint64
+	// client's id
+	id uint64
 
 	// a client to balancer server
 	balacerClient pbbalancer.BalancerServiceClient
 
 	// a list of messages that might have not yet processed by dkvs.
-	nonConfirmedList types.Backlog
+	// nonConfirmedList types.Backlog
 }
 
+// NewClient creates a new client instance
+// During this process, the client gets an id and one the other side, the balancer registers this client
+// * with lamport timestamp of 0.
 func NewClient(balancerAddr string) *Client {
 	context := context.Background()
 
 	c := &Client{
-		context:   context,
-		timestamp: 0,
+		context:       context,
+		timestamp:     0,
+		balacerClient: balancer.NewBalancerClient(balancerAddr),
 	}
 
-	c.setupBalancerClient(balancerAddr)
+	id, err := c.balacerClient.GetId(context, &pbbalancer.GetIdRequest{})
+	if err != nil {
+		panic(err)
+	}
+
+	c.id = id.Id
+
 	return c
 }
 
@@ -41,6 +53,7 @@ func (c *Client) Set(key, value []byte) error {
 		Key:     key,
 		Value:   value,
 		Lamport: c.timestamp,
+		Id:      c.id,
 	}
 
 	_, err := c.balacerClient.Set(c.context, req)
@@ -58,6 +71,7 @@ func (c *Client) Get(key []byte) ([]byte, error) {
 	req := &prototypes.GetRequest{
 		Key:     key,
 		Lamport: c.timestamp,
+		Id:      c.id,
 	}
 
 	resp, err := c.balacerClient.Get(c.context, req)
@@ -75,6 +89,7 @@ func (c *Client) Delete(key []byte) error {
 	req := &prototypes.DeleteRequest{
 		Key:     key,
 		Lamport: c.timestamp,
+		Id:      c.id,
 	}
 
 	_, err := c.balacerClient.Delete(c.context, req)
