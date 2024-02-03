@@ -28,7 +28,7 @@ type Balancer struct {
 	coverage *coverage
 
 	// client id to lamport mapping
-	clientIdToLamport
+	*clientIdToLamport
 }
 
 // NewBalancer returns a new balancer instance.
@@ -42,7 +42,7 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 		DB:                db,
 		rangeToViews:      make(map[partition.RangeKey]*RangeView),
 		coverage:          GetCoverage(),
-		clientIdToLamport: make(clientIdToLamport),
+		clientIdToLamport: NewClientIdToLamport(),
 	}
 
 	err = b.setupCoverage(goalReplicaRanges)
@@ -199,7 +199,7 @@ func (b *Balancer) GetNextLamportForKey(key []byte) uint64 {
 // validateIdAgainstTimestamp checks if the given id has the next lamport timestamp.
 // if not, upstreams the appropriate error.
 func (b *Balancer) validateIdAgainstTimestamp(id, lamport uint64) error {
-	clientLamport := b.clientIdToLamport[id]
+	clientLamport := b.clientIdToLamport.map_[id]
 
 	// clientLamport+1 is the lamport we expect (since clientLamport is the latest processed lamport)
 	if clientLamport+1 > lamport {
@@ -213,20 +213,30 @@ func (b *Balancer) validateIdAgainstTimestamp(id, lamport uint64) error {
 
 // NextClientId returns the next available client id to be used during requests to balancer.
 func (b *Balancer) NextClientId() uint64 {
-	nextId := uint64(len(b.clientIdToLamport) + 1)
+	defer b.clientIdToLamport.mutex.Unlock()
+	b.clientIdToLamport.mutex.Lock()
+
+	nextId := uint64(len(b.clientIdToLamport.map_) + 1)
 
 	b.SetLamportForId(nextId, 0)
 	return nextId
 }
 
 func (b *Balancer) GetLamportForId(id uint64) uint64 {
-	return b.clientIdToLamport[id]
+	defer b.clientIdToLamport.mutex.Unlock()
+	b.clientIdToLamport.mutex.Lock()
+
+	return b.clientIdToLamport.map_[id]
 }
 
+// NOTE: do not lock, this should be called only when the lock is already held
 func (b *Balancer) SetLamportForId(id, lamport uint64) {
-	b.clientIdToLamport[id] = lamport
+	b.clientIdToLamport.map_[id] = lamport
 }
 
 func (b *Balancer) IncrementLamportForId(id uint64) {
-	b.clientIdToLamport[id]++
+	defer b.clientIdToLamport.mutex.Unlock()
+	b.clientIdToLamport.mutex.Lock()
+
+	b.clientIdToLamport.map_[id]++
 }

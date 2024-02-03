@@ -54,7 +54,7 @@ func NewBalancerTest(t *testing.T, goalReplicaRanges int) *Balancer {
 		DB:                db,
 		rangeToViews:      make(map[partition.RangeKey]*RangeView),
 		coverage:          &coverage{},
-		clientIdToLamport: make(clientIdToLamport),
+		clientIdToLamport: NewClientIdToLamport(),
 	}
 
 	require.NoError(t, b.setupCoverage(goalReplicaRanges))

@@ -2,6 +2,7 @@ package balancer
 
 import (
 	"log"
+	"sync"
 
 	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
 	"google.golang.org/grpc"
@@ -20,4 +21,14 @@ func NewBalancerClient(addr string) pbbalancer.BalancerServiceClient {
 }
 
 // clientIdToLamport is used to map ids of clients to their processed logical timestamps.
-type clientIdToLamport map[uint64]uint64
+type clientIdToLamport struct {
+	map_  map[uint64]uint64
+	mutex *sync.Mutex
+}
+
+func NewClientIdToLamport() *clientIdToLamport {
+	return &clientIdToLamport{
+		map_:  make(map[uint64]uint64),
+		mutex: new(sync.Mutex),
+	}
+}
