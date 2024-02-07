@@ -6,6 +6,7 @@ import (
 
 	leveldb "github.com/pysel/dkvs/db/leveldb"
 	"github.com/pysel/dkvs/prototypes"
+	"github.com/pysel/dkvs/shared"
 	"github.com/pysel/dkvs/types"
 	"google.golang.org/protobuf/proto"
 )
@@ -29,6 +30,9 @@ type Partition struct {
 
 	// message that this partition is currently locked in two-phase commit prepare step.
 	lockedMessage proto.Message
+
+	// event handler
+	EventHandler *shared.EventHandler
 }
 
 // NewPartition creates a new partition instance.
@@ -38,11 +42,13 @@ func NewPartition(dbPath string) *Partition {
 		panic(err)
 	}
 
+	eventHandler := shared.NewEventHandler()
 	return &Partition{
-		hashrange: nil, // balancer should set this
-		DB:        db,
-		timestamp: 0,
-		backlog:   types.NewBacklog(),
+		hashrange:    nil, // balancer should set this
+		DB:           db,
+		timestamp:    0,
+		backlog:      types.NewBacklog(),
+		EventHandler: eventHandler,
 	}
 }
 
@@ -113,7 +119,12 @@ func (p *Partition) ProcessBacklog(err error) error {
 
 	var latestTimestamp uint64
 	for {
-		message := p.backlog.Pop()
+		// check if the partition is ready to process the next message
+		if p.backlog.GetSmallestTimestamp() > p.timestamp+1 {
+			break
+		}
+
+		_, message := p.backlog.Pop()
 		if message == nil {
 			break
 		}
