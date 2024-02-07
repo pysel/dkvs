@@ -39,9 +39,9 @@ func TestBacklog(t *testing.T) {
 		b.Add(uint64(i), msg)
 	}
 
-	for _, msg := range messages {
-		popped := b.Pop()
-		if !proto.Equal(msg, popped) {
+	for i, msg := range messages {
+		lamport, popped := b.Pop()
+		if !proto.Equal(msg, popped) || lamport != uint64(i) {
 			t.Errorf("expected %v, got %v", msg, popped)
 		}
 	}

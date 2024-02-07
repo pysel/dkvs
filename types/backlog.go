@@ -35,12 +35,13 @@ func (b *Backlog) Add(ts uint64, message proto.Message) {
 }
 
 // Pop returns the first message (the one with the smallest timestamp) and removes it from the backlog.
-func (b *Backlog) Pop() proto.Message {
+func (b *Backlog) Pop() (uint64, proto.Message) {
 	if len(*b) == 0 {
-		return nil
+		return 0, nil
 	}
 
 	msg := (*b)[0].msg
+	lamport := (*b)[0].timestamp
 	*b = (*b)[1:]
-	return msg
+	return lamport, msg
 }
