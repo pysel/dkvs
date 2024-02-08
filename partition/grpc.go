@@ -128,8 +128,6 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 
 // postCRUD runs functionality that should be run after every CRUD operation.
 func (ls *ListenServer) postCRUD(err error, req string) {
-	ls.ProcessBacklog(err)
-
 	// if error is a warning, log it as warning
 	// log error as error otherwise
 	if err != nil {
@@ -141,6 +139,8 @@ func (ls *ListenServer) postCRUD(err error, req string) {
 	} else {
 		ls.IncrTs()
 	}
+
+	ls.ProcessBacklog()
 }
 
 func (ls *ListenServer) validateTSGrpcLevel(ts uint64, message proto.Message) error {

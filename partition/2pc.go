@@ -22,7 +22,7 @@ func (ls *ListenServer) PrepareCommit(ctx context.Context, req *pbpartition.Prep
 
 func (ls *ListenServer) AbortCommit(ctx context.Context, req *pbpartition.AbortCommitRequest) (*pbpartition.AbortCommitResponse, error) {
 	ls.lockedMessage = nil
-	ls.Partition.ProcessBacklog(nil)
+	ls.Partition.ProcessBacklog()
 
 	ls.EventHandler.Emit(TwoPCAbortEvent{})
 	return &pbpartition.AbortCommitResponse{}, nil
@@ -49,7 +49,6 @@ func (ls *ListenServer) Commit(ctx context.Context, req *pbpartition.CommitReque
 	}
 
 	ls.lockedMessage = nil
-	ls.Partition.ProcessBacklog(nil) // TODO: consider removing processing of backlog after 2PC termination
 
 	ls.EventHandler.Emit(TwoPCCommitEvent{msg: msgString})
 	return &pbpartition.CommitResponse{}, nil

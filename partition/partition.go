@@ -112,11 +112,7 @@ func (p *Partition) IncrTs() {
 }
 
 // ProcessBacklog processes messages in backlog.
-func (p *Partition) ProcessBacklog(err error) error {
-	if err != nil {
-		return nil // TODO: should return error?
-	}
-
+func (p *Partition) ProcessBacklog() error {
 	var latestTimestamp uint64
 	for {
 		// check if the partition is ready to process the next message
@@ -130,16 +126,26 @@ func (p *Partition) ProcessBacklog(err error) error {
 		}
 
 		var err error
+		var messageType string
+		var messageKey string
+		var messageValue string
 		switch m := message.(type) {
 		case *prototypes.SetRequest:
 			latestTimestamp = m.Lamport
-			err = p.Set(m.Key, m.Value)
+			shaKey := types.ShaKey(m.Key)
+			err = p.Set(shaKey[:], m.Value)
+
+			messageType, messageKey, messageValue = "set", string(m.Key), string(m.Value)
 		case *prototypes.DeleteRequest:
 			latestTimestamp = m.Lamport
-			err = p.Delete(m.Key)
+			shaKey := types.ShaKey(m.Key)
+			err = p.Delete(shaKey[:])
+
+			messageType, messageKey = "delete", string(m.Key)
 		default:
 			fmt.Println("Unknown message type") // TODO: think of something better here.
 		}
+		p.EventHandler.Emit(NewBacklogMessageProcessedEvent(messageType, messageKey, messageValue))
 
 		if err != nil {
 			return err

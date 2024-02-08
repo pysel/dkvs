@@ -52,6 +52,10 @@ type (
 	TwoPCCommitEvent struct {
 		msg string
 	}
+
+	BacklogMessageProcessedEvent struct {
+		msg string
+	}
 )
 
 func (e SetEvent) Severity() string {
@@ -134,4 +138,22 @@ func (e TwoPCCommitEvent) Severity() string {
 
 func (e TwoPCCommitEvent) Message() string {
 	return fmt.Sprintf("2PC commit of locked message: %s", shared.GreenWrap(e.msg))
+}
+
+func NewBacklogMessageProcessedEvent(type_, key, value string) BacklogMessageProcessedEvent {
+	if type_ == "set" {
+		return BacklogMessageProcessedEvent{fmt.Sprintf("Set: %s -> %s", key, value)}
+	} else if type_ == "delete" {
+		return BacklogMessageProcessedEvent{fmt.Sprintf("Delete: %s", key)}
+	}
+
+	return BacklogMessageProcessedEvent{fmt.Sprintf("Unknown: %s", type_)}
+}
+
+func (e BacklogMessageProcessedEvent) Severity() string {
+	return "warning"
+}
+
+func (e BacklogMessageProcessedEvent) Message() string {
+	return fmt.Sprintf("Backlog message processed: %s", shared.GreenWrap(e.msg))
 }

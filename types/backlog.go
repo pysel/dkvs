@@ -45,3 +45,12 @@ func (b *Backlog) Pop() (uint64, proto.Message) {
 	*b = (*b)[1:]
 	return lamport, msg
 }
+
+// GetSmallestTimestamp returns the smallest timestamp of the first message in the backlog (the smallest timestamp)
+func (b *Backlog) GetSmallestTimestamp() uint64 {
+	if len(*b) == 0 {
+		return 0
+	}
+
+	return (*b)[0].timestamp
+}

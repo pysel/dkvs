@@ -52,9 +52,8 @@ func BufferedPartitionServer(dbPath string) (*bufconn.Listener, *grpc.Server) {
 	lis := bufconn.Listen(bufSize)
 	s := grpc.NewServer()
 	p := partition.NewPartition(dbPath)
-	eventHandler := shared.NewEventHandler()
 
-	pbpartition.RegisterPartitionServiceServer(s, &partition.ListenServer{Partition: p, EventHandler: eventHandler})
+	pbpartition.RegisterPartitionServiceServer(s, &partition.ListenServer{Partition: p})
 
 	return lis, s
 }
@@ -97,7 +96,7 @@ func StartXPartitionServers(x int) ([]net.Addr, []string) {
 	for i := 0; i < x; i++ {
 		path := TestDBPath + strconv.Itoa(i) + "test"
 		p := partition.NewPartition(path)
-		s := partition.RegisterPartitionServer(p, shared.NewEventHandler())
+		s := partition.RegisterPartitionServer(p)
 		_, addr := shared.StartListeningOnPort(s, 0)
 		addrs[i] = addr
 		dbPaths[i] = path

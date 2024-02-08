@@ -37,7 +37,7 @@ func main() {
 		dbPath := args[3]
 
 		p := partition.NewPartition(dbPath)
-		server := partition.RegisterPartitionServer(p, shared.NewEventHandler())
+		server := partition.RegisterPartitionServer(p)
 
 		wg, addr := shared.StartListeningOnPort(server, uint64(port))
 		fmt.Println("Address: ", addr)
