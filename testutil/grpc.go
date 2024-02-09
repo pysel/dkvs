@@ -5,7 +5,10 @@ import (
 	"log"
 	"math/big"
 	"net"
+	"os"
 	"strconv"
+
+	"github.com/pysel/dkvs/balancer"
 
 	"github.com/pysel/dkvs/partition"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
@@ -104,4 +107,28 @@ func StartXPartitionServers(x int) ([]net.Addr, []string) {
 	}
 
 	return addrs, dbPaths
+}
+
+func BalancerClientWith2Partitions() (net.Addr, func()) {
+	ctx := context.Background()
+	addrs, dbPaths := StartXPartitionServers(2)
+
+	// register partitions
+	b := balancer.NewBalancer(2)
+	b.RegisterPartition(ctx, addrs[0].String())
+	b.RegisterPartition(ctx, addrs[1].String())
+
+	server := balancer.RegisterBalancerServer(b)
+	_, addr := shared.StartListeningOnPort(server, 0)
+
+	return addr, func() {
+		// remove all databases - one for balancer and one for each partitin
+		os.RemoveAll(balancer.BalancerDBPath)
+		for _, path := range dbPaths {
+			err := os.RemoveAll(path)
+			if err != nil {
+				log.Printf("error removing path: %v", err)
+			}
+		}
+	}
 }

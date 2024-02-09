@@ -18,6 +18,10 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+var (
+	BalancerDBPath = "balancer-db"
+)
+
 // Balancer is a node that is responsible for registering partitions and relaying requests to appropriate ones.
 type Balancer struct {
 	// Database instance
@@ -36,7 +40,7 @@ type Balancer struct {
 
 // NewBalancer returns a new balancer instance.
 func NewBalancer(goalReplicaRanges int) *Balancer {
-	db, err := leveldb.NewLevelDB("balancer-db")
+	db, err := leveldb.NewLevelDB(BalancerDBPath)
 	if err != nil {
 		panic(err)
 	}
