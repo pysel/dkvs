@@ -5,6 +5,8 @@ import (
 	"crypto/sha256"
 	"math/big"
 
+	coverage "github.com/pysel/dkvs/balancer/coverage"
+	"github.com/pysel/dkvs/balancer/rangeview"
 	leveldb "github.com/pysel/dkvs/db/leveldb"
 	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/prototypes"
@@ -23,10 +25,10 @@ type Balancer struct {
 
 	// A registry, which is a mapping from ranges to partitions.
 	// Multiple partitions can be mapped to the same range.
-	rangeToViews map[hashrange.RangeKey]*RangeView
+	rangeToViews map[hashrange.RangeKey]*rangeview.RangeView
 
 	// coverage is used for tracking the tracked ranges
-	coverage *coverage
+	coverage *coverage.Coverage
 
 	// client id to lamport mapping
 	*clientIdToLamport
@@ -41,8 +43,8 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 
 	b := &Balancer{
 		DB:                db,
-		rangeToViews:      make(map[hashrange.RangeKey]*RangeView),
-		coverage:          GetCoverage(),
+		rangeToViews:      make(map[hashrange.RangeKey]*rangeview.RangeView),
+		coverage:          coverage.GetCoverage(),
 		clientIdToLamport: NewClientIdToLamport(),
 	}
 
@@ -58,7 +60,7 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 	client := partition.NewPartitionClient(addr)
 
-	nextPartitionRangeKey, lowerTick, _ := b.coverage.getNextPartitionRange()
+	nextPartitionRangeKey, lowerTick, _ := b.coverage.GetNextPartitionRange()
 	partitionRange, _ := nextPartitionRangeKey.ToRange() // TODO: err
 
 	_, err := client.SetHashashrange(ctx, &prototypes.SetHashashrangeRequest{Min: partitionRange.Min.Bytes(), Max: partitionRange.Max.Bytes()})
@@ -68,20 +70,20 @@ func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 
 	rangeView := b.rangeToViews[nextPartitionRangeKey]
 	if rangeView == nil { // means that the range is not yet covered, initialize a new range view
-		rangeView = NewRangeView([]*pbpartition.PartitionServiceClient{}, []string{})
+		rangeView = rangeview.NewRangeView([]*pbpartition.PartitionServiceClient{}, []string{})
 		b.rangeToViews[nextPartitionRangeKey] = rangeView
 	}
 
 	rangeView.AddPartitionData(&client, addr)
 
 	// on sucess, inrease min and max values of ticks
-	b.coverage.bumpTicks(lowerTick)
+	b.coverage.BumpTicks(lowerTick)
 
 	return b.saveCoverage()
 }
 
 // GetPartitionsByKey returns a range view of partitions that contain the given key.
-func (b *Balancer) GetPartitionsByKey(key []byte) *RangeView {
+func (b *Balancer) GetPartitionsByKey(key []byte) *rangeview.RangeView {
 	shaKey := sha256.Sum256(key)
 	for rangeKey, rangeView := range b.rangeToViews {
 		range_, _ := rangeKey.ToRange() // Todo: err
@@ -102,7 +104,7 @@ func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse
 	}
 
 	rangeView := b.rangeToViews[range_.AsKey()]
-	if len(rangeView.clients) == 0 {
+	if len(rangeView.Clients) == 0 {
 		return nil, ErrRangeNotYetCovered
 	}
 
@@ -110,19 +112,19 @@ func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse
 	maxLamport := uint64(0)
 	offlineAddressesErr := ErrPartitionsOffline{Addresses: []string{}, Errors: []error{}}
 
-	rangeView.lamport++ // increase lamport timestamp so that we account for get request we are sending here
-	requestLamport := rangeView.lamport
-	for i, client := range rangeView.clients {
+	rangeView.Lamport++ // increase lamport timestamp so that we account for get request we are sending here
+	requestLamport := rangeView.Lamport
+	for i, client := range rangeView.Clients {
 		resp, err := (*client).Get(ctx, &prototypes.GetRequest{Key: key, Lamport: requestLamport})
 		if err != nil {
 			// remove the partition if it is offline
 			if s, ok := status.FromError(err); ok {
 				if s.Code() == codes.Unavailable {
-					offlineAddressesErr.Addresses = append(offlineAddressesErr.Addresses, rangeView.addresses[i])
+					offlineAddressesErr.Addresses = append(offlineAddressesErr.Addresses, rangeView.Addresses[i])
 					offlineAddressesErr.Errors = append(offlineAddressesErr.Errors, err)
 
 					// TODO: consider tombstoning before removing
-					rangeView.removePartition(rangeView.addresses[i])
+					rangeView.RemovePartition(rangeView.Addresses[i])
 				}
 			}
 			continue
@@ -146,11 +148,11 @@ func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse
 	return response, offlineAddressesErr.ErrOrNil()
 }
 
-// setupCoverage creates necessary ticks for coverage based on goalReplicaRanges
+// setupCoverage creates necessary ticks for Coverage based on goalReplicaRanges
 func (b *Balancer) setupCoverage(goalReplicaRanges int) error {
 	if goalReplicaRanges == 0 {
-		b.coverage.addTick(newTick(big.NewInt(0), 0))
-		b.coverage.addTick(newTick(hashrange.MaxInt, 0))
+		b.coverage.AddTick(coverage.NewTick(big.NewInt(0), 0))
+		b.coverage.AddTick(coverage.NewTick(hashrange.MaxInt, 0))
 		return nil
 	}
 
@@ -158,7 +160,7 @@ func (b *Balancer) setupCoverage(goalReplicaRanges int) error {
 	for i := 0; i <= goalReplicaRanges; i++ {
 		numerator := new(big.Int).Mul(big.NewInt(int64(i)), hashrange.MaxInt)
 		value := new(big.Int).Div(numerator, big.NewInt(int64(goalReplicaRanges)))
-		b.coverage.addTick(newTick(value, 0))
+		b.coverage.AddTick(coverage.NewTick(value, 0))
 	}
 
 	return b.saveCoverage()
@@ -176,14 +178,14 @@ func (b *Balancer) getRangeFromDigest(digest []byte) (*hashrange.Range, error) {
 	return nil, ErrDigestNotCovered
 }
 
-// saveCoverage saves the current coverage to disk
+// saveCoverage saves the current Coverage to disk
 func (b *Balancer) saveCoverage() error {
-	coverageBz, err := proto.Marshal(b.coverage.ToProto())
+	CoverageBz, err := proto.Marshal(b.coverage.ToProto())
 	if err != nil {
 		return err
 	}
 
-	return b.DB.Set(CoverageKey, coverageBz)
+	return b.DB.Set(CoverageKey, CoverageBz)
 }
 
 // GetNextLamportForKey returns the next lamport timestamp for a given key based on the digest of the key.
@@ -194,7 +196,7 @@ func (b *Balancer) GetNextLamportForKey(key []byte) uint64 {
 		return 0
 	}
 
-	return b.rangeToViews[range_.AsKey()].lamport + 1
+	return b.rangeToViews[range_.AsKey()].Lamport + 1
 }
 
 // validateIdAgainstTimestamp checks if the given id has the next lamport timestamp.

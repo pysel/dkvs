@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/pysel/dkvs/balancer/rangeview"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 	"github.com/pysel/dkvs/types/hashrange"
 )
@@ -13,7 +14,7 @@ import (
 // On successfull ack from all nodes, sends a commit message, else sends an abort message.
 func (b *Balancer) AtomicMessage(ctx context.Context, range_ *hashrange.Range, msg *pbpartition.PrepareCommitRequest) error {
 	rangeView := b.rangeToViews[range_.AsKey()]
-	if len(rangeView.clients) == 0 {
+	if len(rangeView.Clients) == 0 {
 		return ErrRangeNotYetCovered
 	}
 
@@ -50,10 +51,10 @@ func (b *Balancer) AtomicMessage(ctx context.Context, range_ *hashrange.Range, m
 }
 
 // prepareCommit sends a prepare commit request to all partitions that are responsible for the given key and awaits for their responses.
-func (b *Balancer) prepareCommit(rangeView *RangeView, msg *pbpartition.PrepareCommitRequest) error {
+func (b *Balancer) prepareCommit(rangeView *rangeview.RangeView, msg *pbpartition.PrepareCommitRequest) error {
 	var wg sync.WaitGroup
-	channel := make(chan error, len(rangeView.clients))
-	for _, client := range rangeView.clients {
+	channel := make(chan error, len(rangeView.Clients))
+	for _, client := range rangeView.Clients {
 		wg.Add(1)
 		clientCopy := *client
 
@@ -74,7 +75,7 @@ func (b *Balancer) prepareCommit(rangeView *RangeView, msg *pbpartition.PrepareC
 
 	wg.Wait()
 
-	for i := 0; i < len(rangeView.clients); i++ {
+	for i := 0; i < len(rangeView.Clients); i++ {
 		err := <-channel
 		if err != nil {
 			return err
@@ -85,10 +86,10 @@ func (b *Balancer) prepareCommit(rangeView *RangeView, msg *pbpartition.PrepareC
 }
 
 // commit sends a commit request to provided partitions.
-func (b *Balancer) commit(ctx context.Context, rangeView *RangeView) error {
+func (b *Balancer) commit(ctx context.Context, rangeView *rangeview.RangeView) error {
 	var wg sync.WaitGroup
-	channel := make(chan error, len(rangeView.clients))
-	for _, client := range rangeView.clients {
+	channel := make(chan error, len(rangeView.Clients))
+	for _, client := range rangeView.Clients {
 		wg.Add(1)
 		clientCopy := *client
 
@@ -106,25 +107,25 @@ func (b *Balancer) commit(ctx context.Context, rangeView *RangeView) error {
 	wg.Wait()
 
 	success := 0
-	for i := 0; i < len(rangeView.clients); i++ {
+	for i := 0; i < len(rangeView.Clients); i++ {
 		if <-channel != nil {
 			return ErrCommitAborted
 		}
 		success++
 	}
 
-	if success == len(rangeView.clients) {
-		rangeView.lamport++
+	if success == len(rangeView.Clients) {
+		rangeView.Lamport++
 	}
 
 	return nil
 }
 
 // abortCommit sends an abort commit request to provided partitions.
-func (b *Balancer) abortCommit(ctx context.Context, rangeView *RangeView) {
+func (b *Balancer) abortCommit(ctx context.Context, rangeView *rangeview.RangeView) {
 	var wg sync.WaitGroup
-	channel := make(chan error, len(rangeView.clients))
-	for _, client := range rangeView.clients {
+	channel := make(chan error, len(rangeView.Clients))
+	for _, client := range rangeView.Clients {
 		wg.Add(1)
 		clientCopy := *client
 
@@ -142,7 +143,7 @@ func (b *Balancer) abortCommit(ctx context.Context, rangeView *RangeView) {
 
 	wg.Wait()
 
-	for i := 0; i < len(rangeView.clients); i++ {
+	for i := 0; i < len(rangeView.Clients); i++ {
 		if <-channel != nil {
 			fmt.Println("TODO: Unimplemented branch 2")
 			return

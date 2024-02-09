@@ -4,6 +4,8 @@ import (
 	"math/big"
 	"testing"
 
+	coverage "github.com/pysel/dkvs/balancer/coverage"
+	"github.com/pysel/dkvs/balancer/rangeview"
 	leveldb "github.com/pysel/dkvs/db/leveldb"
 	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
 	"github.com/pysel/dkvs/types/hashrange"
@@ -17,34 +19,26 @@ type (
 )
 
 func (b *Balancer) GetTickByValue(value *big.Int) *pbbalancer.Tick {
-	return b.coverage.getTickByValue(value)
+	return b.coverage.GetTickByValue(value)
 }
 
 func (b *Balancer) GetCoverageSize() int {
-	return len(b.coverage.ticks)
+	return len(b.coverage.Ticks)
 }
 
 func (b *Balancer) GetNextPartitionRange() (hashrange.RangeKey, *pbbalancer.Tick, *pbbalancer.Tick) {
-	return b.coverage.getNextPartitionRange()
+	return b.coverage.GetNextPartitionRange()
 }
 
 func (b *Balancer) GetRangeFromDigest(digest []byte) (*hashrange.Range, error) {
 	return b.getRangeFromDigest(digest)
 }
 
-func (b *Balancer) GetrangeToViews() map[hashrange.RangeKey]*RangeView {
+func (b *Balancer) GetRangeToViews() map[hashrange.RangeKey]*rangeview.RangeView {
 	return b.rangeToViews
 }
 
-func (rv *RangeView) RemovePartition(addr string) error {
-	return rv.removePartition(addr)
-}
-
-func (rv *RangeView) GetAddresses() []string {
-	return rv.addresses
-}
-
-// NewBalancerTest returns a new balancer instance with an independent coverage every time.
+// NewBalancerTest returns a new balancer instance with an independent Coverage every time.
 func NewBalancerTest(t *testing.T, goalReplicaRanges int) *Balancer {
 	balancerName = "balancer" + t.Name()
 	db, err := leveldb.NewLevelDB(balancerName)
@@ -53,8 +47,8 @@ func NewBalancerTest(t *testing.T, goalReplicaRanges int) *Balancer {
 
 	b := &Balancer{
 		DB:                db,
-		rangeToViews:      make(map[hashrange.RangeKey]*RangeView),
-		coverage:          &coverage{},
+		rangeToViews:      make(map[hashrange.RangeKey]*rangeview.RangeView),
+		coverage:          &coverage.Coverage{},
 		clientIdToLamport: NewClientIdToLamport(),
 	}
 

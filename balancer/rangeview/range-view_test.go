@@ -1,10 +1,10 @@
-package balancer_test
+package rangeview_test
 
 import (
 	"context"
 	"testing"
 
-	"github.com/pysel/dkvs/balancer"
+	"github.com/pysel/dkvs/balancer/rangeview"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 	"github.com/pysel/dkvs/testutil"
 	"github.com/stretchr/testify/require"
@@ -18,10 +18,10 @@ func TestRemovePartition(t *testing.T) {
 	addr, client, closer := testutil.StartPartitionClientToBufferedServer(ctx)
 	defer closer()
 
-	rv := balancer.NewRangeView([]*pbpartition.PartitionServiceClient{&client}, []string{addr.String()})
+	rv := rangeview.NewRangeView([]*pbpartition.PartitionServiceClient{&client}, []string{addr.String()})
 
 	err := rv.RemovePartition("invalid address")
-	require.Equal(t, balancer.ErrPartitionAtAddressNotExist, err)
+	require.Equal(t, rangeview.ErrPartitionAtAddressNotExist, err)
 
 	require.Equal(t, 1, len(rv.GetResponsibleClients()))
 	require.Equal(t, 1, len(rv.GetAddresses()))
