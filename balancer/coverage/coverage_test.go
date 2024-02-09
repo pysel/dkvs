@@ -1,10 +1,11 @@
-package coverage
+package coverage_test
 
 import (
 	"bytes"
 	"math/big"
 	"testing"
 
+	"github.com/pysel/dkvs/balancer/coverage"
 	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
 	"github.com/pysel/dkvs/testutil"
 	"github.com/stretchr/testify/require"
@@ -23,7 +24,7 @@ func TestGetTickByValue(t *testing.T) {
 
 	tests := map[string]struct {
 		value    *big.Int
-		Coverage *Coverage
+		Coverage *coverage.Coverage
 		expected *pbbalancer.Tick
 	}{
 		"Get tick at the beginning": {
@@ -66,13 +67,13 @@ func TestAddTick(t *testing.T) {
 
 	tests := map[string]struct {
 		toAdd             *pbbalancer.Tick
-		Coverage          *Coverage
+		Coverage          *coverage.Coverage
 		expectedTick      *pbbalancer.Tick
 		expectedTickValue *big.Int
 	}{
 		"Add tick at the beginning": {
-			toAdd:    NewTick(new(big.Int).SetInt64(1), 1),
-			Coverage: &Coverage{nil},
+			toAdd:    coverage.NewTick(new(big.Int).SetInt64(1), 1),
+			Coverage: &coverage.Coverage{nil},
 			expectedTick: &pbbalancer.Tick{
 				Covers: 1,
 				Value:  new(big.Int).SetInt64(1).Bytes(),
@@ -80,7 +81,7 @@ func TestAddTick(t *testing.T) {
 			expectedTickValue: new(big.Int).SetInt64(1),
 		},
 		"Add tick at the end": {
-			toAdd:    NewTick(new(big.Int).Mul(fullInt, big.NewInt(2)), 0),
+			toAdd:    coverage.NewTick(new(big.Int).Mul(fullInt, big.NewInt(2)), 0),
 			Coverage: defaultCoverage_,
 			expectedTick: &pbbalancer.Tick{
 				Value: new(big.Int).Mul(fullInt, big.NewInt(2)).Bytes(),
@@ -108,23 +109,23 @@ func TestAddTick(t *testing.T) {
 // Visually ("-" denotes areas that are covered):
 //
 // 0-----1/4-----1/2     3/4-----1
-func defaulCoverage(t *testing.T) *Coverage {
-	Coverage := &Coverage{nil}
+func defaulCoverage(t *testing.T) *coverage.Coverage {
+	Coverage := &coverage.Coverage{nil}
 
 	// zeroNull corresponds to tick at 0
-	zeroNull := NewTick(zeroInt, 1)
+	zeroNull := coverage.NewTick(zeroInt, 1)
 
 	// tickQuarter corresponds to tick at 1/4 of the domain
-	tickQuarter := NewTick(quarterInt, 1)
+	tickQuarter := coverage.NewTick(quarterInt, 1)
 
 	// tickHalf corresponds to tick at 1/2 of the domain
-	tickHalf := NewTick(halfInt, 0)
+	tickHalf := coverage.NewTick(halfInt, 0)
 
 	// tickThreeQuarters corresponds to tick at 3/4 of the domain
-	tickThreeQuarters := NewTick(threeQuartersInt, 1)
+	tickThreeQuarters := coverage.NewTick(threeQuartersInt, 1)
 
 	// tickFull corresponds to tick at the end of the domain
-	tickFull := NewTick(fullInt, 0)
+	tickFull := coverage.NewTick(fullInt, 0)
 
 	Coverage.AddTick(zeroNull)
 	Coverage.AddTick(tickQuarter)
@@ -137,7 +138,7 @@ func defaulCoverage(t *testing.T) *Coverage {
 	return Coverage
 }
 
-func assertDefaultCoverage(t *testing.T, c *Coverage) {
+func assertDefaultCoverage(t *testing.T, c *coverage.Coverage) {
 	require.Equal(t, 5, len(c.Ticks))
 	one64 := int64(1)
 	zero64 := int64(0)
