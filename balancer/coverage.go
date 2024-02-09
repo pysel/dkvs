@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/pysel/dkvs/partition"
 	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
+	"github.com/pysel/dkvs/types/hrange"
 )
 
 var CreatedCoverage *coverage
@@ -67,16 +67,16 @@ func (c *coverage) addTick(t *pbbalancer.Tick) {
 }
 
 // getNextPartitionRange is used when assigning a range to a newly registered partition
-func (c *coverage) getNextPartitionRange() (partition.RangeKey, *pbbalancer.Tick, *pbbalancer.Tick) {
+func (c *coverage) getNextPartitionRange() (hrange.RangeKey, *pbbalancer.Tick, *pbbalancer.Tick) {
 	// initially assume that first interval is minimal
 	minCovered := c.ticks[0].Covers
 	minLowerTick := c.ticks[0]
 	minUpperTick := c.ticks[1]
-	minRange := partition.NewRange(minLowerTick.Value, minUpperTick.Value)
+	minRange := hrange.NewRange(minLowerTick.Value, minUpperTick.Value)
 	for ind, tick := range c.ticks[:len(c.ticks)-1] { // no need to cover last
 		nextTick := c.ticks[ind+1]
 		if tick.Covers < minCovered {
-			minRange = partition.NewRange(tick.Value, nextTick.Value)
+			minRange = hrange.NewRange(tick.Value, nextTick.Value)
 			minCovered = tick.Covers
 			minLowerTick = tick
 			minUpperTick = nextTick
@@ -84,7 +84,7 @@ func (c *coverage) getNextPartitionRange() (partition.RangeKey, *pbbalancer.Tick
 	}
 
 	// minLowerTick and minUpperTick are returned to be increased by 1 if a partition is successfully registered
-	return partition.RangeKey(minRange.AsKey()), minLowerTick, minUpperTick
+	return hrange.RangeKey(minRange.AsKey()), minLowerTick, minUpperTick
 }
 
 func (c *coverage) bumpTicks(lowerTick *pbbalancer.Tick) {

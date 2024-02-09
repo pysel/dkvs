@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/pysel/dkvs/balancer"
-	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/testutil"
+	"github.com/pysel/dkvs/types/hrange"
 	"github.com/stretchr/testify/require"
 )
 
@@ -43,14 +43,14 @@ func TestBalancerInit(t *testing.T) {
 	expectedFirstTickValue := big.NewInt(0)
 	require.NotNil(t, b.GetTickByValue(expectedFirstTickValue))
 
-	expectedSecondTickValue := new(big.Int).Div(partition.MaxInt, big.NewInt(3))
+	expectedSecondTickValue := new(big.Int).Div(hrange.MaxInt, big.NewInt(3))
 	require.NotNil(t, b.GetTickByValue(expectedSecondTickValue))
 
-	expectedThirdTickNumerator := new(big.Int).Mul(partition.MaxInt, big.NewInt(2))
+	expectedThirdTickNumerator := new(big.Int).Mul(hrange.MaxInt, big.NewInt(2))
 	expectedThirdTickValue := new(big.Int).Div(expectedThirdTickNumerator, big.NewInt(3))
 	require.NotNil(t, b.GetTickByValue(expectedThirdTickValue))
 
-	expectedFourthTickValue := partition.MaxInt
+	expectedFourthTickValue := hrange.MaxInt
 	require.NotNil(t, b.GetTickByValue(expectedFourthTickValue))
 }
 
@@ -67,25 +67,25 @@ func TestGetNextPartitionRange(t *testing.T) {
 	b2 := balancer.NewBalancerTest(t, 2)
 	nextPartitionRange, _, _ := b2.GetNextPartitionRange()
 	// defaultHashrange is full sha256 domain, in case of 2 nodes, first node's domain should be half
-	require.Equal(t, partition.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsKey(), nextPartitionRange)
+	require.Equal(t, hrange.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsKey(), nextPartitionRange)
 
 	// Register first Partition
 	require.NoError(t, b2.RegisterPartition(ctx, addr1.String()))
 
 	nextPartitionRange, _, _ = b2.GetNextPartitionRange()
 	// defaultHashrange is full sha256 domain, in case of 2 nodes, second node's domain should be the second half
-	require.Equal(t, partition.NewRange(testutil.HalfShaDomain.Bytes(), testutil.FullHashrange.Max.Bytes()).AsKey(), nextPartitionRange)
+	require.Equal(t, hrange.NewRange(testutil.HalfShaDomain.Bytes(), testutil.FullHashrange.Max.Bytes()).AsKey(), nextPartitionRange)
 
 	// Register second Partition
 	require.NoError(t, b2.RegisterPartition(ctx, addr2.String()))
 
 	// If all ranges are covered, newer partitions should start coverting the domain from the beginning
 	nextPartitionRange, _, _ = b2.GetNextPartitionRange()
-	require.Equal(t, nextPartitionRange, partition.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsKey())
+	require.Equal(t, nextPartitionRange, hrange.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsKey())
 
 	// Assert that GetNextPartitionRange is non-mutative
 	nextPartitionRange, _, _ = b2.GetNextPartitionRange()
-	require.Equal(t, nextPartitionRange, partition.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsKey())
+	require.Equal(t, nextPartitionRange, hrange.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsKey())
 }
 
 func TestClientIdToLamport(t *testing.T) {

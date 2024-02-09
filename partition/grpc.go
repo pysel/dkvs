@@ -7,6 +7,7 @@ import (
 	"github.com/pysel/dkvs/prototypes"
 	"github.com/pysel/dkvs/shared"
 	"github.com/pysel/dkvs/types"
+	"github.com/pysel/dkvs/types/hrange"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -122,7 +123,7 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 		return
 	}
 
-	ls.hashrange = NewRange(req.Min, req.Max)
+	ls.hashrange = hrange.NewRange(req.Min, req.Max)
 	return &prototypes.SetHashrangeResponse{}, nil
 }
 

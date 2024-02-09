@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	leveldb "github.com/pysel/dkvs/db/leveldb"
-	"github.com/pysel/dkvs/partition"
 	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
+	"github.com/pysel/dkvs/types/hrange"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,15 +24,15 @@ func (b *Balancer) GetCoverageSize() int {
 	return len(b.coverage.ticks)
 }
 
-func (b *Balancer) GetNextPartitionRange() (partition.RangeKey, *pbbalancer.Tick, *pbbalancer.Tick) {
+func (b *Balancer) GetNextPartitionRange() (hrange.RangeKey, *pbbalancer.Tick, *pbbalancer.Tick) {
 	return b.coverage.getNextPartitionRange()
 }
 
-func (b *Balancer) GetRangeFromDigest(digest []byte) (*partition.Range, error) {
+func (b *Balancer) GetRangeFromDigest(digest []byte) (*hrange.Range, error) {
 	return b.getRangeFromDigest(digest)
 }
 
-func (b *Balancer) GetrangeToViews() map[partition.RangeKey]*RangeView {
+func (b *Balancer) GetrangeToViews() map[hrange.RangeKey]*RangeView {
 	return b.rangeToViews
 }
 
@@ -53,7 +53,7 @@ func NewBalancerTest(t *testing.T, goalReplicaRanges int) *Balancer {
 
 	b := &Balancer{
 		DB:                db,
-		rangeToViews:      make(map[partition.RangeKey]*RangeView),
+		rangeToViews:      make(map[hrange.RangeKey]*RangeView),
 		coverage:          &coverage{},
 		clientIdToLamport: NewClientIdToLamport(),
 	}

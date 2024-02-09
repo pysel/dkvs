@@ -1,8 +1,10 @@
-package partition
+package hrange
 
 import (
 	"math/big"
 	"strings"
+
+	"github.com/pysel/dkvs/types"
 )
 
 // A range of keys this partition is responsible for. Total range is [0; 2^256].
@@ -66,13 +68,13 @@ func (r RangeKey) ToRange() (*Range, error) {
 	splitted := strings.Split(string(r), "; ")
 	min, ok := new(big.Int).SetString(splitted[0], 10)
 	if !ok {
-		return nil, ErrFailedToSetString
+		return nil, types.ErrFailedToSetString
 
 	}
 
 	max, err := new(big.Int).SetString(splitted[1], 10)
 	if !err {
-		return nil, ErrFailedToSetString
+		return nil, types.ErrFailedToSetString
 	}
 	return NewRange(min.Bytes(), max.Bytes()), nil
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/pysel/dkvs/types/hrange"
+
 	leveldb "github.com/pysel/dkvs/db/leveldb"
 	"github.com/pysel/dkvs/prototypes"
 	"github.com/pysel/dkvs/shared"
@@ -14,7 +16,7 @@ import (
 // Partition is a node that is responsible for some range of keys.
 type Partition struct {
 	// hashrange is a range of keys that this partition is responsible for.
-	hashrange *Range
+	hashrange *hrange.Range
 
 	// Database instance
 	leveldb.DB
@@ -92,7 +94,7 @@ func (p *Partition) Close() error {
 	return p.DB.Close()
 }
 
-func (p *Partition) SetHashrange(hashrange *Range) {
+func (p *Partition) SetHashrange(hashrange *hrange.Range) {
 	p.hashrange = hashrange
 }
 

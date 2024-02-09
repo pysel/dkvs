@@ -10,6 +10,7 @@ import (
 	"github.com/pysel/dkvs/partition"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 	"github.com/pysel/dkvs/shared"
+	"github.com/pysel/dkvs/types/hrange"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
@@ -23,8 +24,8 @@ const (
 var (
 	Min              *big.Int // zero
 	HalfShaDomain    *big.Int // half of sha-2 domain
-	DefaultHashrange *partition.Range
-	FullHashrange    *partition.Range
+	DefaultHashrange *hrange.Range
+	FullHashrange    *hrange.Range
 )
 
 func init() {
@@ -36,12 +37,12 @@ func init() {
 	full_range := new(big.Int).SetBytes(to_bz) // 2^256 - 1
 
 	HalfShaDomain = new(big.Int).Div(full_range, big.NewInt(2)) // half of 2^256 - 1
-	DefaultHashrange = &partition.Range{
+	DefaultHashrange = &hrange.Range{
 		Min: Min,
 		Max: HalfShaDomain,
 	}
 
-	FullHashrange = &partition.Range{
+	FullHashrange = &hrange.Range{
 		Min: big.NewInt(0),
 		Max: full_range,
 	}
