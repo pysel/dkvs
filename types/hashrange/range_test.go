@@ -1,4 +1,4 @@
-package hrange_test
+package hashrange_test
 
 import (
 	"crypto/sha256"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/pysel/dkvs/testutil"
-	"github.com/pysel/dkvs/types/hrange"
+	hashrange "github.com/pysel/dkvs/types/hashrange"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,49 +15,49 @@ func TestNewRange(t *testing.T) {
 	tests := []struct {
 		min            *big.Int
 		max            *big.Int
-		expectedRange  *hrange.Range
+		expectedRange  *hashrange.Range
 		expectingPanic bool
 	}{
 		{
 			min:            big.NewInt(-1),
 			max:            big.NewInt(0),
-			expectedRange:  &hrange.Range{},
+			expectedRange:  &hashrange.Range{},
 			expectingPanic: true,
 		},
 		{
 			min:            big.NewInt(0),
 			max:            big.NewInt(0),
-			expectedRange:  &hrange.Range{},
+			expectedRange:  &hashrange.Range{},
 			expectingPanic: true,
 		},
 		{
 			min:            big.NewInt(0),
 			max:            big.NewInt(1),
-			expectedRange:  &hrange.Range{big.NewInt(0), big.NewInt(1)},
+			expectedRange:  &hashrange.Range{big.NewInt(0), big.NewInt(1)},
 			expectingPanic: false,
 		},
 		{
 			min:            big.NewInt(1),
 			max:            big.NewInt(0),
-			expectedRange:  &hrange.Range{},
+			expectedRange:  &hashrange.Range{},
 			expectingPanic: true,
 		},
 		{
 			min:            big.NewInt(0),
 			max:            tooBig,
-			expectedRange:  &hrange.Range{},
+			expectedRange:  &hashrange.Range{},
 			expectingPanic: true,
 		},
 		{
 			min:            big.NewInt(0),
 			max:            big.NewInt(500),
-			expectedRange:  &hrange.Range{big.NewInt(0), big.NewInt(500)},
+			expectedRange:  &hashrange.Range{big.NewInt(0), big.NewInt(500)},
 			expectingPanic: false,
 		},
 		{
 			min:            big.NewInt(500),
-			max:            hrange.MaxInt,
-			expectedRange:  &hrange.Range{big.NewInt(500), hrange.MaxInt},
+			max:            hashrange.MaxInt,
+			expectedRange:  &hashrange.Range{big.NewInt(500), hashrange.MaxInt},
 			expectingPanic: false,
 		},
 	}
@@ -71,7 +71,7 @@ func TestNewRange(t *testing.T) {
 			}()
 		}
 
-		got := hrange.NewRange(test.min.Bytes(), test.max.Bytes())
+		got := hashrange.NewRange(test.min.Bytes(), test.max.Bytes())
 		require.Equal(t, test.expectedRange, got)
 	}
 }
@@ -82,38 +82,38 @@ func TestContains(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		r        *hrange.Range
+		r        *hashrange.Range
 		hash     []byte
 		expected bool
 	}{
 		{
 			name:     "key is in range",
-			r:        testutil.DefaultHashrange,
+			r:        testutil.DefaultHashashrange,
 			hash:     domainHash[:],
 			expected: true,
 		},
 		{
 			name:     "key is not in range",
-			r:        testutil.DefaultHashrange,
+			r:        testutil.DefaultHashashrange,
 			hash:     nonDomainHash[:],
 			expected: false,
 		},
 		{
 			name:     "key is min",
-			r:        testutil.DefaultHashrange,
-			hash:     testutil.DefaultHashrange.Min.Bytes(),
+			r:        testutil.DefaultHashashrange,
+			hash:     testutil.DefaultHashashrange.Min.Bytes(),
 			expected: true,
 		},
 		{
 			name:     "key is max",
-			r:        testutil.DefaultHashrange,
-			hash:     testutil.DefaultHashrange.Max.Bytes(),
+			r:        testutil.DefaultHashashrange,
+			hash:     testutil.DefaultHashashrange.Max.Bytes(),
 			expected: true,
 		},
 		{
 			name:     "key is max + 1",
-			r:        testutil.DefaultHashrange,
-			hash:     new(big.Int).Add(testutil.DefaultHashrange.Max, big.NewInt(1)).Bytes(),
+			r:        testutil.DefaultHashashrange,
+			hash:     new(big.Int).Add(testutil.DefaultHashashrange.Max, big.NewInt(1)).Bytes(),
 			expected: false,
 		},
 	}
@@ -129,18 +129,18 @@ func TestContains(t *testing.T) {
 func TestAsString(t *testing.T) {
 	tests := []struct {
 		name     string
-		r        *hrange.Range
-		expected hrange.RangeKey
+		r        *hashrange.Range
+		expected hashrange.RangeKey
 	}{
 		{
 			name:     "range is default",
-			r:        testutil.DefaultHashrange,
-			expected: hrange.RangeKey("0" + "; " + testutil.HalfShaDomain.String()),
+			r:        testutil.DefaultHashashrange,
+			expected: hashrange.RangeKey("0" + "; " + testutil.HalfShaDomain.String()),
 		},
 		{
 			name:     "range is full",
-			r:        testutil.FullHashrange,
-			expected: hrange.RangeKey("0" + "; " + hrange.MaxInt.String()),
+			r:        testutil.FullHashashrange,
+			expected: hashrange.RangeKey("0" + "; " + hashrange.MaxInt.String()),
 		},
 	}
 
@@ -155,18 +155,18 @@ func TestAsString(t *testing.T) {
 func TestToRange(t *testing.T) {
 	tests := []struct {
 		name     string
-		r        hrange.RangeKey
-		expected *hrange.Range
+		r        hashrange.RangeKey
+		expected *hashrange.Range
 	}{
 		{
 			name:     "range is default",
-			r:        hrange.RangeKey("0" + "; " + testutil.HalfShaDomain.String()),
-			expected: testutil.DefaultHashrange,
+			r:        hashrange.RangeKey("0" + "; " + testutil.HalfShaDomain.String()),
+			expected: testutil.DefaultHashashrange,
 		},
 		{
 			name:     "range is full",
-			r:        hrange.RangeKey("0" + "; " + hrange.MaxInt.String()),
-			expected: testutil.FullHashrange,
+			r:        hashrange.RangeKey("0" + "; " + hashrange.MaxInt.String()),
+			expected: testutil.FullHashashrange,
 		},
 	}
 

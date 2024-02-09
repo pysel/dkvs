@@ -348,7 +348,7 @@ func (*DeleteResponse) Descriptor() ([]byte, []int) {
 	return file_dkvs_message_message_proto_rawDescGZIP(), []int{5}
 }
 
-type SetHashrangeRequest struct {
+type SetHashashrangeRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -357,8 +357,8 @@ type SetHashrangeRequest struct {
 	Max []byte `protobuf:"bytes,2,opt,name=max,proto3" json:"max,omitempty"`
 }
 
-func (x *SetHashrangeRequest) Reset() {
-	*x = SetHashrangeRequest{}
+func (x *SetHashashrangeRequest) Reset() {
+	*x = SetHashashrangeRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_dkvs_message_message_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -366,13 +366,13 @@ func (x *SetHashrangeRequest) Reset() {
 	}
 }
 
-func (x *SetHashrangeRequest) String() string {
+func (x *SetHashashrangeRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SetHashrangeRequest) ProtoMessage() {}
+func (*SetHashashrangeRequest) ProtoMessage() {}
 
-func (x *SetHashrangeRequest) ProtoReflect() protoreflect.Message {
+func (x *SetHashashrangeRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_dkvs_message_message_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -384,33 +384,33 @@ func (x *SetHashrangeRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SetHashrangeRequest.ProtoReflect.Descriptor instead.
-func (*SetHashrangeRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use SetHashashrangeRequest.ProtoReflect.Descriptor instead.
+func (*SetHashashrangeRequest) Descriptor() ([]byte, []int) {
 	return file_dkvs_message_message_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *SetHashrangeRequest) GetMin() []byte {
+func (x *SetHashashrangeRequest) GetMin() []byte {
 	if x != nil {
 		return x.Min
 	}
 	return nil
 }
 
-func (x *SetHashrangeRequest) GetMax() []byte {
+func (x *SetHashashrangeRequest) GetMax() []byte {
 	if x != nil {
 		return x.Max
 	}
 	return nil
 }
 
-type SetHashrangeResponse struct {
+type SetHashashrangeResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *SetHashrangeResponse) Reset() {
-	*x = SetHashrangeResponse{}
+func (x *SetHashashrangeResponse) Reset() {
+	*x = SetHashashrangeResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_dkvs_message_message_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -418,13 +418,13 @@ func (x *SetHashrangeResponse) Reset() {
 	}
 }
 
-func (x *SetHashrangeResponse) String() string {
+func (x *SetHashashrangeResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SetHashrangeResponse) ProtoMessage() {}
+func (*SetHashashrangeResponse) ProtoMessage() {}
 
-func (x *SetHashrangeResponse) ProtoReflect() protoreflect.Message {
+func (x *SetHashashrangeResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_dkvs_message_message_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -436,8 +436,8 @@ func (x *SetHashrangeResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SetHashrangeResponse.ProtoReflect.Descriptor instead.
-func (*SetHashrangeResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use SetHashashrangeResponse.ProtoReflect.Descriptor instead.
+func (*SetHashashrangeResponse) Descriptor() ([]byte, []int) {
 	return file_dkvs_message_message_proto_rawDescGZIP(), []int{7}
 }
 
@@ -505,8 +505,8 @@ var file_dkvs_message_message_proto_goTypes = []interface{}{
 	(*GetResponse)(nil),          // 3: dkvs.message.GetResponse
 	(*DeleteRequest)(nil),        // 4: dkvs.message.DeleteRequest
 	(*DeleteResponse)(nil),       // 5: dkvs.message.DeleteResponse
-	(*SetHashrangeRequest)(nil),  // 6: dkvs.message.SetHashrangeRequest
-	(*SetHashrangeResponse)(nil), // 7: dkvs.message.SetHashrangeResponse
+	(*SetHashashrangeRequest)(nil),  // 6: dkvs.message.SetHashashrangeRequest
+	(*SetHashashrangeResponse)(nil), // 7: dkvs.message.SetHashashrangeResponse
 	(*StoredValue)(nil),          // 8: dkvs.message.StoredValue
 }
 var file_dkvs_message_message_proto_depIdxs = []int32{
@@ -598,7 +598,7 @@ func file_dkvs_message_message_proto_init() {
 			}
 		}
 		file_dkvs_message_message_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetHashrangeRequest); i {
+			switch v := v.(*SetHashashrangeRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -610,7 +610,7 @@ func file_dkvs_message_message_proto_init() {
 			}
 		}
 		file_dkvs_message_message_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetHashrangeResponse); i {
+			switch v := v.(*SetHashashrangeResponse); i {
 			case 0:
 				return &v.state
 			case 1:

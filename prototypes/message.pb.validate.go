@@ -716,22 +716,22 @@ var _ interface {
 	ErrorName() string
 } = DeleteResponseValidationError{}
 
-// Validate checks the field values on SetHashrangeRequest with the rules
+// Validate checks the field values on SetHashashrangeRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *SetHashrangeRequest) Validate() error {
+func (m *SetHashashrangeRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on SetHashrangeRequest with the rules
+// ValidateAll checks the field values on SetHashashrangeRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// SetHashrangeRequestMultiError, or nil if none found.
-func (m *SetHashrangeRequest) ValidateAll() error {
+// SetHashashrangeRequestMultiError, or nil if none found.
+func (m *SetHashashrangeRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *SetHashrangeRequest) validate(all bool) error {
+func (m *SetHashashrangeRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -743,19 +743,19 @@ func (m *SetHashrangeRequest) validate(all bool) error {
 	// no validation rules for Max
 
 	if len(errors) > 0 {
-		return SetHashrangeRequestMultiError(errors)
+		return SetHashashrangeRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// SetHashrangeRequestMultiError is an error wrapping multiple validation
-// errors returned by SetHashrangeRequest.ValidateAll() if the designated
+// SetHashashrangeRequestMultiError is an error wrapping multiple validation
+// errors returned by SetHashashrangeRequest.ValidateAll() if the designated
 // constraints aren't met.
-type SetHashrangeRequestMultiError []error
+type SetHashashrangeRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m SetHashrangeRequestMultiError) Error() string {
+func (m SetHashashrangeRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -764,11 +764,11 @@ func (m SetHashrangeRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m SetHashrangeRequestMultiError) AllErrors() []error { return m }
+func (m SetHashashrangeRequestMultiError) AllErrors() []error { return m }
 
-// SetHashrangeRequestValidationError is the validation error returned by
-// SetHashrangeRequest.Validate if the designated constraints aren't met.
-type SetHashrangeRequestValidationError struct {
+// SetHashashrangeRequestValidationError is the validation error returned by
+// SetHashashrangeRequest.Validate if the designated constraints aren't met.
+type SetHashashrangeRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -776,24 +776,24 @@ type SetHashrangeRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e SetHashrangeRequestValidationError) Field() string { return e.field }
+func (e SetHashashrangeRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e SetHashrangeRequestValidationError) Reason() string { return e.reason }
+func (e SetHashashrangeRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e SetHashrangeRequestValidationError) Cause() error { return e.cause }
+func (e SetHashashrangeRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e SetHashrangeRequestValidationError) Key() bool { return e.key }
+func (e SetHashashrangeRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e SetHashrangeRequestValidationError) ErrorName() string {
-	return "SetHashrangeRequestValidationError"
+func (e SetHashashrangeRequestValidationError) ErrorName() string {
+	return "SetHashashrangeRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e SetHashrangeRequestValidationError) Error() string {
+func (e SetHashashrangeRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -805,14 +805,14 @@ func (e SetHashrangeRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sSetHashrangeRequest.%s: %s%s",
+		"invalid %sSetHashashrangeRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = SetHashrangeRequestValidationError{}
+var _ error = SetHashashrangeRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -820,24 +820,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = SetHashrangeRequestValidationError{}
+} = SetHashashrangeRequestValidationError{}
 
-// Validate checks the field values on SetHashrangeResponse with the rules
+// Validate checks the field values on SetHashashrangeResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *SetHashrangeResponse) Validate() error {
+func (m *SetHashashrangeResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on SetHashrangeResponse with the rules
+// ValidateAll checks the field values on SetHashashrangeResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// SetHashrangeResponseMultiError, or nil if none found.
-func (m *SetHashrangeResponse) ValidateAll() error {
+// SetHashashrangeResponseMultiError, or nil if none found.
+func (m *SetHashashrangeResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *SetHashrangeResponse) validate(all bool) error {
+func (m *SetHashashrangeResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -845,19 +845,19 @@ func (m *SetHashrangeResponse) validate(all bool) error {
 	var errors []error
 
 	if len(errors) > 0 {
-		return SetHashrangeResponseMultiError(errors)
+		return SetHashashrangeResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// SetHashrangeResponseMultiError is an error wrapping multiple validation
-// errors returned by SetHashrangeResponse.ValidateAll() if the designated
+// SetHashashrangeResponseMultiError is an error wrapping multiple validation
+// errors returned by SetHashashrangeResponse.ValidateAll() if the designated
 // constraints aren't met.
-type SetHashrangeResponseMultiError []error
+type SetHashashrangeResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m SetHashrangeResponseMultiError) Error() string {
+func (m SetHashashrangeResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -866,11 +866,11 @@ func (m SetHashrangeResponseMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m SetHashrangeResponseMultiError) AllErrors() []error { return m }
+func (m SetHashashrangeResponseMultiError) AllErrors() []error { return m }
 
-// SetHashrangeResponseValidationError is the validation error returned by
-// SetHashrangeResponse.Validate if the designated constraints aren't met.
-type SetHashrangeResponseValidationError struct {
+// SetHashashrangeResponseValidationError is the validation error returned by
+// SetHashashrangeResponse.Validate if the designated constraints aren't met.
+type SetHashashrangeResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -878,24 +878,24 @@ type SetHashrangeResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e SetHashrangeResponseValidationError) Field() string { return e.field }
+func (e SetHashashrangeResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e SetHashrangeResponseValidationError) Reason() string { return e.reason }
+func (e SetHashashrangeResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e SetHashrangeResponseValidationError) Cause() error { return e.cause }
+func (e SetHashashrangeResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e SetHashrangeResponseValidationError) Key() bool { return e.key }
+func (e SetHashashrangeResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e SetHashrangeResponseValidationError) ErrorName() string {
-	return "SetHashrangeResponseValidationError"
+func (e SetHashashrangeResponseValidationError) ErrorName() string {
+	return "SetHashashrangeResponseValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e SetHashrangeResponseValidationError) Error() string {
+func (e SetHashashrangeResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -907,14 +907,14 @@ func (e SetHashrangeResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sSetHashrangeResponse.%s: %s%s",
+		"invalid %sSetHashashrangeResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = SetHashrangeResponseValidationError{}
+var _ error = SetHashashrangeResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -922,4 +922,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = SetHashrangeResponseValidationError{}
+} = SetHashashrangeResponseValidationError{}

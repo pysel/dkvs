@@ -16,7 +16,7 @@ func TestPartitionEvents(t *testing.T) {
 	p := partition.NewPartition(testutil.TestDBPath)
 	defer p.Close()
 
-	p.SetHashrange(testutil.DefaultHashrange)
+	p.SetHashashrange(testutil.DefaultHashashrange)
 
 	key := sha256.Sum256(testutil.DomainKey)
 

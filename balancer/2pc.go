@@ -6,12 +6,12 @@ import (
 	"sync"
 
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
-	"github.com/pysel/dkvs/types/hrange"
+	"github.com/pysel/dkvs/types/hashrange"
 )
 
 // AtomicMessage sends a message to all partitions that are responsible for the given key and awaits for their responses.
 // On successfull ack from all nodes, sends a commit message, else sends an abort message.
-func (b *Balancer) AtomicMessage(ctx context.Context, range_ *hrange.Range, msg *pbpartition.PrepareCommitRequest) error {
+func (b *Balancer) AtomicMessage(ctx context.Context, range_ *hashrange.Range, msg *pbpartition.PrepareCommitRequest) error {
 	rangeView := b.rangeToViews[range_.AsKey()]
 	if len(rangeView.clients) == 0 {
 		return ErrRangeNotYetCovered

@@ -10,7 +10,7 @@ import (
 	"github.com/pysel/dkvs/prototypes"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 	"github.com/pysel/dkvs/types"
-	"github.com/pysel/dkvs/types/hrange"
+	hashrange "github.com/pysel/dkvs/types/hashrange"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -23,7 +23,7 @@ type Balancer struct {
 
 	// A registry, which is a mapping from ranges to partitions.
 	// Multiple partitions can be mapped to the same range.
-	rangeToViews map[hrange.RangeKey]*RangeView
+	rangeToViews map[hashrange.RangeKey]*RangeView
 
 	// coverage is used for tracking the tracked ranges
 	coverage *coverage
@@ -41,7 +41,7 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 
 	b := &Balancer{
 		DB:                db,
-		rangeToViews:      make(map[hrange.RangeKey]*RangeView),
+		rangeToViews:      make(map[hashrange.RangeKey]*RangeView),
 		coverage:          GetCoverage(),
 		clientIdToLamport: NewClientIdToLamport(),
 	}
@@ -61,7 +61,7 @@ func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 	nextPartitionRangeKey, lowerTick, _ := b.coverage.getNextPartitionRange()
 	partitionRange, _ := nextPartitionRangeKey.ToRange() // TODO: err
 
-	_, err := client.SetHashrange(ctx, &prototypes.SetHashrangeRequest{Min: partitionRange.Min.Bytes(), Max: partitionRange.Max.Bytes()})
+	_, err := client.SetHashashrange(ctx, &prototypes.SetHashashrangeRequest{Min: partitionRange.Min.Bytes(), Max: partitionRange.Max.Bytes()})
 	if err != nil {
 		return err
 	}
@@ -150,13 +150,13 @@ func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse
 func (b *Balancer) setupCoverage(goalReplicaRanges int) error {
 	if goalReplicaRanges == 0 {
 		b.coverage.addTick(newTick(big.NewInt(0), 0))
-		b.coverage.addTick(newTick(hrange.MaxInt, 0))
+		b.coverage.addTick(newTick(hashrange.MaxInt, 0))
 		return nil
 	}
 
 	// Create a tick for each partition
 	for i := 0; i <= goalReplicaRanges; i++ {
-		numerator := new(big.Int).Mul(big.NewInt(int64(i)), hrange.MaxInt)
+		numerator := new(big.Int).Mul(big.NewInt(int64(i)), hashrange.MaxInt)
 		value := new(big.Int).Div(numerator, big.NewInt(int64(goalReplicaRanges)))
 		b.coverage.addTick(newTick(value, 0))
 	}
@@ -165,7 +165,7 @@ func (b *Balancer) setupCoverage(goalReplicaRanges int) error {
 }
 
 // getRangeFromDigest returns a range to which the given digest belongs
-func (b *Balancer) getRangeFromDigest(digest []byte) (*hrange.Range, error) {
+func (b *Balancer) getRangeFromDigest(digest []byte) (*hashrange.Range, error) {
 	for rangeKey := range b.rangeToViews {
 		range_, _ := rangeKey.ToRange() // TODO: err
 		if range_.Contains(digest) {

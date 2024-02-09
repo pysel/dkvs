@@ -1,4 +1,4 @@
-package hrange
+package hashrange
 
 import (
 	"math/big"

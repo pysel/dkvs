@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/pysel/dkvs/types/hrange"
+	hashrange "github.com/pysel/dkvs/types/hashrange"
 
 	leveldb "github.com/pysel/dkvs/db/leveldb"
 	"github.com/pysel/dkvs/prototypes"
@@ -15,8 +15,8 @@ import (
 
 // Partition is a node that is responsible for some range of keys.
 type Partition struct {
-	// hashrange is a range of keys that this partition is responsible for.
-	hashrange *hrange.Range
+	// hashashrange is a range of keys that this partition is responsible for.
+	hashashrange *hashrange.Range
 
 	// Database instance
 	leveldb.DB
@@ -46,7 +46,7 @@ func NewPartition(dbPath string) *Partition {
 
 	eventHandler := shared.NewEventHandler()
 	return &Partition{
-		hashrange:    nil, // balancer should set this
+		hashashrange: nil, // balancer should set this
 		DB:           db,
 		timestamp:    0,
 		backlog:      types.NewBacklog(),
@@ -94,8 +94,8 @@ func (p *Partition) Close() error {
 	return p.DB.Close()
 }
 
-func (p *Partition) SetHashrange(hashrange *hrange.Range) {
-	p.hashrange = hashrange
+func (p *Partition) SetHashashrange(hashashrange *hashrange.Range) {
+	p.hashashrange = hashashrange
 }
 
 // validate TS checks the timestamp of received message against local timestamp

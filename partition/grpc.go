@@ -7,7 +7,7 @@ import (
 	"github.com/pysel/dkvs/prototypes"
 	"github.com/pysel/dkvs/shared"
 	"github.com/pysel/dkvs/types"
-	"github.com/pysel/dkvs/types/hrange"
+	hashrange "github.com/pysel/dkvs/types/hashrange"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -105,8 +105,8 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 	return &prototypes.DeleteResponse{}, nil
 }
 
-// SetHashrange sets the hashrange for this partition.
-func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHashrangeRequest) (res *prototypes.SetHashrangeResponse, err error) {
+// SetHashashrange sets the hashashrange for this partition.
+func (ls *ListenServer) SetHashashrange(ctx context.Context, req *prototypes.SetHashashrangeRequest) (res *prototypes.SetHashashrangeResponse, err error) {
 	defer func() {
 		if err != nil {
 			ls.EventHandler.Emit(shared.ErrorEvent{Req: req.String(), Err: err})
@@ -114,7 +114,7 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 			min := new(big.Int).SetBytes(req.Min)
 			max := new(big.Int).SetBytes(req.Max)
 
-			ls.EventHandler.Emit(SetHashrangeEvent{min: min, max: max})
+			ls.EventHandler.Emit(SetHashashrangeEvent{min: min, max: max})
 		}
 	}()
 
@@ -123,8 +123,8 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 		return
 	}
 
-	ls.hashrange = hrange.NewRange(req.Min, req.Max)
-	return &prototypes.SetHashrangeResponse{}, nil
+	ls.hashashrange = hashrange.NewRange(req.Min, req.Max)
+	return &prototypes.SetHashashrangeResponse{}, nil
 }
 
 // postCRUD runs functionality that should be run after every CRUD operation.
