@@ -27,4 +27,16 @@ func TestClient(t *testing.T) {
 	require.Equal(t, one, c.GetId())         // id is never 0
 	require.NotNil(t, c.GetBalancerClient()) // address is never nil
 	require.NotNil(t, c.GetContext())        // context is never nil
+
+	// valid client requests
+	err := c.Set([]byte("key"), []byte("value"))
+	require.NoError(t, err)
+
+	err = c.Delete([]byte("key"))
+	require.NoError(t, err)
+
+	value, err := c.Get([]byte("key"))
+	require.NoError(t, err)
+	require.Nil(t, value)
+
 }

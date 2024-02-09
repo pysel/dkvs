@@ -81,6 +81,10 @@ func (c *Client) Get(key []byte) ([]byte, error) {
 		return nil, err
 	}
 
+	if resp.StoredValue == nil {
+		return nil, nil
+	}
+
 	return resp.StoredValue.Value, nil
 }
 
