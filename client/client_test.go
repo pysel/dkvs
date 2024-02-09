@@ -38,5 +38,4 @@ func TestClient(t *testing.T) {
 	value, err := c.Get([]byte("key"))
 	require.NoError(t, err)
 	require.Nil(t, value)
-
 }
