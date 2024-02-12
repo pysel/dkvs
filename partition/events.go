@@ -8,7 +8,7 @@ import (
 )
 
 type (
-	SetHashashrangeEvent struct {
+	SetHashrangeEvent struct {
 		min *big.Int
 		max *big.Int
 	}
@@ -98,12 +98,12 @@ func (e NotNextRequestEvent) Message() string {
 	return fmt.Sprintf("\033[33mFuture Request\033[0m. Request: {%s}. Current timestamp: \033[32m%d\033[0m, received timestamp: \033[32m%d\033[0m", shared.GreyWrap(e.req), e.currentTimestamp, e.receivedTimestamp)
 }
 
-func (e SetHashashrangeEvent) Severity() string {
+func (e SetHashrangeEvent) Severity() string {
 	return "info"
 }
 
-func (e SetHashashrangeEvent) Message() string {
-	return fmt.Sprintf("Set hashashrange: %s -> %s", shared.GreenWrap(e.min.String()), shared.GreenWrap(e.max.String()))
+func (e SetHashrangeEvent) Message() string {
+	return fmt.Sprintf("Set hashrange: %s -> %s", shared.GreenWrap(e.min.String()), shared.GreenWrap(e.max.String()))
 }
 
 func (e ServerStartEvent) Severity() string {

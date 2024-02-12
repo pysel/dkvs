@@ -25,10 +25,10 @@ const (
 )
 
 var (
-	Min                 *big.Int // zero
-	HalfShaDomain       *big.Int // half of sha-2 domain
-	DefaultHashashrange *hashrange.Range
-	FullHashashrange    *hashrange.Range
+	Min              *big.Int // zero
+	HalfShaDomain    *big.Int // half of sha-2 domain
+	DefaultHashrange *hashrange.Range
+	FullHashrange    *hashrange.Range
 )
 
 func init() {
@@ -40,12 +40,12 @@ func init() {
 	full_range := new(big.Int).SetBytes(to_bz) // 2^256 - 1
 
 	HalfShaDomain = new(big.Int).Div(full_range, big.NewInt(2)) // half of 2^256 - 1
-	DefaultHashashrange = &hashrange.Range{
+	DefaultHashrange = &hashrange.Range{
 		Min: Min,
 		Max: HalfShaDomain,
 	}
 
-	FullHashashrange = &hashrange.Range{
+	FullHashrange = &hashrange.Range{
 		Min: big.NewInt(0),
 		Max: full_range,
 	}

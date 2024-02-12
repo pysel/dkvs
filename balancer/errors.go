@@ -17,7 +17,6 @@ var (
 
 	// 2PC
 	ErrPrepareCommitAborted = errors.New("prepare commit aborted")
-	ErrCommitAborted        = errors.New("commit aborted")
 )
 
 // ErrDecisionNotSavedToDisk is returned when a balancer's decision was not saved to disk during 2PC.
@@ -81,4 +80,16 @@ func (e ErrNotReadyForRequest) WarningErrorToEvent(req string) shared.Event {
 		Expected: e.CurrentClientTimestamp + 1,
 		Received: e.ReceivedClientTimestamp,
 	}
+}
+
+type ErrCommitAborted struct {
+	Err error
+}
+
+func (e ErrCommitAborted) Error() string {
+	return shared.RedWrap("commit aborted: " + e.Err.Error())
+}
+
+func (e ErrCommitAborted) Unwrap() error {
+	return e.Err
 }

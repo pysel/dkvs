@@ -67,7 +67,7 @@ func (b *Balancer) RegisterPartition(ctx context.Context, addr string) error {
 	nextPartitionRangeKey, lowerTick, _ := b.coverage.GetNextPartitionRange()
 	partitionRange, _ := nextPartitionRangeKey.ToRange() // TODO: err
 
-	_, err := client.SetHashashrange(ctx, &prototypes.SetHashashrangeRequest{Min: partitionRange.Min.Bytes(), Max: partitionRange.Max.Bytes()})
+	_, err := client.SetHashrange(ctx, &prototypes.SetHashrangeRequest{Min: partitionRange.Min.Bytes(), Max: partitionRange.Max.Bytes()})
 	if err != nil {
 		return err
 	}

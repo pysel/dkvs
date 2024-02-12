@@ -13,11 +13,11 @@ import (
 )
 
 // Half of MaxInt
-var defaultHashashrange = hashrange.NewRange(big.NewInt(0).Bytes(), new(big.Int).Div(hashrange.MaxInt, big.NewInt(2)).Bytes())
+var defaultHashrange = hashrange.NewRange(big.NewInt(0).Bytes(), new(big.Int).Div(hashrange.MaxInt, big.NewInt(2)).Bytes())
 
 func TestDatabaseMethods(t *testing.T) {
 	p := partition.NewPartition("test")
-	p.SetHashashrange(defaultHashashrange)
+	p.SetHashrange(defaultHashrange)
 
 	defer p.Close()
 	defer require.NoError(t, os.RemoveAll("test"))

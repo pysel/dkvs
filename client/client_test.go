@@ -1,6 +1,7 @@
 package client_test
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/pysel/dkvs/client"
@@ -38,4 +39,61 @@ func TestClient(t *testing.T) {
 	value, err := c.Get([]byte("key"))
 	require.NoError(t, err)
 	require.Nil(t, value)
+}
+
+func TestClientParallel(t *testing.T) {
+	// setup balancer server to which the client will be connected
+	balancerAddress, closer := testutil.BalancerClientWith2Partitions()
+
+	defer closer()
+
+	// generate load
+	var wg sync.WaitGroup
+	load := generateLoad(2)
+	channel := make(chan grpcError, len(load))
+
+	wg.Add(len(load))
+	for _, f := range load {
+		c := client.NewClient(balancerAddress.String())
+		go f(c, channel, &wg)
+	}
+
+	require.Zero(t, len(channel))
+}
+
+type grpcError struct {
+	errSet    error
+	errDelete error
+	errGet    error
+}
+
+func (ge *grpcError) ok() bool {
+	return ge.errSet == nil && ge.errDelete == nil && ge.errGet == nil
+}
+
+func generateLoad(goroutineNumber int) []func(*client.Client, chan grpcError, *sync.WaitGroup) {
+	var load []func(*client.Client, chan grpcError, *sync.WaitGroup)
+	for i := 0; i < goroutineNumber; i++ {
+		load = append(load, func(c *client.Client, channel chan grpcError, wg *sync.WaitGroup) {
+			defer wg.Done()
+
+			errSet := c.Set([]byte("key"+string(rune(i))), []byte("value"+string(rune(i))))
+			errDelete := c.Delete([]byte("key" + string(rune(i))))
+			_, errGet := c.Get([]byte("key" + string(rune(i))))
+
+			grpcError := grpcError{
+				errSet:    errSet,
+				errDelete: errDelete,
+				errGet:    errGet,
+			}
+
+			if grpcError.ok() {
+				return
+			}
+
+			channel <- grpcError
+		})
+	}
+
+	return load
 }

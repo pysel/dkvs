@@ -66,15 +66,15 @@ func TestGetNextPartitionRange(t *testing.T) {
 	// SUT
 	b2 := balancer.NewBalancerTest(t, 2)
 	nextPartitionRange, _, _ := b2.GetNextPartitionRange()
-	// defaultHashashrange is full sha256 domain, in case of 2 nodes, first node's domain should be half
+	// defaultHashrange is full sha256 domain, in case of 2 nodes, first node's domain should be half
 	require.Equal(t, hashrange.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsKey(), nextPartitionRange)
 
 	// Register first Partition
 	require.NoError(t, b2.RegisterPartition(ctx, addr1.String()))
 
 	nextPartitionRange, _, _ = b2.GetNextPartitionRange()
-	// defaultHashashrange is full sha256 domain, in case of 2 nodes, second node's domain should be the second half
-	require.Equal(t, hashrange.NewRange(testutil.HalfShaDomain.Bytes(), testutil.FullHashashrange.Max.Bytes()).AsKey(), nextPartitionRange)
+	// defaultHashrange is full sha256 domain, in case of 2 nodes, second node's domain should be the second half
+	require.Equal(t, hashrange.NewRange(testutil.HalfShaDomain.Bytes(), testutil.FullHashrange.Max.Bytes()).AsKey(), nextPartitionRange)
 
 	// Register second Partition
 	require.NoError(t, b2.RegisterPartition(ctx, addr2.String()))

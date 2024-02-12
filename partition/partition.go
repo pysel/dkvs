@@ -15,8 +15,8 @@ import (
 
 // Partition is a node that is responsible for some range of keys.
 type Partition struct {
-	// hashashrange is a range of keys that this partition is responsible for.
-	hashashrange *hashrange.Range
+	// hashrange is a range of keys that this partition is responsible for.
+	hashrange *hashrange.Range
 
 	// Database instance
 	leveldb.DB
@@ -46,7 +46,7 @@ func NewPartition(dbPath string) *Partition {
 
 	eventHandler := shared.NewEventHandler()
 	return &Partition{
-		hashashrange: nil, // balancer should set this
+		hashrange:    nil, // balancer should set this
 		DB:           db,
 		timestamp:    0,
 		backlog:      types.NewBacklog(),
@@ -94,8 +94,8 @@ func (p *Partition) Close() error {
 	return p.DB.Close()
 }
 
-func (p *Partition) SetHashashrange(hashashrange *hashrange.Range) {
-	p.hashashrange = hashashrange
+func (p *Partition) SetHashrange(hashrange *hashrange.Range) {
+	p.hashrange = hashrange
 }
 
 // validate TS checks the timestamp of received message against local timestamp

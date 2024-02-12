@@ -88,32 +88,32 @@ func TestContains(t *testing.T) {
 	}{
 		{
 			name:     "key is in range",
-			r:        testutil.DefaultHashashrange,
+			r:        testutil.DefaultHashrange,
 			hash:     domainHash[:],
 			expected: true,
 		},
 		{
 			name:     "key is not in range",
-			r:        testutil.DefaultHashashrange,
+			r:        testutil.DefaultHashrange,
 			hash:     nonDomainHash[:],
 			expected: false,
 		},
 		{
 			name:     "key is min",
-			r:        testutil.DefaultHashashrange,
-			hash:     testutil.DefaultHashashrange.Min.Bytes(),
+			r:        testutil.DefaultHashrange,
+			hash:     testutil.DefaultHashrange.Min.Bytes(),
 			expected: true,
 		},
 		{
 			name:     "key is max",
-			r:        testutil.DefaultHashashrange,
-			hash:     testutil.DefaultHashashrange.Max.Bytes(),
+			r:        testutil.DefaultHashrange,
+			hash:     testutil.DefaultHashrange.Max.Bytes(),
 			expected: true,
 		},
 		{
 			name:     "key is max + 1",
-			r:        testutil.DefaultHashashrange,
-			hash:     new(big.Int).Add(testutil.DefaultHashashrange.Max, big.NewInt(1)).Bytes(),
+			r:        testutil.DefaultHashrange,
+			hash:     new(big.Int).Add(testutil.DefaultHashrange.Max, big.NewInt(1)).Bytes(),
 			expected: false,
 		},
 	}
@@ -134,12 +134,12 @@ func TestAsString(t *testing.T) {
 	}{
 		{
 			name:     "range is default",
-			r:        testutil.DefaultHashashrange,
+			r:        testutil.DefaultHashrange,
 			expected: hashrange.RangeKey("0" + "; " + testutil.HalfShaDomain.String()),
 		},
 		{
 			name:     "range is full",
-			r:        testutil.FullHashashrange,
+			r:        testutil.FullHashrange,
 			expected: hashrange.RangeKey("0" + "; " + hashrange.MaxInt.String()),
 		},
 	}
@@ -161,12 +161,12 @@ func TestToRange(t *testing.T) {
 		{
 			name:     "range is default",
 			r:        hashrange.RangeKey("0" + "; " + testutil.HalfShaDomain.String()),
-			expected: testutil.DefaultHashashrange,
+			expected: testutil.DefaultHashrange,
 		},
 		{
 			name:     "range is full",
 			r:        hashrange.RangeKey("0" + "; " + hashrange.MaxInt.String()),
-			expected: testutil.FullHashashrange,
+			expected: testutil.FullHashrange,
 		},
 	}
 

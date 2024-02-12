@@ -20,9 +20,9 @@ func TestGRPCServer(t *testing.T) {
 	_, client, closer := testutil.StartPartitionClientToBufferedServer(ctx)
 	require.NotNil(t, closer)
 
-	min := binary.LittleEndian.AppendUint64(testutil.DefaultHashashrange.Min.Bytes(), 0)
-	max := testutil.DefaultHashashrange.Max.Bytes()
-	_, err := client.SetHashashrange(ctx, &prototypes.SetHashashrangeRequest{
+	min := binary.LittleEndian.AppendUint64(testutil.DefaultHashrange.Min.Bytes(), 0)
+	max := testutil.DefaultHashrange.Max.Bytes()
+	_, err := client.SetHashrange(ctx, &prototypes.SetHashrangeRequest{
 		Min: min,
 		Max: max,
 	})
@@ -61,7 +61,7 @@ func TestGRPCServer(t *testing.T) {
 			increaseLamport:  false,
 			expectedError:    errors.New("value length must be at least 1 bytes"),
 		},
-		"Invalid Set Request: key out of hashashrange": {
+		"Invalid Set Request: key out of hashrange": {
 			request:          &prototypes.SetRequest{},
 			key:              testutil.NonDomainKey,
 			expectedResponse: "",
@@ -132,7 +132,7 @@ func TestGRPCServer(t *testing.T) {
 			getResp, err := client.Get(ctx, &prototypes.GetRequest{Key: test.key, Lamport: uint64(lamport)})
 			require.NoError(t, err, "GetMessage should not return error")
 
-			// if test.SetRequest, the value should be stored correctly (assuming that expectedError is not nil when key is out of hashashrange)
+			// if test.SetRequest, the value should be stored correctly (assuming that expectedError is not nil when key is out of hashrange)
 			// if test.DeleteRequest, the value should be nil
 			switch test.request.(type) {
 			case *prototypes.SetRequest:

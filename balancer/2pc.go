@@ -108,8 +108,8 @@ func (b *Balancer) commit(ctx context.Context, rangeView *rangeview.RangeView) e
 
 	success := 0
 	for i := 0; i < len(rangeView.Clients); i++ {
-		if <-channel != nil {
-			return ErrCommitAborted
+		if err := <-channel; err != nil {
+			return ErrCommitAborted{Err: err}
 		}
 		success++
 	}

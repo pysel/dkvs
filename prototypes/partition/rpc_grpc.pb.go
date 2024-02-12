@@ -30,8 +30,8 @@ type PartitionServiceClient interface {
 	PrepareCommit(ctx context.Context, in *PrepareCommitRequest, opts ...grpc.CallOption) (*PrepareCommitResponse, error)
 	AbortCommit(ctx context.Context, in *AbortCommitRequest, opts ...grpc.CallOption) (*AbortCommitResponse, error)
 	Commit(ctx context.Context, in *CommitRequest, opts ...grpc.CallOption) (*CommitResponse, error)
-	// SetHashashrange sets this node's hashashrange to the given range.
-	SetHashashrange(ctx context.Context, in *prototypes.SetHashashrangeRequest, opts ...grpc.CallOption) (*prototypes.SetHashashrangeResponse, error)
+	// SetHashrange sets this node's hashrange to the given range.
+	SetHashrange(ctx context.Context, in *prototypes.SetHashrangeRequest, opts ...grpc.CallOption) (*prototypes.SetHashrangeResponse, error)
 }
 
 type partitionServiceClient struct {
@@ -96,9 +96,9 @@ func (c *partitionServiceClient) Commit(ctx context.Context, in *CommitRequest, 
 	return out, nil
 }
 
-func (c *partitionServiceClient) SetHashashrange(ctx context.Context, in *prototypes.SetHashashrangeRequest, opts ...grpc.CallOption) (*prototypes.SetHashashrangeResponse, error) {
-	out := new(prototypes.SetHashashrangeResponse)
-	err := c.cc.Invoke(ctx, "/dkvs.partition.PartitionService/SetHashashrange", in, out, opts...)
+func (c *partitionServiceClient) SetHashrange(ctx context.Context, in *prototypes.SetHashrangeRequest, opts ...grpc.CallOption) (*prototypes.SetHashrangeResponse, error) {
+	out := new(prototypes.SetHashrangeResponse)
+	err := c.cc.Invoke(ctx, "/dkvs.partition.PartitionService/SetHashrange", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -116,8 +116,8 @@ type PartitionServiceServer interface {
 	PrepareCommit(context.Context, *PrepareCommitRequest) (*PrepareCommitResponse, error)
 	AbortCommit(context.Context, *AbortCommitRequest) (*AbortCommitResponse, error)
 	Commit(context.Context, *CommitRequest) (*CommitResponse, error)
-	// SetHashashrange sets this node's hashashrange to the given range.
-	SetHashashrange(context.Context, *prototypes.SetHashashrangeRequest) (*prototypes.SetHashashrangeResponse, error)
+	// SetHashrange sets this node's hashrange to the given range.
+	SetHashrange(context.Context, *prototypes.SetHashrangeRequest) (*prototypes.SetHashrangeResponse, error)
 }
 
 // UnimplementedPartitionServiceServer should be embedded to have forward compatible implementations.
@@ -142,8 +142,8 @@ func (UnimplementedPartitionServiceServer) AbortCommit(context.Context, *AbortCo
 func (UnimplementedPartitionServiceServer) Commit(context.Context, *CommitRequest) (*CommitResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Commit not implemented")
 }
-func (UnimplementedPartitionServiceServer) SetHashashrange(context.Context, *prototypes.SetHashashrangeRequest) (*prototypes.SetHashashrangeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetHashashrange not implemented")
+func (UnimplementedPartitionServiceServer) SetHashrange(context.Context, *prototypes.SetHashrangeRequest) (*prototypes.SetHashrangeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetHashrange not implemented")
 }
 
 // UnsafePartitionServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -265,20 +265,20 @@ func _PartitionService_Commit_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PartitionService_SetHashashrange_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(prototypes.SetHashashrangeRequest)
+func _PartitionService_SetHashrange_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(prototypes.SetHashrangeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PartitionServiceServer).SetHashashrange(ctx, in)
+		return srv.(PartitionServiceServer).SetHashrange(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/dkvs.partition.PartitionService/SetHashashrange",
+		FullMethod: "/dkvs.partition.PartitionService/SetHashrange",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PartitionServiceServer).SetHashashrange(ctx, req.(*prototypes.SetHashashrangeRequest))
+		return srv.(PartitionServiceServer).SetHashrange(ctx, req.(*prototypes.SetHashrangeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -315,8 +315,8 @@ var PartitionService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _PartitionService_Commit_Handler,
 		},
 		{
-			MethodName: "SetHashashrange",
-			Handler:    _PartitionService_SetHashashrange_Handler,
+			MethodName: "SetHashrange",
+			Handler:    _PartitionService_SetHashrange_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

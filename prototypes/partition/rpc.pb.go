@@ -388,11 +388,11 @@ var file_dkvs_partition_rpc_proto_goTypes = []interface{}{
 	(*prototypes.SetRequest)(nil),           // 6: dkvs.message.SetRequest
 	(*prototypes.DeleteRequest)(nil),        // 7: dkvs.message.DeleteRequest
 	(*prototypes.GetRequest)(nil),           // 8: dkvs.message.GetRequest
-	(*prototypes.SetHashashrangeRequest)(nil),  // 9: dkvs.message.SetHashashrangeRequest
+	(*prototypes.SetHashrangeRequest)(nil),  // 9: dkvs.message.SetHashrangeRequest
 	(*prototypes.SetResponse)(nil),          // 10: dkvs.message.SetResponse
 	(*prototypes.GetResponse)(nil),          // 11: dkvs.message.GetResponse
 	(*prototypes.DeleteResponse)(nil),       // 12: dkvs.message.DeleteResponse
-	(*prototypes.SetHashashrangeResponse)(nil), // 13: dkvs.message.SetHashashrangeResponse
+	(*prototypes.SetHashrangeResponse)(nil), // 13: dkvs.message.SetHashrangeResponse
 }
 var file_dkvs_partition_rpc_proto_depIdxs = []int32{
 	6,  // 0: dkvs.partition.PrepareCommitRequest.set:type_name -> dkvs.message.SetRequest
@@ -403,14 +403,14 @@ var file_dkvs_partition_rpc_proto_depIdxs = []int32{
 	0,  // 5: dkvs.partition.PartitionService.PrepareCommit:input_type -> dkvs.partition.PrepareCommitRequest
 	2,  // 6: dkvs.partition.PartitionService.AbortCommit:input_type -> dkvs.partition.AbortCommitRequest
 	4,  // 7: dkvs.partition.PartitionService.Commit:input_type -> dkvs.partition.CommitRequest
-	9,  // 8: dkvs.partition.PartitionService.SetHashashrange:input_type -> dkvs.message.SetHashashrangeRequest
+	9,  // 8: dkvs.partition.PartitionService.SetHashrange:input_type -> dkvs.message.SetHashrangeRequest
 	10, // 9: dkvs.partition.PartitionService.Set:output_type -> dkvs.message.SetResponse
 	11, // 10: dkvs.partition.PartitionService.Get:output_type -> dkvs.message.GetResponse
 	12, // 11: dkvs.partition.PartitionService.Delete:output_type -> dkvs.message.DeleteResponse
 	1,  // 12: dkvs.partition.PartitionService.PrepareCommit:output_type -> dkvs.partition.PrepareCommitResponse
 	3,  // 13: dkvs.partition.PartitionService.AbortCommit:output_type -> dkvs.partition.AbortCommitResponse
 	5,  // 14: dkvs.partition.PartitionService.Commit:output_type -> dkvs.partition.CommitResponse
-	13, // 15: dkvs.partition.PartitionService.SetHashashrange:output_type -> dkvs.message.SetHashashrangeResponse
+	13, // 15: dkvs.partition.PartitionService.SetHashrange:output_type -> dkvs.message.SetHashrangeResponse
 	9,  // [9:16] is the sub-list for method output_type
 	2,  // [2:9] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name
