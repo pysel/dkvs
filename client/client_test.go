@@ -16,7 +16,7 @@ var (
 
 func TestClient(t *testing.T) {
 	// setup balancer server to which the client will be connected
-	balancerAddress, closer := testutil.BalancerClientWith2Partitions()
+	balancerAddress, closer := testutil.BalancerClientWith2Partitions(t)
 
 	defer closer()
 
@@ -43,7 +43,7 @@ func TestClient(t *testing.T) {
 
 func TestClientParallel(t *testing.T) {
 	// setup balancer server to which the client will be connected
-	balancerAddress, closer := testutil.BalancerClientWith2Partitions()
+	balancerAddress, closer := testutil.BalancerClientWith2Partitions(t)
 
 	defer closer()
 

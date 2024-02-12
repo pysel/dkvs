@@ -35,12 +35,12 @@ func (c *Coverage) String() string {
 
 // GetCoverage returns a Coverage.
 // Singletone pattern is used here.
-func GetCoverage() *Coverage {
-	if CreatedCoverage == nil {
-		CreatedCoverage = &Coverage{nil}
-	}
-	return CreatedCoverage
-}
+// func GetCoverage() *Coverage {
+// 	if CreatedCoverage == nil {
+// 		CreatedCoverage = &Coverage{nil}
+// 	}
+// 	return &Coverage{nil}
+// }
 
 // addTick iterates over the list of ticks until
 func (c *Coverage) AddTick(t *pbbalancer.Tick) {

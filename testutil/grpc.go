@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"testing"
 
 	"github.com/pysel/dkvs/balancer"
 
@@ -94,11 +95,11 @@ func StartPartitionClientToBufferedServer(ctx context.Context) (net.Addr, pbpart
 	return lis.Addr(), pbpartition.NewPartitionServiceClient(conn), closer
 }
 
-func StartXPartitionServers(x int) ([]net.Addr, []string) {
+func StartXPartitionServers(t *testing.T, x int) ([]net.Addr, []string) {
 	addrs := make([]net.Addr, x)
 	dbPaths := make([]string, x)
 	for i := 0; i < x; i++ {
-		path := TestDBPath + strconv.Itoa(i) + "test"
+		path := TestDBPath + strconv.Itoa(i) + "test" + t.Name()
 		p := partition.NewPartition(path)
 		s := partition.RegisterPartitionServer(p)
 		_, addr := shared.StartListeningOnPort(s, 0)
@@ -109,12 +110,12 @@ func StartXPartitionServers(x int) ([]net.Addr, []string) {
 	return addrs, dbPaths
 }
 
-func BalancerClientWith2Partitions() (net.Addr, func()) {
+func BalancerClientWith2Partitions(t *testing.T) (net.Addr, func()) {
 	ctx := context.Background()
-	addrs, dbPaths := StartXPartitionServers(2)
+	addrs, dbPaths := StartXPartitionServers(t, 2)
 
 	// register partitions
-	b := balancer.NewBalancer(2)
+	b := balancer.NewBalancer(balancer.BalancerDBPath+t.Name(), 2)
 	b.RegisterPartition(ctx, addrs[0].String())
 	b.RegisterPartition(ctx, addrs[1].String())
 
@@ -123,7 +124,7 @@ func BalancerClientWith2Partitions() (net.Addr, func()) {
 
 	return addr, func() {
 		// remove all databases - one for balancer and one for each partitin
-		os.RemoveAll(balancer.BalancerDBPath)
+		os.RemoveAll(balancer.BalancerDBPath + t.Name())
 		for _, path := range dbPaths {
 			err := os.RemoveAll(path)
 			if err != nil {

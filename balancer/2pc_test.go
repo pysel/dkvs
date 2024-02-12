@@ -14,20 +14,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	TestDBBalancer = "balancer"
-)
-
 func TestTwoPhaseCommit(t *testing.T) {
-	defer os.RemoveAll(TestDBBalancer + t.Name())
-	addrs, paths := testutil.StartXPartitionServers(2)
+	defer os.RemoveAll(balancer.BalancerDBPath + t.Name())
+	addrs, paths := testutil.StartXPartitionServers(t, 2)
 	defer testutil.RemovePaths(paths)
 
 	ctx := context.Background()
 
 	partitionAddr1, partitionAddr2 := addrs[0], addrs[1]
 
-	b := balancer.NewBalancerTest(t, 1)
+	b := balancer.NewBalancer(balancer.BalancerDBPath+t.Name(), 1)
 
 	err := b.RegisterPartition(ctx, partitionAddr1.String())
 	require.NoError(t, err)

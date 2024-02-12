@@ -59,7 +59,7 @@ func main() {
 			panic("invalid parameter for desired amount of partitions")
 		}
 
-		b := balancer.NewBalancer(goalReplicas)
+		b := balancer.NewBalancer(balancer.BalancerDBPath, goalReplicas)
 		server := balancer.RegisterBalancerServer(b)
 
 		wg, addr := shared.StartListeningOnPort(server, uint64(port))

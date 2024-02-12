@@ -40,8 +40,8 @@ type Balancer struct {
 }
 
 // NewBalancer returns a new balancer instance.
-func NewBalancer(goalReplicaRanges int) *Balancer {
-	db, err := leveldb.NewLevelDB(BalancerDBPath)
+func NewBalancer(dbPath string, goalReplicaRanges int) *Balancer {
+	db, err := leveldb.NewLevelDB(dbPath)
 	if err != nil {
 		panic(err)
 	}
@@ -49,7 +49,7 @@ func NewBalancer(goalReplicaRanges int) *Balancer {
 	b := &Balancer{
 		DB:                db,
 		rangeToViews:      make(map[hashrange.RangeKey]*rangeview.RangeView),
-		coverage:          coverage.GetCoverage(),
+		coverage:          &coverage.Coverage{Ticks: nil},
 		clientIdToLamport: NewClientIdToLamport(),
 	}
 
@@ -160,11 +160,11 @@ func (b *Balancer) setupCoverage(goalReplicaRanges int) error {
 		b.coverage.AddTick(coverage.NewTick(hashrange.MaxInt, 0))
 		return nil
 	}
-
 	// Create a tick for each partition
 	for i := 0; i <= goalReplicaRanges; i++ {
 		numerator := new(big.Int).Mul(big.NewInt(int64(i)), hashrange.MaxInt)
-		value := new(big.Int).Div(numerator, big.NewInt(int64(goalReplicaRanges)))
+		denominator := big.NewInt(int64(goalReplicaRanges))
+		value := new(big.Int).Div(numerator, denominator)
 		b.coverage.AddTick(coverage.NewTick(value, 0))
 	}
 

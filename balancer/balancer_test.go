@@ -13,14 +13,14 @@ import (
 )
 
 func TestRegisterGetPartition(t *testing.T) {
-	defer os.RemoveAll(TestDBBalancer + t.Name())
-	addrs, paths := testutil.StartXPartitionServers(1)
+	defer os.RemoveAll(balancer.BalancerDBPath + t.Name())
+	addrs, paths := testutil.StartXPartitionServers(t, 1)
 	defer testutil.RemovePaths(paths)
 
 	ctx := context.Background()
 
 	addr := addrs[0]
-	b2 := balancer.NewBalancerTest(t, 2)
+	b2 := balancer.NewBalancer(balancer.BalancerDBPath+t.Name(), 2)
 
 	err := b2.RegisterPartition(ctx, addr.String())
 	require.NoError(t, err)
@@ -33,11 +33,11 @@ func TestRegisterGetPartition(t *testing.T) {
 }
 
 func TestBalancerInit(t *testing.T) {
-	defer os.RemoveAll(TestDBBalancer + t.Name())
+	defer os.RemoveAll(balancer.BalancerDBPath + t.Name())
 
 	goalReplicaRanges := 3
 
-	b := balancer.NewBalancerTest(t, goalReplicaRanges)
+	b := balancer.NewBalancer(balancer.BalancerDBPath+t.Name(), goalReplicaRanges)
 	require.Equal(t, b.GetCoverageSize(), goalReplicaRanges+1)
 
 	expectedFirstTickValue := big.NewInt(0)
@@ -55,8 +55,8 @@ func TestBalancerInit(t *testing.T) {
 }
 
 func TestGetNextPartitionRange(t *testing.T) {
-	defer os.RemoveAll(TestDBBalancer + t.Name())
-	addrs, paths := testutil.StartXPartitionServers(2)
+	defer os.RemoveAll(balancer.BalancerDBPath + t.Name())
+	addrs, paths := testutil.StartXPartitionServers(t, 2)
 	defer testutil.RemovePaths(paths)
 
 	addr1, addr2 := addrs[0], addrs[1]
@@ -64,7 +64,7 @@ func TestGetNextPartitionRange(t *testing.T) {
 	ctx := context.Background()
 
 	// SUT
-	b2 := balancer.NewBalancerTest(t, 2)
+	b2 := balancer.NewBalancer(balancer.BalancerDBPath+t.Name(), 2)
 	nextPartitionRange, _, _ := b2.GetNextPartitionRange()
 	// defaultHashrange is full sha256 domain, in case of 2 nodes, first node's domain should be half
 	require.Equal(t, hashrange.NewRange(big.NewInt(0).Bytes(), testutil.HalfShaDomain.Bytes()).AsKey(), nextPartitionRange)
@@ -89,9 +89,9 @@ func TestGetNextPartitionRange(t *testing.T) {
 }
 
 func TestClientIdToLamport(t *testing.T) {
-	defer os.RemoveAll(TestDBBalancer + t.Name())
+	defer os.RemoveAll(balancer.BalancerDBPath + t.Name())
 
-	b := balancer.NewBalancerTest(t, 2)
+	b := balancer.NewBalancer(balancer.BalancerDBPath+t.Name(), 2)
 
 	require.Equal(t, uint64(1), b.NextClientId()) // first call should return 1
 
