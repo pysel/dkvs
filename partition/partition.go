@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	db "github.com/pysel/dkvs/db"
 	hashrange "github.com/pysel/dkvs/types/hashrange"
 
 	leveldb "github.com/pysel/dkvs/db/leveldb"
@@ -19,7 +20,7 @@ type Partition struct {
 	hashrange *hashrange.Range
 
 	// Database instance
-	leveldb.DB
+	db.DB
 
 	// read-write mutex
 	rwmutex sync.RWMutex

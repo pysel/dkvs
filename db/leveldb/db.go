@@ -2,14 +2,6 @@ package leveldb
 
 import "github.com/syndtr/goleveldb/leveldb"
 
-type DB interface {
-	Get(key []byte) ([]byte, error)
-	Set(key []byte, value []byte) error
-	Delete(key []byte) error
-	Has(key []byte) bool
-	Close() error
-}
-
 // LevelDB is a wrapper around GoLevelDB to implement the DB interface.
 type LevelDB struct {
 	*leveldb.DB

@@ -7,6 +7,7 @@ import (
 
 	coverage "github.com/pysel/dkvs/balancer/coverage"
 	"github.com/pysel/dkvs/balancer/rangeview"
+	db "github.com/pysel/dkvs/db"
 	leveldb "github.com/pysel/dkvs/db/leveldb"
 	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/prototypes"
@@ -25,7 +26,7 @@ var (
 // Balancer is a node that is responsible for registering partitions and relaying requests to appropriate ones.
 type Balancer struct {
 	// Database instance
-	leveldb.DB
+	db.DB
 
 	// A registry, which is a mapping from ranges to partitions.
 	// Multiple partitions can be mapped to the same range.
