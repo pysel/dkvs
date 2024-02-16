@@ -57,6 +57,7 @@ func TestClientParallel(t *testing.T) {
 		c := client.NewClient(balancerAddress.String())
 		go f(c, channel, &wg)
 	}
+	wg.Wait()
 
 	require.Zero(t, len(channel))
 }

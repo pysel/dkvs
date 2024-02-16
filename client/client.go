@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/pysel/dkvs/balancer"
+	"github.com/pysel/dkvs/partition"
 	"github.com/pysel/dkvs/prototypes"
 	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
 )
@@ -59,11 +60,13 @@ func (c *Client) Set(key, value []byte) error {
 	}
 
 	_, err := c.balacerClient.Set(c.context, req)
-	if err != nil {
-		return err
+	switch err.(type) {
+	case partition.ErrTimestampIsStale: // if timestamp is stale, it is a concurrency issue
+		// TODO: retry previous requests
+		return nil
 	}
 
-	return nil
+	return err
 }
 
 // Get gets a value for a key.
