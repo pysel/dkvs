@@ -10,7 +10,6 @@ import (
 	"github.com/pysel/dkvs/prototypes"
 	pbpartition "github.com/pysel/dkvs/prototypes/partition"
 	"github.com/pysel/dkvs/testutil"
-	"github.com/pysel/dkvs/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -31,8 +30,7 @@ func TestTwoPhaseCommit(t *testing.T) {
 	err = b.RegisterPartition(ctx, partitionAddr2.String())
 	require.NoError(t, err)
 
-	shaKey := types.ShaKey(testutil.DomainKey)
-	range_, err := b.GetRangeFromDigest(shaKey[:])
+	range_, err := b.GetRangeFromKey(testutil.DomainKey)
 	require.NoError(t, err)
 
 	msgSet := &pbpartition.PrepareCommitRequest{

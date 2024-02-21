@@ -6,7 +6,6 @@ import (
 	"github.com/pysel/dkvs/prototypes"
 	pbbalancer "github.com/pysel/dkvs/prototypes/balancer"
 	"github.com/pysel/dkvs/shared"
-	"github.com/pysel/dkvs/types"
 )
 
 // RegisterPartition registers a partition in the balancer.
@@ -72,8 +71,7 @@ func (bs *BalancerServer) Set(ctx context.Context, req *prototypes.SetRequest) (
 		return nil, err
 	}
 
-	shaKey := types.ShaKey(req.Key)
-	range_, err := bs.getRangeFromDigest(shaKey[:])
+	range_, err := bs.getRangeFromKey(req.Key)
 	if err != nil {
 		return nil, err
 	}
@@ -104,8 +102,7 @@ func (bs *BalancerServer) Delete(ctx context.Context, req *prototypes.DeleteRequ
 		return nil, err
 	}
 
-	shaKey := types.ShaKey(req.Key)
-	range_, err := bs.getRangeFromDigest(shaKey[:])
+	range_, err := bs.getRangeFromKey(req.Key)
 	if err != nil {
 		return nil, err
 	}

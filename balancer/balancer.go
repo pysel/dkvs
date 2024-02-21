@@ -107,8 +107,7 @@ func (b *Balancer) GetPartitionsByKey(key []byte) *rangeview.RangeView {
 
 // Get returns the most up to date value between responsible replicas for a given key.
 func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse, error) {
-	shaKey := types.ShaKey(key)
-	range_, err := b.getRangeFromDigest(shaKey[:])
+	range_, err := b.getRangeFromKey(key)
 	if err != nil {
 		return nil, err
 	}
@@ -176,11 +175,12 @@ func (b *Balancer) setupCoverage(goalReplicaRanges int) error {
 	return b.saveCoverage()
 }
 
-// getRangeFromDigest returns a range to which the given digest belongs
-func (b *Balancer) getRangeFromDigest(digest []byte) (*hashrange.Range, error) {
+// getRangeFromKey returns a range to which the given digest belongs
+func (b *Balancer) getRangeFromKey(key []byte) (*hashrange.Range, error) {
+	shaKey := types.ShaKey(key)
 	for rangeKey := range b.rangeToViews {
 		range_, _ := rangeKey.ToRange() // TODO: err
-		if range_.Contains(digest) {
+		if range_.Contains(shaKey[:]) {
 			return range_, nil
 		}
 	}
@@ -200,8 +200,7 @@ func (b *Balancer) saveCoverage() error {
 
 // GetNextLamportForKey returns the next lamport timestamp for a given key based on the digest of the key.
 func (b *Balancer) GetNextLamportForKey(key []byte) uint64 {
-	shaKey := types.ShaKey(key)
-	range_, err := b.getRangeFromDigest(shaKey[:])
+	range_, err := b.getRangeFromKey(key)
 	if err != nil {
 		return 0
 	}

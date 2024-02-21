@@ -24,8 +24,8 @@ func (b *Balancer) GetNextPartitionRange() (hashrange.RangeKey, *pbbalancer.Tick
 	return b.coverage.GetNextPartitionRange()
 }
 
-func (b *Balancer) GetRangeFromDigest(digest []byte) (*hashrange.Range, error) {
-	return b.getRangeFromDigest(digest)
+func (b *Balancer) GetRangeFromKey(key []byte) (*hashrange.Range, error) {
+	return b.getRangeFromKey(key)
 }
 
 func (b *Balancer) GetRangeToViews() map[hashrange.RangeKey]*rangeview.RangeView {
