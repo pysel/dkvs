@@ -1,7 +1,6 @@
 package partition_test
 
 import (
-	"crypto/sha256"
 	"os"
 	"testing"
 
@@ -18,9 +17,7 @@ func TestPartitionEvents(t *testing.T) {
 
 	p.SetHashrange(testutil.DefaultHashrange)
 
-	key := sha256.Sum256(testutil.DomainKey)
-
 	// Set
-	err := p.Set(key[:], []byte("Value"))
+	err := p.Set(testutil.DomainKey, []byte("Value"))
 	require.NoError(t, err)
 }

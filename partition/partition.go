@@ -49,6 +49,7 @@ func NewPartition(dbPath string) *Partition {
 	return &Partition{
 		hashrange:    nil, // balancer should set this
 		DB:           db,
+		rwmutex:      sync.RWMutex{},
 		timestamp:    0,
 		backlog:      types.NewBacklog(),
 		EventHandler: eventHandler,
@@ -59,10 +60,9 @@ func NewPartition(dbPath string) *Partition {
 // Keys should be sent of 32 length bytes, since SHA-2 produces 256-bit hashes, and be of big endian format.
 
 func (p *Partition) Get(key []byte) ([]byte, error) {
-	defer p.rwmutex.RUnlock()
-	p.rwmutex.RLock()
+	shaKey := types.ShaKey(key)
 
-	if err := p.checkKeyRange(key); err != nil {
+	if err := p.checkKeyRange(shaKey[:]); err != nil {
 		return nil, ErrNotThisPartitionKey
 	}
 
@@ -70,10 +70,9 @@ func (p *Partition) Get(key []byte) ([]byte, error) {
 }
 
 func (p *Partition) Set(key, value []byte) error {
-	defer p.rwmutex.Unlock()
-	p.rwmutex.Lock()
+	shaKey := types.ShaKey(key)
 
-	if err := p.checkKeyRange(key); err != nil {
+	if err := p.checkKeyRange(shaKey[:]); err != nil {
 		return ErrNotThisPartitionKey
 	}
 
@@ -81,10 +80,9 @@ func (p *Partition) Set(key, value []byte) error {
 }
 
 func (p *Partition) Delete(key []byte) error {
-	defer p.rwmutex.Unlock()
-	p.rwmutex.Lock()
+	shaKey := types.ShaKey(key)
 
-	if err := p.checkKeyRange(key); err != nil {
+	if err := p.checkKeyRange(shaKey[:]); err != nil {
 		return ErrNotThisPartitionKey
 	}
 

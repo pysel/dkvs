@@ -29,9 +29,7 @@ type Client struct {
 // NewClient creates a new client instance
 // During this process, the client gets an id and one the other side, the balancer registers this client
 // * with lamport timestamp of 0.
-func NewClient(balancerAddr string) *Client {
-	context := context.Background()
-
+func NewClient(context context.Context, balancerAddr string) *Client {
 	c := &Client{
 		context:       context,
 		timestamp:     0,

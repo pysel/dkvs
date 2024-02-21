@@ -1,7 +1,6 @@
 package partition_test
 
 import (
-	"crypto/sha256"
 	"math/big"
 	"os"
 	"testing"
@@ -22,33 +21,27 @@ func TestDatabaseMethods(t *testing.T) {
 	defer p.Close()
 	defer require.NoError(t, os.RemoveAll("test"))
 
-	err := p.Set(testutil.DomainKey[:], []byte("Value"))
-	require.Error(t, err, "should return error if key is not 32 bytes long - not a valid SHA-2 digest")
+	err := p.Set(testutil.DomainKey, []byte("Value"))
+	require.NoError(t, err)
 
-	hashedPartitionKey := sha256.Sum256(testutil.DomainKey)
-	hashedNotPartitionKey := sha256.Sum256(testutil.NonDomainKey)
-
-	err = p.Set(hashedPartitionKey[:], []byte("Value"))
-	require.NoError(t, err) // partition's key, should store correctly
-
-	err = p.Set(hashedNotPartitionKey[:], []byte("Value2"))
+	err = p.Set(testutil.NonDomainKey, []byte("Value2"))
 	require.Error(t, err) // not partition's key, should return error
 
-	value, err := p.Get(hashedPartitionKey[:])
+	value, err := p.Get(testutil.DomainKey)
 	require.NoError(t, err) // partition's key, should get correctly
 	require.Equal(t, []byte("Value"), value)
 
-	value, err = p.Get(hashedNotPartitionKey[:])
+	value, err = p.Get(testutil.NonDomainKey)
 	require.Error(t, err) // not partition's key, should return error
 	require.Nil(t, value)
 
-	err = p.Delete(hashedNotPartitionKey[:])
+	err = p.Delete(testutil.NonDomainKey)
 	require.Error(t, err) // not partition's key, should return error
 
-	err = p.Delete(hashedPartitionKey[:])
+	err = p.Delete(testutil.DomainKey)
 	require.NoError(t, err) // partition's key, should delete correctly
 
-	value, err = p.Get(hashedPartitionKey[:])
+	value, err = p.Get(testutil.DomainKey)
 	require.NoError(t, err) // partition's key, should return error
 	require.Nil(t, value)
 }

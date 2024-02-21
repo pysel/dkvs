@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"math/big"
+	"sync"
 
 	coverage "github.com/pysel/dkvs/balancer/coverage"
 	"github.com/pysel/dkvs/balancer/rangeview"
@@ -28,6 +29,9 @@ type Balancer struct {
 	// Database instance
 	db.DB
 
+	// rwmutex
+	rwmutex sync.RWMutex
+
 	// A registry, which is a mapping from ranges to partitions.
 	// Multiple partitions can be mapped to the same range.
 	rangeToViews map[hashrange.RangeKey]*rangeview.RangeView
@@ -48,6 +52,7 @@ func NewBalancer(dbPath string, goalReplicaRanges int) *Balancer {
 
 	b := &Balancer{
 		DB:                db,
+		rwmutex:           sync.RWMutex{},
 		rangeToViews:      make(map[hashrange.RangeKey]*rangeview.RangeView),
 		coverage:          &coverage.Coverage{Ticks: nil},
 		clientIdToLamport: NewClientIdToLamport(),

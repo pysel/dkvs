@@ -20,7 +20,6 @@ func (b *Balancer) AtomicMessage(ctx context.Context, range_ *hashrange.Range, m
 
 	// synchronous prepare commit step
 	err := b.prepareCommit(rangeView, msg)
-
 	// If >= 1 partition aborted, abort all
 	// Before aborting/committing, save decision to disk so that we can recover from a crash
 	if err != nil {
