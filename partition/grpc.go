@@ -60,13 +60,11 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (re
 		return nil, err
 	}
 
-	shaKey := types.ShaKey(req.Key)
-
 	// lock the partition
 	ls.rwmutex.RLock()
 	defer ls.rwmutex.RUnlock()
 
-	value, err := ls.Partition.Get(shaKey[:])
+	value, err := ls.Partition.Get(req.Key)
 	if err != nil {
 		return nil, ErrInternal{Reason: err}
 	}
@@ -99,12 +97,10 @@ func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteReques
 		return nil, err
 	}
 
-	shaKey := types.ShaKey(req.Key)
-
 	ls.rwmutex.Lock()
 	defer ls.rwmutex.Unlock()
 
-	err = ls.Partition.Delete(shaKey[:])
+	err = ls.Partition.Delete(req.Key)
 	if err != nil {
 		return nil, ErrInternal{Reason: err}
 	}
