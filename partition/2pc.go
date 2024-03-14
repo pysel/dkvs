@@ -22,10 +22,10 @@ func (ls *ListenServer) PrepareCommit(ctx context.Context, req *pbpartition.Prep
 
 func (ls *ListenServer) AbortCommit(ctx context.Context, req *pbpartition.AbortCommitRequest) (*pbpartition.AbortCommitResponse, error) {
 	ls.lockedMessage = nil
-	ls.Partition.ProcessBacklog()
+	err := ls.Partition.ProcessBacklog()
 
 	ls.EventHandler.Emit(TwoPCAbortEvent{})
-	return &pbpartition.AbortCommitResponse{}, nil
+	return &pbpartition.AbortCommitResponse{}, err
 }
 
 func (ls *ListenServer) Commit(ctx context.Context, req *pbpartition.CommitRequest) (res *pbpartition.CommitResponse, err error) {

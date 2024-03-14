@@ -133,7 +133,10 @@ func (b *Balancer) Get(ctx context.Context, key []byte) (*prototypes.GetResponse
 					offlineAddressesErr.Errors = append(offlineAddressesErr.Errors, err)
 
 					// TODO: consider tombstoning before removing
-					rangeView.RemovePartition(rangeView.Addresses[i])
+					err := rangeView.RemovePartition(rangeView.Addresses[i])
+					if err != nil {
+						return nil, err
+					}
 				}
 			}
 			continue

@@ -116,8 +116,8 @@ func BalancerClientWith2Partitions(t *testing.T) (net.Addr, func()) {
 
 	// register partitions
 	b := balancer.NewBalancer(balancer.BalancerDBPath+t.Name(), 2)
-	b.RegisterPartition(ctx, addrs[0].String())
-	b.RegisterPartition(ctx, addrs[1].String())
+	_ = b.RegisterPartition(ctx, addrs[0].String())
+	_ = b.RegisterPartition(ctx, addrs[1].String())
 
 	server := balancer.RegisterBalancerServer(b)
 	_, addr := shared.StartListeningOnPort(server, 0)

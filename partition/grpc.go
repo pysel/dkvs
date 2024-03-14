@@ -13,7 +13,11 @@ import (
 
 // Set sets a value for a key.
 func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (resp *prototypes.SetResponse, err error) {
-	defer func() { ls.postCRUD(err, req.String()) }()
+	defer func() {
+		if ls.postCRUD(err, req.String()) != nil {
+			panic("postCRUD failed")
+		}
+	}()
 
 	// note: if request is not valid, the timestamp will not be incremented
 	// TODO: investigate if it is a valid behaviour.
@@ -49,7 +53,11 @@ func (ls *ListenServer) Set(ctx context.Context, req *prototypes.SetRequest) (re
 
 // Get gets a value for a key.
 func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (resp *prototypes.GetResponse, err error) {
-	defer func() { ls.postCRUD(err, req.String()) }()
+	defer func() {
+		if ls.postCRUD(err, req.String()) != nil {
+			panic("postCRUD failed")
+		}
+	}()
 
 	if err = req.Validate(); err != nil {
 		return nil, err
@@ -86,7 +94,11 @@ func (ls *ListenServer) Get(ctx context.Context, req *prototypes.GetRequest) (re
 
 // Delete deletes a value for a key.
 func (ls *ListenServer) Delete(ctx context.Context, req *prototypes.DeleteRequest) (resp *prototypes.DeleteResponse, err error) {
-	defer func() { ls.postCRUD(err, req.String()) }()
+	defer func() {
+		if ls.postCRUD(err, req.String()) != nil {
+			panic("postCRUD failed")
+		}
+	}()
 
 	if err = req.Validate(); err != nil {
 		return nil, err
@@ -134,20 +146,20 @@ func (ls *ListenServer) SetHashrange(ctx context.Context, req *prototypes.SetHas
 }
 
 // postCRUD runs functionality that should be run after every CRUD operation.
-func (ls *ListenServer) postCRUD(err error, req string) {
+func (ls *ListenServer) postCRUD(err error, req string) error {
 	// if error is a warning, log it as warning
 	// log error as error otherwise
 	if err != nil {
 		if eventError, ok := err.(shared.IsWarningEventError); ok {
 			ls.EventHandler.Emit(eventError.WarningErrorToEvent(req))
-			return
+			return nil
 		}
 		ls.EventHandler.Emit(shared.ErrorEvent{Req: req, Err: err})
 	} else {
 		ls.IncrTs()
 	}
 
-	ls.ProcessBacklog()
+	return ls.ProcessBacklog()
 }
 
 func (ls *ListenServer) validateTSGrpcLevel(ts uint64, message proto.Message) error {

@@ -12,7 +12,6 @@ import (
 )
 
 var (
-	// zero = uint64(0)
 	one = uint64(1)
 )
 
