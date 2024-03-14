@@ -43,9 +43,8 @@ func TestClient(t *testing.T) {
 	require.Nil(t, value)
 }
 
-func TestClientParallel(t *testing.T) {
-	t.Skip()
-	goroutines := 1
+func TestClient_Parallel(t *testing.T) {
+	goroutines := 100          // 100 different clients
 	timeout := time.Second * 3 // 3 seconds hopefully should be enough
 
 	// setup balancer server to which the client will be connected

@@ -30,6 +30,8 @@ func (bs *BalancerServer) GetId(ctx context.Context, req *pbbalancer.GetIdReques
 
 func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (res *prototypes.GetResponse, err error) {
 	defer func() { bs.postCRUD(req.Id, err, req.String()) }()
+	bs.mutex.Lock()
+	defer bs.mutex.Unlock()
 
 	// validate request structure
 	if err = req.Validate(); err != nil && req.Id != 0 {
@@ -60,6 +62,8 @@ func (bs *BalancerServer) Get(ctx context.Context, req *prototypes.GetRequest) (
 
 func (bs *BalancerServer) Set(ctx context.Context, req *prototypes.SetRequest) (res *prototypes.SetResponse, err error) {
 	defer func() { bs.postCRUD(req.Id, err, req.String()) }()
+	bs.mutex.Lock()
+	defer bs.mutex.Unlock()
 
 	// validate request structure
 	if err = req.Validate(); err != nil && req.Id != 0 {
@@ -91,6 +95,8 @@ func (bs *BalancerServer) Set(ctx context.Context, req *prototypes.SetRequest) (
 
 func (bs *BalancerServer) Delete(ctx context.Context, req *prototypes.DeleteRequest) (res *prototypes.DeleteResponse, err error) {
 	defer func() { bs.postCRUD(req.Id, err, req.String()) }()
+	bs.mutex.Lock()
+	defer bs.mutex.Unlock()
 
 	// validate request structure
 	if err = req.Validate(); err != nil && req.Id != 0 {
@@ -124,10 +130,9 @@ func (bs *BalancerServer) postCRUD(id uint64, err error, req string) {
 	if err != nil {
 		if eventError, ok := err.(shared.IsWarningEventError); ok {
 			bs.eventHandler.Emit(eventError.WarningErrorToEvent(req))
-			return
+		} else {
+			bs.eventHandler.Emit(&shared.ErrorEvent{Req: req, Err: err})
 		}
-
-		bs.eventHandler.Emit(&shared.ErrorEvent{Req: req, Err: err})
 	}
 
 	bs.Balancer.IncrementLamportForId(id)
